@@ -42,8 +42,8 @@ export default function AddManhwaModal({ onClose, onAdd }: AddManhwaModalProps) 
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
-      <div className="bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-gray-800 border-b border-gray-700 p-3 sm:p-4 flex items-center justify-between">
+      <div className="bg-background-darker rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-800">
+        <div className="sticky top-0 bg-background-darker border-b border-gray-800 p-3 sm:p-4 flex items-center justify-between">
           <h2 className="text-xl sm:text-2xl font-bold">Adicionar Manhwa</h2>
           <button
             onClick={onClose}
@@ -63,7 +63,7 @@ export default function AddManhwaModal({ onClose, onAdd }: AddManhwaModalProps) 
               required
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full bg-gray-700 text-white px-3 sm:px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm sm:text-base"
+              className="w-full bg-background-dark text-white px-3 sm:px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm sm:text-base border border-gray-800"
             />
           </div>
 
@@ -73,7 +73,7 @@ export default function AddManhwaModal({ onClose, onAdd }: AddManhwaModalProps) 
               type="text"
               value={formData.author}
               onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-              className="w-full bg-gray-700 text-white px-3 sm:px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm sm:text-base"
+              className="w-full bg-background-dark text-white px-3 sm:px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm sm:text-base border border-gray-800"
             />
           </div>
 
@@ -83,7 +83,7 @@ export default function AddManhwaModal({ onClose, onAdd }: AddManhwaModalProps) 
               type="url"
               value={formData.cover_url}
               onChange={(e) => setFormData({ ...formData, cover_url: e.target.value })}
-              className="w-full bg-gray-700 text-white px-3 sm:px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm sm:text-base"
+              className="w-full bg-background-dark text-white px-3 sm:px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm sm:text-base border border-gray-800"
             />
           </div>
 
@@ -92,7 +92,7 @@ export default function AddManhwaModal({ onClose, onAdd }: AddManhwaModalProps) 
             <select
               value={formData.status}
               onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-              className="w-full bg-gray-700 text-white px-3 sm:px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm sm:text-base"
+              className="w-full bg-background-dark text-white px-3 sm:px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm sm:text-base border border-gray-800"
             >
               <option value="plan_to_read">Planejo Ler</option>
               <option value="reading">Lendo</option>
@@ -108,7 +108,7 @@ export default function AddManhwaModal({ onClose, onAdd }: AddManhwaModalProps) 
                 min="0"
                 value={formData.current_chapter || ''}
                 onChange={(e) => setFormData({ ...formData, current_chapter: parseInt(e.target.value) || 0 })}
-                className="w-full bg-gray-700 text-white px-3 sm:px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm sm:text-base"
+                className="w-full bg-background-dark text-white px-3 sm:px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm sm:text-base border border-gray-800"
               />
             </div>
 
@@ -119,7 +119,7 @@ export default function AddManhwaModal({ onClose, onAdd }: AddManhwaModalProps) 
                 min="0"
                 value={formData.total_chapters || ''}
                 onChange={(e) => setFormData({ ...formData, total_chapters: parseInt(e.target.value) || undefined })}
-                className="w-full bg-gray-700 text-white px-3 sm:px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm sm:text-base"
+                className="w-full bg-background-dark text-white px-3 sm:px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm sm:text-base border border-gray-800"
               />
             </div>
           </div>
@@ -152,21 +152,21 @@ export default function AddManhwaModal({ onClose, onAdd }: AddManhwaModalProps) 
               rows={3}
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              className="w-full bg-gray-700 text-white px-3 sm:px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm sm:text-base resize-none sm:rows-4"
+              className="w-full bg-background-dark text-white px-3 sm:px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm sm:text-base resize-none sm:rows-4 border border-gray-800"
             />
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2 sm:pt-4">
             <button
               type="submit"
-              className="flex-1 bg-primary-600 hover:bg-primary-700 px-4 py-2.5 rounded-lg transition font-medium text-sm sm:text-base order-1 sm:order-1"
+              className="flex-1 bg-primary-500 hover:bg-primary-600 px-4 py-2.5 rounded-lg transition font-medium text-sm sm:text-base order-1 sm:order-1"
             >
               Adicionar
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-gray-700 hover:bg-gray-600 px-4 py-2.5 rounded-lg transition font-medium text-sm sm:text-base order-2 sm:order-2"
+              className="flex-1 bg-background-dark hover:bg-gray-800 px-4 py-2.5 rounded-lg transition font-medium text-sm sm:text-base order-2 sm:order-2"
             >
               Cancelar
             </button>

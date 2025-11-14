@@ -57,9 +57,9 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
   }
 
   return (
-    <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+    <div className="bg-background-darker rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-gray-800">
       {manhwa.cover_url && (
-        <div className="w-full h-48 sm:h-56 md:h-64 bg-gray-700 flex items-center justify-center">
+        <div className="w-full h-48 sm:h-56 md:h-64 bg-background-dark flex items-center justify-center">
           <img
             src={manhwa.cover_url}
             alt={manhwa.title}
@@ -110,7 +110,7 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
         <select
           value={manhwa.status}
           onChange={(e) => updateStatus(e.target.value)}
-          className="w-full bg-gray-700 text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm hover:bg-gray-600 transition"
+          className="w-full bg-background-dark text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm hover:bg-gray-800 transition border border-gray-800"
         >
           <option value="plan_to_read">Planejo Ler</option>
           <option value="reading">Lendo</option>

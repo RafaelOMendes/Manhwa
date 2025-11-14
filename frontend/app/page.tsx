@@ -30,7 +30,7 @@ export default function Home() {
   )
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
+    <main className="min-h-screen bg-gradient-to-b from-background-dark to-background-darker text-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         <header className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
@@ -40,7 +40,7 @@ export default function Home() {
             </div>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 px-3 sm:px-4 py-2 rounded-lg transition text-sm sm:text-base w-full sm:w-auto justify-center"
+              className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 px-3 sm:px-4 py-2 rounded-lg transition text-sm sm:text-base w-full sm:w-auto justify-center"
             >
               <Plus size={18} className="sm:w-5 sm:h-5" />
               <span className="sm:inline">Adicionar Manhwa</span>
@@ -51,7 +51,7 @@ export default function Home() {
             <button
               onClick={() => setFilter('all')}
               className={`px-3 sm:px-4 py-2 rounded-lg transition text-sm sm:text-base flex-1 sm:flex-none ${
-                filter === 'all' ? 'bg-primary-600' : 'bg-gray-700 hover:bg-gray-600'
+                filter === 'all' ? 'bg-primary-500' : 'bg-background-darker hover:bg-gray-800'
               }`}
             >
               Todos
@@ -59,7 +59,7 @@ export default function Home() {
             <button
               onClick={() => setFilter('reading')}
               className={`px-3 sm:px-4 py-2 rounded-lg transition text-sm sm:text-base flex-1 sm:flex-none ${
-                filter === 'reading' ? 'bg-primary-600' : 'bg-gray-700 hover:bg-gray-600'
+                filter === 'reading' ? 'bg-primary-500' : 'bg-background-darker hover:bg-gray-800'
               }`}
             >
               Lendo
@@ -67,7 +67,7 @@ export default function Home() {
             <button
               onClick={() => setFilter('completed')}
               className={`px-3 sm:px-4 py-2 rounded-lg transition text-sm sm:text-base flex-1 sm:flex-none ${
-                filter === 'completed' ? 'bg-primary-600' : 'bg-gray-700 hover:bg-gray-600'
+                filter === 'completed' ? 'bg-primary-500' : 'bg-background-darker hover:bg-gray-800'
               }`}
             >
               Completos
@@ -75,7 +75,7 @@ export default function Home() {
             <button
               onClick={() => setFilter('plan_to_read')}
               className={`px-3 sm:px-4 py-2 rounded-lg transition text-sm sm:text-base flex-1 sm:flex-none ${
-                filter === 'plan_to_read' ? 'bg-primary-600' : 'bg-gray-700 hover:bg-gray-600'
+                filter === 'plan_to_read' ? 'bg-primary-500' : 'bg-background-darker hover:bg-gray-800'
               }`}
             >
               Planejo Ler
