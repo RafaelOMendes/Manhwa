@@ -1,12 +1,28 @@
-from fastapi import FastAPI, HTTPException
+# -*- coding: utf-8 -*-
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime
-import json
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 import os
+from contextlib import asynccontextmanager
 
-app = FastAPI(title="Manhwa Tracker API")
+from database import get_db, create_tables
+from models import Manhwa as ManhwaModel
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Gerencia o ciclo de vida da aplicação"""
+    # Startup: criar tabelas
+    await create_tables()
+    yield
+    # Shutdown: limpeza (se necessário)
+
+
+app = FastAPI(title="Manhwa Tracker API", lifespan=lifespan)
 
 # Configuração de CORS
 app.add_middleware(
@@ -16,9 +32,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Arquivo para armazenar dados (simples, sem banco de dados por enquanto)
-DATA_FILE = "manhwas.json"
 
 # Modelos Pydantic
 class ManhwaBase(BaseModel):
@@ -42,21 +55,11 @@ class Manhwa(ManhwaBase):
     created_at: str
     updated_at: str
 
-# Funções auxiliares para ler/escrever dados
-def load_data():
-    if not os.path.exists(DATA_FILE):
-        return []
-    with open(DATA_FILE, 'r', encoding='utf-8') as f:
-        return json.load(f)
+class TelegramImportRequest(BaseModel):
+    channel_link: str
+    limit: Optional[int] = 50
+    auto_status: str = "plan_to_read"
 
-def save_data(data):
-    with open(DATA_FILE, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-def get_next_id(data):
-    if not data:
-        return 1
-    return max(item['id'] for item in data) + 1
 
 # Rotas da API
 @app.get("/")
@@ -64,73 +67,172 @@ def root():
     return {"message": "Manhwa Tracker API"}
 
 @app.get("/api/manhwas", response_model=List[Manhwa])
-def get_manhwas(status: Optional[str] = None):
+async def get_manhwas(status: Optional[str] = None, db: AsyncSession = Depends(get_db)):
     """Retorna todos os manhwas, opcionalmente filtrados por status"""
-    data = load_data()
+    query = select(ManhwaModel)
     if status:
-        data = [m for m in data if m['status'] == status]
-    return data
+        query = query.where(ManhwaModel.status == status)
+    
+    result = await db.execute(query)
+    manhwas = result.scalars().all()
+    
+    return [manhwa.to_dict() for manhwa in manhwas]
 
 @app.get("/api/manhwas/{manhwa_id}", response_model=Manhwa)
-def get_manhwa(manhwa_id: int):
+async def get_manhwa(manhwa_id: int, db: AsyncSession = Depends(get_db)):
     """Retorna um manhwa específico"""
-    data = load_data()
-    manhwa = next((m for m in data if m['id'] == manhwa_id), None)
+    result = await db.execute(select(ManhwaModel).where(ManhwaModel.id == manhwa_id))
+    manhwa = result.scalar_one_or_none()
+    
     if not manhwa:
         raise HTTPException(status_code=404, detail="Manhwa não encontrado")
-    return manhwa
+    
+    return manhwa.to_dict()
 
 @app.post("/api/manhwas", response_model=Manhwa, status_code=201)
-def create_manhwa(manhwa: ManhwaCreate):
+async def create_manhwa(manhwa: ManhwaCreate, db: AsyncSession = Depends(get_db)):
     """Cria um novo manhwa"""
-    data = load_data()
+    new_manhwa = ManhwaModel(**manhwa.model_dump())
     
-    new_manhwa = {
-        "id": get_next_id(data),
-        **manhwa.model_dump(),
-        "created_at": datetime.now().isoformat(),
-        "updated_at": datetime.now().isoformat()
-    }
+    db.add(new_manhwa)
+    await db.commit()
+    await db.refresh(new_manhwa)
     
-    data.append(new_manhwa)
-    save_data(data)
-    
-    return new_manhwa
+    return new_manhwa.to_dict()
 
 @app.put("/api/manhwas/{manhwa_id}", response_model=Manhwa)
-def update_manhwa(manhwa_id: int, manhwa: ManhwaUpdate):
+async def update_manhwa(manhwa_id: int, manhwa: ManhwaUpdate, db: AsyncSession = Depends(get_db)):
     """Atualiza um manhwa existente"""
-    data = load_data()
+    result = await db.execute(select(ManhwaModel).where(ManhwaModel.id == manhwa_id))
+    db_manhwa = result.scalar_one_or_none()
     
-    index = next((i for i, m in enumerate(data) if m['id'] == manhwa_id), None)
-    if index is None:
+    if not db_manhwa:
         raise HTTPException(status_code=404, detail="Manhwa não encontrado")
     
-    updated_manhwa = {
-        "id": manhwa_id,
-        **manhwa.model_dump(),
-        "created_at": data[index]['created_at'],
-        "updated_at": datetime.now().isoformat()
-    }
+    # Atualizar campos
+    for key, value in manhwa.model_dump().items():
+        setattr(db_manhwa, key, value)
     
-    data[index] = updated_manhwa
-    save_data(data)
+    await db.commit()
+    await db.refresh(db_manhwa)
     
-    return updated_manhwa
+    return db_manhwa.to_dict()
 
 @app.delete("/api/manhwas/{manhwa_id}", status_code=204)
-def delete_manhwa(manhwa_id: int):
+async def delete_manhwa(manhwa_id: int, db: AsyncSession = Depends(get_db)):
     """Deleta um manhwa"""
-    data = load_data()
+    result = await db.execute(select(ManhwaModel).where(ManhwaModel.id == manhwa_id))
+    manhwa = result.scalar_one_or_none()
     
-    index = next((i for i, m in enumerate(data) if m['id'] == manhwa_id), None)
-    if index is None:
+    if not manhwa:
         raise HTTPException(status_code=404, detail="Manhwa não encontrado")
     
-    data.pop(index)
-    save_data(data)
+    await db.delete(manhwa)
+    await db.commit()
     
     return None
+
+@app.post("/api/telegram/import")
+async def import_from_telegram(request: TelegramImportRequest, db: AsyncSession = Depends(get_db)):
+    """
+    Importa manhwas de um canal do Telegram
+    
+    Requer configuração prévia das credenciais do Telegram no .env:
+    - TELEGRAM_API_ID
+    - TELEGRAM_API_HASH
+    - TELEGRAM_PHONE
+    """
+    try:
+        from telegram_scraper import TelegramManhwaScraper
+        
+        scraper = TelegramManhwaScraper()
+        
+        # Conectar e buscar manhwas
+        await scraper.connect()
+        manhwas_data = await scraper.scrape_manhwas(request.channel_link, request.limit)
+        await scraper.disconnect()
+        
+        # Buscar títulos existentes
+        result = await db.execute(select(ManhwaModel.title))
+        existing_titles = {title.lower() for (title,) in result.all()}
+        
+        # Adicionar novos manhwas (evitar duplicatas por título)
+        imported = 0
+        skipped = 0
+        
+        for manhwa_info in manhwas_data:
+            title_lower = manhwa_info['title'].lower()
+            
+            if title_lower not in existing_titles:
+                new_manhwa = ManhwaModel(
+                    title=manhwa_info['title'],
+                    author=manhwa_info.get('author'),
+                    cover_url=manhwa_info.get('cover_url'),
+                    status=request.auto_status,
+                    current_chapter=manhwa_info.get('current_chapter', 0),
+                    total_chapters=None,
+                    rating=None,
+                    notes=manhwa_info.get('notes'),
+                )
+                db.add(new_manhwa)
+                existing_titles.add(title_lower)
+                imported += 1
+            else:
+                skipped += 1
+        
+        # Salvar alterações no banco
+        await db.commit()
+        
+        return {
+            "success": True,
+            "imported": imported,
+            "skipped": skipped,
+            "total_found": len(manhwas_data),
+            "message": f"Importados {imported} manhwas, {skipped} já existiam"
+        }
+        
+    except ImportError:
+        raise HTTPException(
+            status_code=500,
+            detail="Módulo telegram_scraper não encontrado. Instale as dependências: pip install telethon cryptg"
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Erro de configuração: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro ao importar do Telegram: {str(e)}"
+        )
+
+@app.get("/api/telegram/test")
+def test_telegram_config():
+    """Testa se as configurações do Telegram estão corretas"""
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+        
+        api_id = os.getenv('TELEGRAM_API_ID')
+        api_hash = os.getenv('TELEGRAM_API_HASH')
+        phone = os.getenv('TELEGRAM_PHONE')
+        
+        config_status = {
+            "api_id": "✓ Configurado" if api_id else "✗ Não configurado",
+            "api_hash": "✓ Configurado" if api_hash else "✗ Não configurado",
+            "phone": "✓ Configurado" if phone else "✗ Não configurado",
+        }
+        
+        all_configured = all([api_id, api_hash, phone])
+        
+        return {
+            "configured": all_configured,
+            "config": config_status,
+            "message": "Todas as configurações OK!" if all_configured else "Configure as credenciais no arquivo .env"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
