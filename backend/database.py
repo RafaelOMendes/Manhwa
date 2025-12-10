@@ -35,7 +35,7 @@ Base = declarative_base()
 
 # Dependency para obter session do banco
 async def get_db():
-    """Dependency que fornece uma sess�o do banco de dados"""
+    """Dependency que fornece uma sessão do banco de dados"""
     async with async_session_maker() as session:
         try:
             yield session
