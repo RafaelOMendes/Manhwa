@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
 from pydantic import BaseModel
@@ -7,20 +6,7 @@ from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 import os
-from contextlib import asynccontextmanager
-
-from database import get_db, create_tables
-from models import Manhwa as ManhwaModel
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Gerencia o ciclo de vida da aplicação"""
-    # Startup: criar tabelas
-    await create_tables()
-    yield
-    # Shutdown: limpeza (se necessário)
-
+import asyncio
 
 app = FastAPI(title="Manhwa Tracker API", lifespan=lifespan)
 
@@ -60,6 +46,21 @@ class TelegramImportRequest(BaseModel):
     limit: Optional[int] = 50
     auto_status: str = "plan_to_read"
 
+# Funções auxiliares para ler/escrever dados
+def load_data():
+    if not os.path.exists(DATA_FILE):
+        return []
+    with open(DATA_FILE, 'r', encoding='utf-8') as f:
+        return json.load(f)
+
+def save_data(data):
+    with open(DATA_FILE, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+def get_next_id(data):
+    if not data:
+        return 1
+    return max(item['id'] for item in data) + 1
 
 # Rotas da API
 @app.get("/")
@@ -133,7 +134,7 @@ async def delete_manhwa(manhwa_id: int, db: AsyncSession = Depends(get_db)):
     return None
 
 @app.post("/api/telegram/import")
-async def import_from_telegram(request: TelegramImportRequest, db: AsyncSession = Depends(get_db)):
+async def import_from_telegram(request: TelegramImportRequest):
     """
     Importa manhwas de um canal do Telegram
     
@@ -152,9 +153,9 @@ async def import_from_telegram(request: TelegramImportRequest, db: AsyncSession 
         manhwas_data = await scraper.scrape_manhwas(request.channel_link, request.limit)
         await scraper.disconnect()
         
-        # Buscar títulos existentes
-        result = await db.execute(select(ManhwaModel.title))
-        existing_titles = {title.lower() for (title,) in result.all()}
+        # Carregar dados existentes
+        existing_data = load_data()
+        existing_titles = {m['title'].lower() for m in existing_data}
         
         # Adicionar novos manhwas (evitar duplicatas por título)
         imported = 0
@@ -164,24 +165,27 @@ async def import_from_telegram(request: TelegramImportRequest, db: AsyncSession 
             title_lower = manhwa_info['title'].lower()
             
             if title_lower not in existing_titles:
-                new_manhwa = ManhwaModel(
-                    title=manhwa_info['title'],
-                    author=manhwa_info.get('author'),
-                    cover_url=manhwa_info.get('cover_url'),
-                    status=request.auto_status,
-                    current_chapter=manhwa_info.get('current_chapter', 0),
-                    total_chapters=None,
-                    rating=None,
-                    notes=manhwa_info.get('notes'),
-                )
-                db.add(new_manhwa)
+                new_manhwa = {
+                    "id": get_next_id(existing_data),
+                    "title": manhwa_info['title'],
+                    "author": manhwa_info.get('author'),
+                    "cover_url": manhwa_info.get('cover_url'),
+                    "status": request.auto_status,
+                    "current_chapter": manhwa_info.get('current_chapter', 0),
+                    "total_chapters": None,
+                    "rating": None,
+                    "notes": manhwa_info.get('notes'),
+                    "created_at": datetime.now().isoformat(),
+                    "updated_at": datetime.now().isoformat()
+                }
+                existing_data.append(new_manhwa)
                 existing_titles.add(title_lower)
                 imported += 1
             else:
                 skipped += 1
         
-        # Salvar alterações no banco
-        await db.commit()
+        # Salvar dados atualizados
+        save_data(existing_data)
         
         return {
             "success": True,
