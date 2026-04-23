@@ -8,6 +8,8 @@ export interface Manhwa {
   total_chapters?: number
   rating?: number
   notes?: string
+  download: boolean
+  medium_reaction?: number
   created_at?: string
   updated_at?: string
 }
@@ -21,4 +23,5 @@ export interface CreateManhwaDto {
   total_chapters?: number
   rating?: number
   notes?: string
+  download?: boolean
 }
