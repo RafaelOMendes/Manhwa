@@ -2,7 +2,7 @@ import os
 import re
 import html
 from telethon import TelegramClient
-from telethon.tl.types import MessageService, MessageActionTopicCreate, Message
+from telethon.tl.types import MessageService, MessageActionTopicCreate, Message, DocumentAttributeFilename
 from telethon.tl.functions.channels import GetForumTopicsByIDRequest
 
 class TelegramManhwaScraper:
@@ -40,7 +40,37 @@ class TelegramManhwaScraper:
             return chat_username, topic_id
             
         return None, None
+
+    async def _count_cbz_in_topic(self, topic_link: str) -> int:
+        """
+        Entra em um tópico do Telegram e conta quantos arquivos .cbz existem.
+        Cada arquivo .cbz representa um capítulo.
+        """
+        chat_id_or_username, topic_id = self._parse_telegram_link(topic_link)
+        if not chat_id_or_username or not topic_id:
+            return 0
         
+        try:
+            if isinstance(chat_id_or_username, int):
+                await self.client.get_dialogs()
+            
+            chat = await self.client.get_entity(chat_id_or_username)
+            
+            cbz_count = 0
+            async for msg in self.client.iter_messages(chat, reply_to=topic_id):
+                if not msg.document:
+                    continue
+                for attr in msg.document.attributes:
+                    if isinstance(attr, DocumentAttributeFilename):
+                        if attr.file_name.lower().endswith('.cbz'):
+                            cbz_count += 1
+                        break
+            
+            return cbz_count
+        except Exception as e:
+            print(f"Erro ao contar .cbz no tópico {topic_link}: {e}")
+            return 0
+    
     async def scrape_manhwa_topic(self, topic_link: str, limit: int = 50):
         """
         Lê apenas um tópico. O nome do manhwa é o nome do tópico.
@@ -132,10 +162,16 @@ class TelegramManhwaScraper:
                     
                 cover_url = f"/covers/{file_name}"
                 
+                # Contar arquivos .cbz no tópico de capítulos
+                total_chapters = 0
+                if chapter_link and 't.me' in chapter_link:
+                    total_chapters = await self._count_cbz_in_topic(chapter_link)
+                
                 manhwas_encontrados.append({
                     "title": msg_title,
                     "notes": chapter_link,
-                    "cover_url": cover_url
+                    "cover_url": cover_url,
+                    "total_chapters": total_chapters
                 })
                 
             return manhwas_encontrados

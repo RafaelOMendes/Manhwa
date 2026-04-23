@@ -200,7 +200,7 @@ async def import_from_telegram(request: TelegramImportRequest, db: AsyncSession 
                 status=request.auto_status,
                 andamento=derived_andamento,
                 current_chapter=0,
-                total_chapters=None,
+                total_chapters=m_data.get('total_chapters') or None,
                 rating=None,
                 notes=m_data.get('notes', ''),
             )
