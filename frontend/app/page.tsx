@@ -8,7 +8,10 @@ import { Manhwa } from '@/types/manhwa'
 
 export default function Home() {
     const [manhwas, setManhwas] = useState<Manhwa[]>([])
-    const [filter, setFilter] = useState<'all' | 'reading' | 'completed' | 'plan_to_read' | 'top30' | 'top30_new'>('all')
+    const [filter, setFilter] = useState<'all' | 'reading' | 'completed' | 'plan_to_read' | 'top30'>('all')
+    const [showOnlyNew, setShowOnlyNew] = useState(false)
+    const [showOnlyUnreadTop30, setShowOnlyUnreadTop30] = useState(false)
+    const [showOnlyDownloaded, setShowOnlyDownloaded] = useState(false)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isSyncing, setIsSyncing] = useState(false)
     const [syncResult, setSyncResult] = useState<{ success: boolean; message: string } | null>(null)
@@ -52,20 +55,35 @@ export default function Home() {
     }
 
     const filteredManhwas = (() => {
+        let result = [...manhwas]
+        
+        if (showOnlyDownloaded) {
+            result = result.filter(m => m.download === true)
+        }
+
         if (filter === 'top30') {
-            return [...manhwas]
+            if (showOnlyUnreadTop30) {
+                result = result.filter(m => m.status !== 'reading' && m.status !== 'completed')
+            }
+            return result
                 .sort((a, b) => (b.medium_reaction ?? 0) - (a.medium_reaction ?? 0))
                 .slice(0, 30)
         }
-        if (filter === 'top30_new') {
-            return [...manhwas]
-                .filter(m => m.status !== 'reading' && m.status !== 'completed')
-                .sort((a, b) => (b.medium_reaction ?? 0) - (a.medium_reaction ?? 0))
-                .slice(0, 30)
-        }
-        return manhwas.filter(manhwa =>
-            filter === 'all' ? true : manhwa.status === filter
-        )
+        
+        return result.filter(manhwa => {
+            if (filter === 'all') return true
+            if (filter === 'reading') {
+                if (showOnlyNew) {
+                    return manhwa.status === 'reading' && 
+                        manhwa.total_chapters !== undefined && 
+                        manhwa.total_chapters !== null &&
+                        manhwa.current_chapter !== undefined &&
+                        manhwa.total_chapters > manhwa.current_chapter
+                }
+                return manhwa.status === 'reading'
+            }
+            return manhwa.status === filter
+        })
     })()
 
     return (
@@ -129,19 +147,13 @@ export default function Home() {
                         >
                             Lendo
                         </button>
+
                         <button
                             onClick={() => setFilter('top30')}
                             className={`px-3 sm:px-4 py-2 rounded-lg transition text-sm sm:text-base flex-1 sm:flex-none ${filter === 'top30' ? 'bg-rose-600' : 'bg-background-darker hover:bg-gray-800'
                                 }`}
                         >
                             🔥 Top 30
-                        </button>
-                        <button
-                            onClick={() => setFilter('top30_new')}
-                            className={`px-3 sm:px-4 py-2 rounded-lg transition text-sm sm:text-base flex-1 sm:flex-none ${filter === 'top30_new' ? 'bg-rose-600' : 'bg-background-darker hover:bg-gray-800'
-                                }`}
-                        >
-                            ✨ Top 30 Novos
                         </button>
                         <button
                             onClick={() => setFilter('completed')}
@@ -157,6 +169,42 @@ export default function Home() {
                         >
                             Planejo Ler
                         </button>
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap items-center gap-3">
+                        <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer hover:text-white transition bg-background-darker/50 px-3 py-2 rounded-lg border border-gray-800/50">
+                            <input 
+                                type="checkbox" 
+                                checked={showOnlyDownloaded}
+                                onChange={(e) => setShowOnlyDownloaded(e.target.checked)}
+                                className="w-4 h-4 rounded border-gray-600 bg-background-dark text-blue-500 focus:ring-blue-500 focus:ring-offset-background-dark"
+                            />
+                            <span>Apenas baixados</span>
+                        </label>
+
+                        {filter === 'reading' && (
+                            <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer hover:text-white transition bg-background-darker/50 px-3 py-2 rounded-lg border border-gray-800/50">
+                                <input 
+                                    type="checkbox" 
+                                    checked={showOnlyNew}
+                                    onChange={(e) => setShowOnlyNew(e.target.checked)}
+                                    className="w-4 h-4 rounded border-gray-600 bg-background-dark text-blue-500 focus:ring-blue-500 focus:ring-offset-background-dark"
+                                />
+                                <span>Apenas com capítulos novos</span>
+                            </label>
+                        )}
+
+                        {filter === 'top30' && (
+                            <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer hover:text-white transition bg-background-darker/50 px-3 py-2 rounded-lg border border-rose-900/30">
+                                <input 
+                                    type="checkbox" 
+                                    checked={showOnlyUnreadTop30}
+                                    onChange={(e) => setShowOnlyUnreadTop30(e.target.checked)}
+                                    className="w-4 h-4 rounded border-gray-600 bg-background-dark text-rose-500 focus:ring-rose-500 focus:ring-offset-background-dark"
+                                />
+                                <span>Apenas os que não li nenhum capítulo</span>
+                            </label>
+                        )}
                     </div>
                 </header>
 

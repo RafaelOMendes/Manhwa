@@ -1,13 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { Star, Trash2, ExternalLink, Heart, FileText, X, FolderOpen } from 'lucide-react'
+import { Star, Trash2, ExternalLink, Heart, FileText, X, FolderOpen, CheckCircle2 } from 'lucide-react'
 import { Manhwa } from '@/types/manhwa'
 import CbzReader from './CbzReader'
 
 interface CbzFile {
     name: string
     size_mb: number
+    chapter_number: number
 }
 
 interface ManhwaCardProps {
@@ -22,6 +23,8 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
     const [files, setFiles] = useState<CbzFile[]>([])
     const [isLoadingFiles, setIsLoadingFiles] = useState(false)
     const [readingFile, setReadingFile] = useState<string | null>(null)
+    const [readingChapterNum, setReadingChapterNum] = useState<number | undefined>()
+    const [currentChapter, setCurrentChapter] = useState(manhwa.current_chapter || 0)
 
     const hasLink = manhwa.notes && manhwa.notes.startsWith('http')
     const hasTelegramLink = manhwa.notes && manhwa.notes.includes('t.me')
@@ -35,6 +38,7 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                 const response = await fetch(`http://localhost:8000/api/manhwas/${manhwa.id}/files`)
                 const data = await response.json()
                 setFiles(data.files || [])
+                setCurrentChapter(data.current_chapter || 0)
             } catch (error) {
                 console.error('Erro ao buscar arquivos:', error)
                 setFiles([])
@@ -100,6 +104,15 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
         }
     }
 
+    const handleChapterRead = (chapterNum: number) => {
+        setCurrentChapter(chapterNum)
+        onUpdate()
+    }
+
+    const isChapterRead = (index: number): boolean => {
+        return index + 1 <= currentChapter
+    }
+
     const getStatusBadge = () => {
         const badges = {
             reading: { text: 'Lendo', color: 'bg-blue-600' },
@@ -113,6 +126,8 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
             </span>
         )
     }
+
+    const readCount = files.filter((_, i) => isChapterRead(i)).length
 
     return (
         <>
@@ -249,18 +264,49 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                                 </div>
                             ) : (
                                 <div className="space-y-1">
-                                    <p className="text-xs text-gray-500 mb-3">{files.length} capítulo{files.length > 1 ? 's' : ''} baixado{files.length > 1 ? 's' : ''}</p>
-                                    {files.map((file, i) => (
-                                        <div
-                                            key={i}
-                                            onClick={() => { setShowFiles(false); setReadingFile(file.name); }}
-                                            className="flex items-center gap-3 px-3 py-2 rounded-md bg-background-dark border border-gray-800/50 hover:border-blue-600/50 hover:bg-blue-950/20 cursor-pointer transition"
-                                        >
-                                            <FileText size={16} className="text-blue-400 flex-shrink-0" />
-                                            <span className="text-sm flex-1 truncate">{file.name}</span>
-                                            <span className="text-xs text-gray-500 flex-shrink-0">{file.size_mb} MB</span>
-                                        </div>
-                                    ))}
+                                    <p className="text-xs text-gray-500 mb-3">
+                                        {files.length} capítulo{files.length > 1 ? 's' : ''} baixado{files.length > 1 ? 's' : ''}
+                                        {readCount > 0 && (
+                                            <span className="text-green-400 ml-1.5">
+                                                · {readCount} lido{readCount > 1 ? 's' : ''}
+                                            </span>
+                                        )}
+                                    </p>
+                                    {files.map((file, i) => {
+                                        const read = isChapterRead(i)
+                                        const chapterNumber = i + 1
+                                        return (
+                                            <div
+                                                key={i}
+                                                onClick={() => {
+                                                    setShowFiles(false)
+                                                    setReadingChapterNum(chapterNumber)
+                                                    setReadingFile(file.name)
+                                                }}
+                                                className={`flex items-center gap-3 px-3 py-2 rounded-md border cursor-pointer transition ${
+                                                    read
+                                                        ? 'bg-green-950/20 border-green-800/40 hover:border-green-600/50 hover:bg-green-950/30'
+                                                        : 'bg-background-dark border-gray-800/50 hover:border-blue-600/50 hover:bg-blue-950/20'
+                                                }`}
+                                            >
+                                                {read ? (
+                                                    <CheckCircle2 size={16} className="text-green-400 flex-shrink-0" />
+                                                ) : (
+                                                    <FileText size={16} className="text-blue-400 flex-shrink-0" />
+                                                )}
+                                                <span className={`text-sm flex-1 truncate ${read ? 'text-green-300/80' : ''}`}>
+                                                    <span className="text-gray-500 mr-2 font-mono text-xs">#{chapterNumber}</span>
+                                                    {file.name}
+                                                </span>
+                                                {read && (
+                                                    <span className="text-[10px] text-green-500 flex-shrink-0 uppercase tracking-wider font-medium">
+                                                        Lido
+                                                    </span>
+                                                )}
+                                                <span className="text-xs text-gray-500 flex-shrink-0">{file.size_mb} MB</span>
+                                            </div>
+                                        )
+                                    })}
                                 </div>
                             )}
                         </div>
@@ -271,7 +317,14 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                 <CbzReader
                     manhwaId={manhwa.id}
                     filename={readingFile}
+                    chapterNumber={readingChapterNum}
+                    files={files}
                     onClose={() => setReadingFile(null)}
+                    onChapterRead={handleChapterRead}
+                    onNavigate={(newFilename, newChapterNum) => {
+                        setReadingFile(newFilename)
+                        setReadingChapterNum(newChapterNum)
+                    }}
                 />
             )}
         </>

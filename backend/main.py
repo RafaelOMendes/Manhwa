@@ -12,7 +12,7 @@ import re
 from contextlib import asynccontextmanager
 
 from database import get_db, create_tables
-from models import Manhwa as ManhwaModel
+from models import Manhwa as ManhwaModel, ChapterProgress
 
 
 @asynccontextmanager
@@ -175,12 +175,73 @@ async def list_manhwa_files(manhwa_id: int, db: AsyncSession = Depends(get_db)):
         if f.lower().endswith('.cbz'):
             full_path = os.path.join(download_dir, f)
             size_mb = round(os.path.getsize(full_path) / (1024 * 1024), 1)
-            raw_files.append({"name": f, "size_mb": size_mb})
+            chapter_num = _extract_chapter_number(f)
+            raw_files.append({"name": f, "size_mb": size_mb, "chapter_number": chapter_num})
 
     # Ordenar pelo número do capítulo
-    raw_files.sort(key=lambda x: _extract_chapter_number(x["name"]))
+    raw_files.sort(key=lambda x: x["chapter_number"])
 
-    return {"files": raw_files, "path": download_dir}
+    return {"files": raw_files, "path": download_dir, "current_chapter": manhwa.current_chapter or 0}
+
+class UpdateCurrentChapter(BaseModel):
+    current_chapter: int
+
+@app.patch("/api/manhwas/{manhwa_id}/current-chapter")
+async def update_current_chapter(manhwa_id: int, body: UpdateCurrentChapter, db: AsyncSession = Depends(get_db)):
+    """Atualiza o current_chapter de um manhwa (chamado ao terminar de ler um capítulo)"""
+    result = await db.execute(select(ManhwaModel).where(ManhwaModel.id == manhwa_id))
+    manhwa = result.scalar_one_or_none()
+    if not manhwa:
+        raise HTTPException(status_code=404, detail="Manhwa não encontrado")
+
+    updated = False
+    # Atualiza o capítulo atual para o capítulo que acabou de ser lido (permite regressão)
+    if manhwa.current_chapter != body.current_chapter:
+        manhwa.current_chapter = body.current_chapter
+        updated = True
+        
+    # Muda automaticamente para "reading" se não estiver lendo ou completo
+    if manhwa.status != "reading" and manhwa.status != "completed":
+        manhwa.status = "reading"
+        updated = True
+
+    if updated:
+        await db.commit()
+        await db.refresh(manhwa)
+
+    return {"success": True, "current_chapter": manhwa.current_chapter, "status": manhwa.status}
+
+class ScrollUpdate(BaseModel):
+    scroll_position: int
+
+@app.put("/api/manhwas/{manhwa_id}/read/{filename}/scroll")
+async def update_scroll(manhwa_id: int, filename: str, body: ScrollUpdate, db: AsyncSession = Depends(get_db)):
+    """Salva a posição de rolagem de um capítulo específico"""
+    result = await db.execute(select(ChapterProgress).where(
+        ChapterProgress.manhwa_id == manhwa_id, 
+        ChapterProgress.filename == filename
+    ))
+    progress = result.scalar_one_or_none()
+    
+    if progress:
+        progress.scroll_position = body.scroll_position
+    else:
+        progress = ChapterProgress(manhwa_id=manhwa_id, filename=filename, scroll_position=body.scroll_position)
+        db.add(progress)
+        
+    await db.commit()
+    return {"success": True}
+
+@app.get("/api/manhwas/{manhwa_id}/read/{filename}/scroll")
+async def get_scroll(manhwa_id: int, filename: str, db: AsyncSession = Depends(get_db)):
+    """Retorna a posição de rolagem salva de um capítulo específico"""
+    result = await db.execute(select(ChapterProgress).where(
+        ChapterProgress.manhwa_id == manhwa_id, 
+        ChapterProgress.filename == filename
+    ))
+    progress = result.scalar_one_or_none()
+    
+    return {"scroll_position": progress.scroll_position if progress else 0}
 
 @app.get("/api/manhwas/{manhwa_id}/read/{filename}")
 async def get_cbz_info(manhwa_id: int, filename: str, db: AsyncSession = Depends(get_db)):
