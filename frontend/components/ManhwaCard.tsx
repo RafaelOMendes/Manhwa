@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Star, Trash2, Edit2 } from 'lucide-react'
+import { Star, Trash2 } from 'lucide-react'
 import { Manhwa } from '@/types/manhwa'
 
 interface ManhwaCardProps {
@@ -80,12 +80,19 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
           </button>
         </div>
 
-        {manhwa.author && (
-          <p className="text-xs sm:text-sm text-gray-400 mb-2 line-clamp-1">por {manhwa.author}</p>
-        )}
-
         <div className="flex items-center justify-between mb-3 gap-2">
-          {getStatusBadge()}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {getStatusBadge()}
+            {manhwa.andamento && (
+              <span className={`text-xs px-2 py-1 rounded-full ${
+                manhwa.andamento === 'finalizado'
+                  ? 'bg-purple-600/80'
+                  : 'bg-teal-600/80'
+              }`}>
+                {manhwa.andamento === 'finalizado' ? 'Finalizado' : 'Em Andamento'}
+              </span>
+            )}
+          </div>
           {manhwa.rating && (
             <div className="flex items-center gap-1 text-yellow-500">
               <Star size={14} fill="currentColor" className="sm:w-4 sm:h-4" />

@@ -1,9 +1,9 @@
 export interface Manhwa {
   id: number
   title: string
-  author?: string
   cover_url?: string
   status: 'reading' | 'completed' | 'plan_to_read'
+  andamento?: string
   current_chapter?: number
   total_chapters?: number
   rating?: number
@@ -14,9 +14,9 @@ export interface Manhwa {
 
 export interface CreateManhwaDto {
   title: string
-  author?: string
   cover_url?: string
   status: 'reading' | 'completed' | 'plan_to_read'
+  andamento?: string
   current_chapter?: number
   total_chapters?: number
   rating?: number
