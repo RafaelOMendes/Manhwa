@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Star, Trash2 } from 'lucide-react'
+import { Star, Trash2, ExternalLink } from 'lucide-react'
 import { Manhwa } from '@/types/manhwa'
 
 interface ManhwaCardProps {
@@ -12,7 +12,16 @@ interface ManhwaCardProps {
 export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const deleteManhwa = async () => {
+  const hasLink = manhwa.notes && manhwa.notes.startsWith('http')
+
+  const handleCardClick = () => {
+    if (hasLink) {
+      window.open(manhwa.notes!, '_blank', 'noopener,noreferrer')
+    }
+  }
+
+  const deleteManhwa = async (e: React.MouseEvent) => {
+    e.stopPropagation()
     if (!confirm(`Tem certeza que deseja excluir "${manhwa.title}"?`)) return
 
     setIsDeleting(true)
@@ -27,7 +36,9 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
     }
   }
 
-  const updateStatus = async (newStatus: string) => {
+  const updateStatus = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    e.stopPropagation()
+    const newStatus = e.target.value
     try {
       await fetch(`http://localhost:8000/api/manhwas/${manhwa.id}`, {
         method: 'PUT',
@@ -57,14 +68,24 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
   }
 
   return (
-    <div className="bg-background-darker rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-gray-800">
+    <div
+      onClick={handleCardClick}
+      className={`bg-background-darker rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all border border-gray-800 ${
+        hasLink ? 'cursor-pointer hover:scale-[1.02] hover:border-gray-600' : ''
+      }`}
+    >
       {manhwa.cover_url && (
-        <div className="w-full h-48 sm:h-56 md:h-64 bg-background-dark flex items-center justify-center">
+        <div className="w-full h-48 sm:h-56 md:h-64 bg-background-dark flex items-center justify-center relative">
           <img
             src={manhwa.cover_url}
             alt={manhwa.title}
             className="w-full h-full object-cover"
           />
+          {hasLink && (
+            <div className="absolute top-2 right-2 bg-black/60 rounded-full p-1.5">
+              <ExternalLink size={14} className="text-white/80" />
+            </div>
+          )}
         </div>
       )}
       
@@ -108,15 +129,10 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
           </p>
         )}
 
-        {manhwa.notes && (
-          <p className="text-xs sm:text-sm text-gray-300 mb-3 line-clamp-2">
-            {manhwa.notes}
-          </p>
-        )}
-
         <select
           value={manhwa.status}
-          onChange={(e) => updateStatus(e.target.value)}
+          onClick={(e) => e.stopPropagation()}
+          onChange={updateStatus}
           className="w-full bg-background-dark text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm hover:bg-gray-800 transition border border-gray-800"
         >
           <option value="plan_to_read">Planejo Ler</option>
@@ -127,3 +143,4 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
     </div>
   )
 }
+
