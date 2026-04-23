@@ -148,7 +148,6 @@ Acesse: http://localhost:8000/docs
 |--------|------|-----------|
 | id | INTEGER | Chave primária (auto-incremento) |
 | title | VARCHAR(255) | Título do manhwa |
-| author | VARCHAR(255) | Autor (opcional) |
 | cover_url | TEXT | URL da capa (opcional) |
 | status | VARCHAR(50) | Status: reading, completed, plan_to_read |
 | current_chapter | INTEGER | Capítulo atual (padrão: 0) |
@@ -157,6 +156,8 @@ Acesse: http://localhost:8000/docs
 | notes | TEXT | Notas pessoais (opcional) |
 | created_at | TIMESTAMP | Data de criação (automático) |
 | updated_at | TIMESTAMP | Data de atualização (automático) |
+| is_reading | BOOLEAN | Estou lendo ainda |
+| andamento | CHARACTER VARYING | andamento |
 
 ### Comandos Úteis do PostgreSQL
 
@@ -276,7 +277,6 @@ curl -X POST "http://localhost:8000/api/telegram/import" \
 ```json
 {
   "title": "Nome do Manhwa",
-  "author": "Autor",
   "status": "plan_to_read",
   "current_chapter": 0
 }

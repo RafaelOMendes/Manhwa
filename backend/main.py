@@ -7,6 +7,7 @@ from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 import os
+import re
 from contextlib import asynccontextmanager
 
 from database import get_db, create_tables
@@ -36,9 +37,9 @@ app.add_middleware(
 # Modelos Pydantic
 class ManhwaBase(BaseModel):
     title: str
-    author: Optional[str] = None
     cover_url: Optional[str] = None
     status: str = "plan_to_read"  # reading, completed, plan_to_read
+    andamento: Optional[str] = "andamento"
     current_chapter: Optional[int] = 0
     total_chapters: Optional[int] = None
     rating: Optional[int] = None
@@ -57,7 +58,7 @@ class Manhwa(ManhwaBase):
 
 class TelegramImportRequest(BaseModel):
     channel_link: str
-    limit: Optional[int] = 50
+    limit: Optional[int] = 10
     auto_status: str = "plan_to_read"
 
 
@@ -145,41 +146,67 @@ async def import_from_telegram(request: TelegramImportRequest, db: AsyncSession 
     try:
         from telegram_scraper import TelegramManhwaScraper
         
+        # Instantiate without connecting inside the try initially
         scraper = TelegramManhwaScraper()
         
-        # Conectar e buscar manhwas
-        await scraper.connect()
-        manhwas_data = await scraper.scrape_manhwas(request.channel_link, request.limit)
-        await scraper.disconnect()
-        
-        # Buscar títulos existentes
-        result = await db.execute(select(ManhwaModel.title))
-        existing_titles = {title.lower() for (title,) in result.all()}
-        
-        # Adicionar novos manhwas (evitar duplicatas por título)
+        try:
+            # Conectar e buscar um ou múltiplos manhwas a partir do tópico
+            await scraper.connect()
+            manhwa_data_list = await scraper.scrape_manhwa_topic(request.channel_link, limit=request.limit)
+        except Exception as scraper_err:
+            if "database is locked" in str(scraper_err):
+                return {"success": False, "message": "Erro: O banco de dados do Telegram está em uso por outro processo (talvez o servidor reiniciou). Reinicie o backend e tente novamente.", "imported": 0}
+            raise scraper_err
+        finally:
+            await scraper.disconnect()
+            
+        if not manhwa_data_list:
+            return {"success": False, "message": "Nenhum dado encontrado no tópico.", "imported": 0}
+            
+        # Transformar para lista se ele resolver retornar 1 item só (compatibilidade)
+        if isinstance(manhwa_data_list, dict):
+            manhwa_data_list = [manhwa_data_list]
+            
         imported = 0
         skipped = 0
         
-        for manhwa_info in manhwas_data:
-            title_lower = manhwa_info['title'].lower()
+        for m_data in manhwa_data_list:
+            title_to_search = m_data['title']
+            result = await db.execute(select(ManhwaModel).where(ManhwaModel.title.ilike(title_to_search)))
+            db_manhwa = result.scalar_one_or_none()
             
-            if title_lower not in existing_titles:
-                new_manhwa = ManhwaModel(
-                    title=manhwa_info['title'],
-                    author=manhwa_info.get('author'),
-                    cover_url=manhwa_info.get('cover_url'),
-                    status=request.auto_status,
-                    current_chapter=manhwa_info.get('current_chapter', 0),
-                    total_chapters=None,
-                    rating=None,
-                    notes=manhwa_info.get('notes'),
-                )
-                db.add(new_manhwa)
-                existing_titles.add(title_lower)
-                imported += 1
-            else:
+            if db_manhwa:
                 skipped += 1
-        
+                continue
+            
+            # Detectar andamento pelo título original (antes de limpar)
+            raw_title = str(m_data['title'])
+            title_lower = raw_title.lower()
+            if "finalizado" in title_lower:
+                derived_andamento = "finalizado"
+            else:
+                derived_andamento = "andamento"
+            
+            # Limpar título: remover sufixos como "Finalizado", "Em Andamento", etc.
+            _status_words = r'(finalizado|em andamento|completo|hiato|dropped)'
+            clean_title = re.sub(rf'\s*[-–—|/]\s*{_status_words}\s*$', '', raw_title, flags=re.IGNORECASE)
+            clean_title = re.sub(rf'\s*[\(\[]{_status_words}[\)\]]\s*$', '', clean_title, flags=re.IGNORECASE)
+            clean_title = re.sub(rf'\s+{_status_words}\s*$', '', clean_title, flags=re.IGNORECASE)
+            clean_title = clean_title.strip()
+            
+            new_manhwa = ManhwaModel(
+                title=clean_title,
+                cover_url=m_data.get('cover_url'),
+                status=request.auto_status,
+                andamento=derived_andamento,
+                current_chapter=0,
+                total_chapters=None,
+                rating=None,
+                notes=m_data.get('notes', ''),
+            )
+            db.add(new_manhwa)
+            imported += 1
+            
         # Salvar alterações no banco
         await db.commit()
         
@@ -187,8 +214,8 @@ async def import_from_telegram(request: TelegramImportRequest, db: AsyncSession 
             "success": True,
             "imported": imported,
             "skipped": skipped,
-            "total_found": len(manhwas_data),
-            "message": f"Importados {imported} manhwas, {skipped} já existiam"
+            "total_found": len(manhwa_data_list),
+            "message": f"Sincronização concluída! {imported} importados, {skipped} ignorados."
         }
         
     except ImportError:

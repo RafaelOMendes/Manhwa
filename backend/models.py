@@ -12,9 +12,9 @@ class Manhwa(Base):
     
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     title = Column(String(255), nullable=False, index=True)
-    author = Column(String(255), nullable=True)
     cover_url = Column(Text, nullable=True)
     status = Column(String(50), nullable=False, default="plan_to_read")
+    andamento = Column(String(50), nullable=False, default="andamento")
     current_chapter = Column(Integer, default=0)
     total_chapters = Column(Integer, nullable=True)
     rating = Column(Integer, nullable=True)
@@ -30,9 +30,9 @@ class Manhwa(Base):
         return {
             "id": self.id,
             "title": self.title,
-            "author": self.author,
             "cover_url": self.cover_url,
             "status": self.status,
+            "andamento": self.andamento,
             "current_chapter": self.current_chapter,
             "total_chapters": self.total_chapters,
             "rating": self.rating,

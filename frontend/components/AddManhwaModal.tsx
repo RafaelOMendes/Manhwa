@@ -12,7 +12,6 @@ interface AddManhwaModalProps {
 export default function AddManhwaModal({ onClose, onAdd }: AddManhwaModalProps) {
   const [formData, setFormData] = useState<CreateManhwaDto>({
     title: '',
-    author: '',
     cover_url: '',
     status: 'plan_to_read',
     current_chapter: 0,
@@ -67,15 +66,7 @@ export default function AddManhwaModal({ onClose, onAdd }: AddManhwaModalProps) 
             />
           </div>
 
-          <div>
-            <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2">Autor</label>
-            <input
-              type="text"
-              value={formData.author}
-              onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-              className="w-full bg-background-dark text-white px-3 sm:px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm sm:text-base border border-gray-800"
-            />
-          </div>
+
 
           <div>
             <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2">URL da Capa</label>
