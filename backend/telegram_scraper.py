@@ -41,14 +41,15 @@ class TelegramManhwaScraper:
             
         return None, None
 
-    async def _count_cbz_in_topic(self, topic_link: str) -> int:
+    async def _get_topic_stats(self, topic_link: str) -> dict:
         """
-        Entra em um tópico do Telegram e conta quantos arquivos .cbz existem.
-        Cada arquivo .cbz representa um capítulo.
+        Entra em um tópico do Telegram e retorna:
+        - cbz_count: quantos arquivos .cbz existem
+        - avg_reactions: média de reações por capítulo
         """
         chat_id_or_username, topic_id = self._parse_telegram_link(topic_link)
         if not chat_id_or_username or not topic_id:
-            return 0
+            return {"cbz_count": 0, "avg_reactions": 0}
         
         try:
             if isinstance(chat_id_or_username, int):
@@ -57,19 +58,141 @@ class TelegramManhwaScraper:
             chat = await self.client.get_entity(chat_id_or_username)
             
             cbz_count = 0
+            total_reactions = 0
+            
             async for msg in self.client.iter_messages(chat, reply_to=topic_id):
                 if not msg.document:
                     continue
+                
+                is_cbz = False
                 for attr in msg.document.attributes:
                     if isinstance(attr, DocumentAttributeFilename):
                         if attr.file_name.lower().endswith('.cbz'):
-                            cbz_count += 1
+                            is_cbz = True
                         break
+                
+                if not is_cbz:
+                    continue
+                
+                cbz_count += 1
+                
+                # Somar reações desta mensagem
+                if msg.reactions and msg.reactions.results:
+                    msg_reactions = sum(r.count for r in msg.reactions.results)
+                    total_reactions += msg_reactions
             
-            return cbz_count
+            avg_reactions = round(total_reactions / cbz_count) if cbz_count > 0 else 0
+            
+            return {"cbz_count": cbz_count, "avg_reactions": avg_reactions}
         except Exception as e:
-            print(f"Erro ao contar .cbz no tópico {topic_link}: {e}")
-            return 0
+            print(f"Erro ao obter stats do tópico {topic_link}: {e}")
+            return {"cbz_count": 0, "avg_reactions": 0}
+
+    async def download_cbz_from_topic(self, topic_link: str, manhwa_title: str, base_dir: str = r"D:\Manhwas", max_concurrent: int = 5) -> dict:
+        """
+        Baixa todos os arquivos .cbz de um tópico do Telegram em paralelo.
+        Salva em base_dir/manhwa_title/
+        Pula arquivos que já existem localmente.
+        """
+        import asyncio
+
+        chat_id_or_username, topic_id = self._parse_telegram_link(topic_link)
+        if not chat_id_or_username or not topic_id:
+            return {"success": False, "message": "Link inválido", "downloaded": 0, "skipped": 0, "errors": 0}
+
+        # Sanitizar nome do manhwa para usar como pasta
+        safe_name = "".join(c for c in manhwa_title if c.isalnum() or c in " _-().").strip()
+        if not safe_name:
+            safe_name = "Manhwa_Desconhecido"
+        download_dir = os.path.join(base_dir, safe_name)
+        os.makedirs(download_dir, exist_ok=True)
+
+        try:
+            if isinstance(chat_id_or_username, int):
+                await self.client.get_dialogs()
+
+            chat = await self.client.get_entity(chat_id_or_username)
+
+            # Fase 1: Coletar arquivos .cbz pendentes ou com tamanho diferente
+            files_to_download = []
+            skipped = 0
+            replaced = 0
+
+            async for msg in self.client.iter_messages(chat, reply_to=topic_id):
+                if not msg.document:
+                    continue
+
+                file_name = None
+                for attr in msg.document.attributes:
+                    if isinstance(attr, DocumentAttributeFilename):
+                        file_name = attr.file_name
+                        break
+
+                if not file_name or not file_name.lower().endswith('.cbz'):
+                    continue
+
+                file_path = os.path.join(download_dir, file_name)
+
+                if os.path.exists(file_path):
+                    # Comparar tamanho local vs Telegram
+                    local_size = os.path.getsize(file_path)
+                    telegram_size = msg.document.size
+
+                    if local_size == telegram_size:
+                        skipped += 1
+                        continue
+                    else:
+                        # Tamanho diferente: remover e re-baixar
+                        os.remove(file_path)
+                        replaced += 1
+                        print(f"  ↻ [{manhwa_title}] {file_name} (local: {local_size}b ≠ telegram: {telegram_size}b)")
+
+                files_to_download.append((msg, file_path, file_name))
+
+            if not files_to_download:
+                total = skipped
+                return {
+                    "success": True,
+                    "downloaded": 0,
+                    "skipped": skipped,
+                    "replaced": 0,
+                    "errors": 0,
+                    "total": total,
+                    "path": download_dir,
+                    "message": f"Nenhum arquivo novo. {skipped} já existiam."
+                }
+
+            # Fase 2: Download paralelo com semáforo
+            sem = asyncio.Semaphore(max_concurrent)
+            downloaded = 0
+            errors = 0
+
+            async def _download_one(msg, file_path, file_name):
+                nonlocal downloaded, errors
+                async with sem:
+                    try:
+                        await self.client.download_media(msg, file=file_path)
+                        downloaded += 1
+                        print(f"  ✓ [{manhwa_title}] {file_name}")
+                    except Exception as e:
+                        print(f"  ✗ [{manhwa_title}] {file_name}: {e}")
+                        errors += 1
+
+            tasks = [_download_one(msg, fp, fn) for msg, fp, fn in files_to_download]
+            await asyncio.gather(*tasks)
+
+            return {
+                "success": True,
+                "downloaded": downloaded,
+                "skipped": skipped,
+                "replaced": replaced,
+                "errors": errors,
+                "total": downloaded + skipped + errors,
+                "path": download_dir,
+                "message": f"{downloaded} baixados, {replaced} substituídos, {skipped} já existiam, {errors} erros."
+            }
+        except Exception as e:
+            return {"success": False, "message": f"Erro: {str(e)}", "downloaded": 0, "skipped": 0, "errors": 0}
     
     async def scrape_manhwa_topic(self, topic_link: str, limit: int = 50):
         """
@@ -162,16 +285,20 @@ class TelegramManhwaScraper:
                     
                 cover_url = f"/covers/{file_name}"
                 
-                # Contar arquivos .cbz no tópico de capítulos
+                # Obter stats do tópico de capítulos (contagem + média de reações)
                 total_chapters = 0
+                medium_reaction = 0
                 if chapter_link and 't.me' in chapter_link:
-                    total_chapters = await self._count_cbz_in_topic(chapter_link)
+                    stats = await self._get_topic_stats(chapter_link)
+                    total_chapters = stats["cbz_count"]
+                    medium_reaction = stats["avg_reactions"]
                 
                 manhwas_encontrados.append({
                     "title": msg_title,
                     "notes": chapter_link,
                     "cover_url": cover_url,
-                    "total_chapters": total_chapters
+                    "total_chapters": total_chapters,
+                    "medium_reaction": medium_reaction
                 })
                 
             return manhwas_encontrados

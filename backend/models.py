@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import Column, Integer, String, DateTime, Text
+from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean
 from sqlalchemy.sql import func
 from database import Base
 from datetime import datetime
@@ -19,6 +19,8 @@ class Manhwa(Base):
     total_chapters = Column(Integer, nullable=True)
     rating = Column(Integer, nullable=True)
     notes = Column(Text, nullable=True)
+    download = Column(Boolean, nullable=False, default=False)
+    medium_reaction = Column(Integer, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     
@@ -37,6 +39,8 @@ class Manhwa(Base):
             "total_chapters": self.total_chapters,
             "rating": self.rating,
             "notes": self.notes,
+            "download": self.download,
+            "medium_reaction": self.medium_reaction,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

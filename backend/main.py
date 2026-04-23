@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from fastapi import FastAPI, HTTPException, Depends
+from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
 from pydantic import BaseModel
@@ -44,6 +45,8 @@ class ManhwaBase(BaseModel):
     total_chapters: Optional[int] = None
     rating: Optional[int] = None
     notes: Optional[str] = None
+    download: Optional[bool] = False
+    medium_reaction: Optional[int] = None
 
 class ManhwaCreate(ManhwaBase):
     pass
@@ -53,6 +56,8 @@ class ManhwaUpdate(ManhwaBase):
 
 class Manhwa(ManhwaBase):
     id: int
+    download: bool
+    medium_reaction: Optional[int] = None
     created_at: str
     updated_at: str
 
@@ -133,6 +138,206 @@ async def delete_manhwa(manhwa_id: int, db: AsyncSession = Depends(get_db)):
     
     return None
 
+@app.get("/api/manhwas/{manhwa_id}/files")
+async def list_manhwa_files(manhwa_id: int, db: AsyncSession = Depends(get_db)):
+    """Lista os arquivos .cbz baixados de um manhwa em D:\\Manhwas\\{titulo}\\"""
+    import os
+
+    result = await db.execute(select(ManhwaModel).where(ManhwaModel.id == manhwa_id))
+    manhwa = result.scalar_one_or_none()
+
+    if not manhwa:
+        raise HTTPException(status_code=404, detail="Manhwa não encontrado")
+
+    # Sanitizar nome igual ao scraper
+    safe_name = "".join(c for c in manhwa.title if c.isalnum() or c in " _-().").strip()
+    if not safe_name:
+        safe_name = "Manhwa_Desconhecido"
+    download_dir = os.path.join(r"D:\Manhwas", safe_name)
+
+    if not os.path.exists(download_dir):
+        return {"files": [], "path": download_dir}
+
+    def _extract_chapter_number(filename: str) -> float:
+        """Extrai o número do capítulo do nome do arquivo para ordenação."""
+        # Tenta padrões como "Cap 01", "Chapter 123", "Cap. 05", "- 10 -", etc.
+        m = re.search(r'(?:cap(?:[ií]tulo)?\.?\s*|chapter\s*|ch\.?\s*|ep\.?\s*|#)(\d+(?:\.\d+)?)', filename, re.IGNORECASE)
+        if m:
+            return float(m.group(1))
+        # Fallback: pega qualquer número no nome
+        nums = re.findall(r'(\d+(?:\.\d+)?)', filename)
+        if nums:
+            return float(nums[-1])
+        return 0
+
+    raw_files = []
+    for f in os.listdir(download_dir):
+        if f.lower().endswith('.cbz'):
+            full_path = os.path.join(download_dir, f)
+            size_mb = round(os.path.getsize(full_path) / (1024 * 1024), 1)
+            raw_files.append({"name": f, "size_mb": size_mb})
+
+    # Ordenar pelo número do capítulo
+    raw_files.sort(key=lambda x: _extract_chapter_number(x["name"]))
+
+    return {"files": raw_files, "path": download_dir}
+
+@app.get("/api/manhwas/{manhwa_id}/read/{filename}")
+async def get_cbz_info(manhwa_id: int, filename: str, db: AsyncSession = Depends(get_db)):
+    """Retorna informações do CBZ (número de páginas)"""
+    import zipfile
+
+    result = await db.execute(select(ManhwaModel).where(ManhwaModel.id == manhwa_id))
+    manhwa = result.scalar_one_or_none()
+    if not manhwa:
+        raise HTTPException(status_code=404, detail="Manhwa não encontrado")
+
+    safe_name = "".join(c for c in manhwa.title if c.isalnum() or c in " _-().").strip() or "Manhwa_Desconhecido"
+    cbz_path = os.path.join(r"D:\Manhwas", safe_name, filename)
+
+    if not os.path.exists(cbz_path):
+        raise HTTPException(status_code=404, detail="Arquivo não encontrado")
+
+    image_extensions = {'.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp'}
+
+    with zipfile.ZipFile(cbz_path, 'r') as zf:
+        pages = sorted([
+            name for name in zf.namelist()
+            if os.path.splitext(name.lower())[1] in image_extensions
+            and not os.path.basename(name).startswith('.')
+        ])
+
+    return {"filename": filename, "total_pages": len(pages), "pages": list(range(len(pages)))}
+
+@app.get("/api/manhwas/{manhwa_id}/read/{filename}/page/{page_num}")
+async def get_cbz_page(manhwa_id: int, filename: str, page_num: int, db: AsyncSession = Depends(get_db)):
+    """Serve uma página individual do CBZ como imagem"""
+    import zipfile
+
+    result = await db.execute(select(ManhwaModel).where(ManhwaModel.id == manhwa_id))
+    manhwa = result.scalar_one_or_none()
+    if not manhwa:
+        raise HTTPException(status_code=404, detail="Manhwa não encontrado")
+
+    safe_name = "".join(c for c in manhwa.title if c.isalnum() or c in " _-().").strip() or "Manhwa_Desconhecido"
+    cbz_path = os.path.join(r"D:\Manhwas", safe_name, filename)
+
+    if not os.path.exists(cbz_path):
+        raise HTTPException(status_code=404, detail="Arquivo não encontrado")
+
+    image_extensions = {'.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp'}
+
+    with zipfile.ZipFile(cbz_path, 'r') as zf:
+        pages = sorted([
+            name for name in zf.namelist()
+            if os.path.splitext(name.lower())[1] in image_extensions
+            and not os.path.basename(name).startswith('.')
+        ])
+
+        if page_num < 0 or page_num >= len(pages):
+            raise HTTPException(status_code=404, detail="Página não encontrada")
+
+        page_name = pages[page_num]
+        ext = os.path.splitext(page_name.lower())[1]
+        content_types = {
+            '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+            '.png': 'image/png', '.webp': 'image/webp',
+            '.gif': 'image/gif', '.bmp': 'image/bmp',
+        }
+
+        image_data = zf.read(page_name)
+        return Response(
+            content=image_data,
+            media_type=content_types.get(ext, 'image/jpeg'),
+            headers={"Cache-Control": "public, max-age=86400"}
+        )
+
+@app.post("/api/manhwas/download-all")
+async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
+    """
+    Sincroniza todos os manhwas em paralelo: baixa os .cbz de todos que possuem link do Telegram
+    para D:\\Manhwas\\{titulo}\\ usando uma única conexão com downloads concorrentes.
+    """
+    import asyncio
+
+    # Buscar todos os manhwas com link do Telegram
+    result = await db.execute(select(ManhwaModel))
+    all_manhwas = result.scalars().all()
+
+    manhwas_to_download = [
+        m for m in all_manhwas
+        if m.notes and 't.me' in m.notes and m.download
+    ]
+
+    if not manhwas_to_download:
+        return {
+            "success": True,
+            "message": "Nenhum manhwa com link do Telegram encontrado.",
+            "results": [],
+            "total_downloaded": 0,
+            "total_skipped": 0,
+            "total_errors": 0,
+        }
+
+    try:
+        from telegram_scraper import TelegramManhwaScraper
+
+        scraper = TelegramManhwaScraper()
+        results_list = []
+
+        # Semáforo para limitar manhwas simultâneos (3 manhwas ao mesmo tempo)
+        manhwa_sem = asyncio.Semaphore(3)
+
+        async def download_one_manhwa(manhwa):
+            async with manhwa_sem:
+                try:
+                    dl_result = await scraper.download_cbz_from_topic(manhwa.notes, manhwa.title)
+                    dl_result["manhwa_title"] = manhwa.title
+                    return dl_result
+                except Exception as e:
+                    return {
+                        "manhwa_title": manhwa.title,
+                        "success": False,
+                        "message": str(e),
+                        "downloaded": 0,
+                        "skipped": 0,
+                        "errors": 1,
+                    }
+
+        try:
+            await scraper.connect()
+
+            # Disparar todos os downloads em paralelo (limitado pelo semáforo)
+            tasks = [download_one_manhwa(m) for m in manhwas_to_download]
+            results_list = await asyncio.gather(*tasks)
+
+        except Exception as scraper_err:
+            if "database is locked" in str(scraper_err):
+                return {"success": False, "message": "Erro: O banco de dados do Telegram está em uso. Reinicie o backend."}
+            raise scraper_err
+        finally:
+            await scraper.disconnect()
+
+        # Agregar totais
+        total_downloaded = sum(r.get("downloaded", 0) for r in results_list)
+        total_skipped = sum(r.get("skipped", 0) for r in results_list)
+        total_errors = sum(r.get("errors", 0) for r in results_list)
+
+        return {
+            "success": True,
+            "message": f"Sincronização concluída! {total_downloaded} baixados, {total_skipped} já existiam, {total_errors} erros.",
+            "results": results_list,
+            "total_downloaded": total_downloaded,
+            "total_skipped": total_skipped,
+            "total_errors": total_errors,
+            "manhwas_processed": len(manhwas_to_download),
+        }
+
+    except ImportError:
+        raise HTTPException(status_code=500, detail="Módulo telegram_scraper não encontrado.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro na sincronização: {str(e)}")
+
 @app.post("/api/telegram/import")
 async def import_from_telegram(request: TelegramImportRequest, db: AsyncSession = Depends(get_db)):
     """
@@ -201,6 +406,7 @@ async def import_from_telegram(request: TelegramImportRequest, db: AsyncSession 
                 andamento=derived_andamento,
                 current_chapter=0,
                 total_chapters=m_data.get('total_chapters') or None,
+                medium_reaction=m_data.get('medium_reaction') or None,
                 rating=None,
                 notes=m_data.get('notes', ''),
             )

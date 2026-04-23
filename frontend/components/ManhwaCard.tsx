@@ -1,146 +1,279 @@
 'use client'
 
 import { useState } from 'react'
-import { Star, Trash2, ExternalLink } from 'lucide-react'
+import { Star, Trash2, ExternalLink, Heart, FileText, X, FolderOpen } from 'lucide-react'
 import { Manhwa } from '@/types/manhwa'
+import CbzReader from './CbzReader'
+
+interface CbzFile {
+    name: string
+    size_mb: number
+}
 
 interface ManhwaCardProps {
-  manhwa: Manhwa
-  onUpdate: () => void
+    manhwa: Manhwa
+    onUpdate: () => void
 }
 
 export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
-  const [isDeleting, setIsDeleting] = useState(false)
+    const [isDeleting, setIsDeleting] = useState(false)
+    const [isTogglingDownload, setIsTogglingDownload] = useState(false)
+    const [showFiles, setShowFiles] = useState(false)
+    const [files, setFiles] = useState<CbzFile[]>([])
+    const [isLoadingFiles, setIsLoadingFiles] = useState(false)
+    const [readingFile, setReadingFile] = useState<string | null>(null)
 
-  const hasLink = manhwa.notes && manhwa.notes.startsWith('http')
+    const hasLink = manhwa.notes && manhwa.notes.startsWith('http')
+    const hasTelegramLink = manhwa.notes && manhwa.notes.includes('t.me')
 
-  const handleCardClick = () => {
-    if (hasLink) {
-      window.open(manhwa.notes!, '_blank', 'noopener,noreferrer')
+    const handleCardClick = async () => {
+        // Se tem sincronização ativa, mostrar lista de arquivos
+        if (manhwa.download && hasTelegramLink) {
+            setIsLoadingFiles(true)
+            setShowFiles(true)
+            try {
+                const response = await fetch(`http://localhost:8000/api/manhwas/${manhwa.id}/files`)
+                const data = await response.json()
+                setFiles(data.files || [])
+            } catch (error) {
+                console.error('Erro ao buscar arquivos:', error)
+                setFiles([])
+            } finally {
+                setIsLoadingFiles(false)
+            }
+            return
+        }
+
+        // Senão, abre o link normalmente
+        if (hasLink) {
+            window.open(manhwa.notes!, '_blank', 'noopener,noreferrer')
+        }
     }
-  }
 
-  const deleteManhwa = async (e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (!confirm(`Tem certeza que deseja excluir "${manhwa.title}"?`)) return
+    const deleteManhwa = async (e: React.MouseEvent) => {
+        e.stopPropagation()
+        if (!confirm(`Tem certeza que deseja excluir "${manhwa.title}"?`)) return
 
-    setIsDeleting(true)
-    try {
-      await fetch(`http://localhost:8000/api/manhwas/${manhwa.id}`, {
-        method: 'DELETE',
-      })
-      onUpdate()
-    } catch (error) {
-      console.error('Erro ao deletar manhwa:', error)
-      setIsDeleting(false)
+        setIsDeleting(true)
+        try {
+            await fetch(`http://localhost:8000/api/manhwas/${manhwa.id}`, {
+                method: 'DELETE',
+            })
+            onUpdate()
+        } catch (error) {
+            console.error('Erro ao deletar manhwa:', error)
+            setIsDeleting(false)
+        }
     }
-  }
 
-  const updateStatus = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    e.stopPropagation()
-    const newStatus = e.target.value
-    try {
-      await fetch(`http://localhost:8000/api/manhwas/${manhwa.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ...manhwa, status: newStatus }),
-      })
-      onUpdate()
-    } catch (error) {
-      console.error('Erro ao atualizar status:', error)
-    }
-  }
+    const toggleDownload = async (e: React.MouseEvent) => {
+        e.stopPropagation()
+        if (isTogglingDownload) return
 
-  const getStatusBadge = () => {
-    const badges = {
-      reading: { text: 'Lendo', color: 'bg-blue-600' },
-      completed: { text: 'Completo', color: 'bg-green-600' },
-      plan_to_read: { text: 'Planejo Ler', color: 'bg-yellow-600' },
+        setIsTogglingDownload(true)
+        try {
+            await fetch(`http://localhost:8000/api/manhwas/${manhwa.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...manhwa, download: !manhwa.download }),
+            })
+            onUpdate()
+        } catch (error) {
+            console.error('Erro ao alterar download:', error)
+        } finally {
+            setIsTogglingDownload(false)
+        }
     }
-    const badge = badges[manhwa.status]
+
+    const updateStatus = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+        e.stopPropagation()
+        const newStatus = e.target.value
+        try {
+            await fetch(`http://localhost:8000/api/manhwas/${manhwa.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...manhwa, status: newStatus }),
+            })
+            onUpdate()
+        } catch (error) {
+            console.error('Erro ao atualizar status:', error)
+        }
+    }
+
+    const getStatusBadge = () => {
+        const badges = {
+            reading: { text: 'Lendo', color: 'bg-blue-600' },
+            completed: { text: 'Completo', color: 'bg-green-600' },
+            plan_to_read: { text: 'Planejo Ler', color: 'bg-yellow-600' },
+        }
+        const badge = badges[manhwa.status]
+        return (
+            <span className={`${badge.color} text-xs px-2 py-1 rounded-full`}>
+                {badge.text}
+            </span>
+        )
+    }
+
     return (
-      <span className={`${badge.color} text-xs px-2 py-1 rounded-full`}>
-        {badge.text}
-      </span>
-    )
-  }
+        <>
+            <div
+                onClick={handleCardClick}
+                className={`bg-background-darker rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all border border-gray-800 ${hasLink || (manhwa.download && hasTelegramLink) ? 'cursor-pointer hover:scale-[1.02] hover:border-gray-600' : ''
+                    }`}
+            >
+                {manhwa.cover_url && (
+                    <div className="w-full h-48 sm:h-56 md:h-64 bg-background-dark flex items-center justify-center relative">
+                        <img
+                            src={manhwa.cover_url}
+                            alt={manhwa.title}
+                            className="w-full h-full object-cover"
+                        />
+                        {manhwa.download && hasTelegramLink ? (
+                            <div className="absolute top-2 right-2 bg-blue-600/80 rounded-full p-1.5">
+                                <FolderOpen size={14} className="text-white" />
+                            </div>
+                        ) : hasLink ? (
+                            <div className="absolute top-2 right-2 bg-black/60 rounded-full p-1.5">
+                                <ExternalLink size={14} className="text-white/80" />
+                            </div>
+                        ) : null}
+                    </div>
+                )}
 
-  return (
-    <div
-      onClick={handleCardClick}
-      className={`bg-background-darker rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all border border-gray-800 ${
-        hasLink ? 'cursor-pointer hover:scale-[1.02] hover:border-gray-600' : ''
-      }`}
-    >
-      {manhwa.cover_url && (
-        <div className="w-full h-48 sm:h-56 md:h-64 bg-background-dark flex items-center justify-center relative">
-          <img
-            src={manhwa.cover_url}
-            alt={manhwa.title}
-            className="w-full h-full object-cover"
-          />
-          {hasLink && (
-            <div className="absolute top-2 right-2 bg-black/60 rounded-full p-1.5">
-              <ExternalLink size={14} className="text-white/80" />
+                <div className="p-3 sm:p-4">
+                    <div className="flex items-start justify-between mb-2 gap-2">
+                        <h3 className="text-base sm:text-lg font-bold flex-1 line-clamp-2">{manhwa.title}</h3>
+                        <button
+                            onClick={deleteManhwa}
+                            disabled={isDeleting}
+                            className="text-red-500 hover:text-red-400 transition flex-shrink-0"
+                        >
+                            <Trash2 size={16} className="sm:w-[18px] sm:h-[18px]" />
+                        </button>
+                    </div>
+
+                    <div className="flex items-center justify-between mb-3 gap-2">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                            {getStatusBadge()}
+                            {manhwa.andamento && (
+                                <span className={`text-xs px-2 py-1 rounded-full ${manhwa.andamento === 'finalizado'
+                                    ? 'bg-purple-600/80'
+                                    : 'bg-teal-600/80'
+                                    }`}>
+                                    {manhwa.andamento === 'finalizado' ? 'Finalizado' : 'Em Andamento'}
+                                </span>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            {manhwa.medium_reaction !== undefined && manhwa.medium_reaction !== null && manhwa.medium_reaction > 0 && (
+                                <div className="flex items-center gap-1 text-rose-400">
+                                    <Heart size={14} fill="currentColor" className="sm:w-4 sm:h-4" />
+                                    <span className="text-xs sm:text-sm">{manhwa.medium_reaction}</span>
+                                </div>
+                            )}
+                            {manhwa.rating && (
+                                <div className="flex items-center gap-1 text-yellow-500">
+                                    <Star size={14} fill="currentColor" className="sm:w-4 sm:h-4" />
+                                    <span className="text-xs sm:text-sm">{manhwa.rating}/5</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {manhwa.current_chapter !== undefined && (
+                        <p className="text-xs sm:text-sm text-gray-400 mb-2">
+                            Capítulo: {manhwa.current_chapter}
+                            {manhwa.total_chapters && ` / ${manhwa.total_chapters}`}
+                        </p>
+                    )}
+
+                    {hasTelegramLink && (
+                        <div
+                            onClick={toggleDownload}
+                            className="flex items-center justify-between mb-3 px-2 py-1.5 rounded-md bg-background-dark border border-gray-800 cursor-pointer hover:border-gray-700 transition"
+                        >
+                            <span className="text-xs text-gray-400">Sincronizar</span>
+                            <div className={`relative w-9 h-5 rounded-full transition-colors duration-200 ${manhwa.download ? 'bg-blue-600' : 'bg-gray-700'}`}>
+                                <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200 ${manhwa.download ? 'translate-x-[18px]' : 'translate-x-0.5'}`} />
+                            </div>
+                        </div>
+                    )}
+
+                    <select
+                        value={manhwa.status}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={updateStatus}
+                        className="w-full bg-background-dark text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm hover:bg-gray-800 transition border border-gray-800"
+                    >
+                        <option value="plan_to_read">Planejo Ler</option>
+                        <option value="reading">Lendo</option>
+                        <option value="completed">Completo</option>
+                    </select>
+                </div>
             </div>
-          )}
-        </div>
-      )}
-      
-      <div className="p-3 sm:p-4">
-        <div className="flex items-start justify-between mb-2 gap-2">
-          <h3 className="text-base sm:text-lg font-bold flex-1 line-clamp-2">{manhwa.title}</h3>
-          <button
-            onClick={deleteManhwa}
-            disabled={isDeleting}
-            className="text-red-500 hover:text-red-400 transition flex-shrink-0"
-          >
-            <Trash2 size={16} className="sm:w-[18px] sm:h-[18px]" />
-          </button>
-        </div>
 
-        <div className="flex items-center justify-between mb-3 gap-2">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {getStatusBadge()}
-            {manhwa.andamento && (
-              <span className={`text-xs px-2 py-1 rounded-full ${
-                manhwa.andamento === 'finalizado'
-                  ? 'bg-purple-600/80'
-                  : 'bg-teal-600/80'
-              }`}>
-                {manhwa.andamento === 'finalizado' ? 'Finalizado' : 'Em Andamento'}
-              </span>
+            {/* Modal de arquivos baixados */}
+            {showFiles && (
+                <div
+                    className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+                    onClick={() => setShowFiles(false)}
+                >
+                    <div
+                        className="bg-background-darker rounded-lg max-w-lg w-full max-h-[80vh] flex flex-col border border-gray-800 shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between p-4 border-b border-gray-800">
+                            <div className="flex items-center gap-2">
+                                <FolderOpen size={20} className="text-blue-400" />
+                                <h3 className="text-lg font-bold truncate">{manhwa.title}</h3>
+                            </div>
+                            <button
+                                onClick={() => setShowFiles(false)}
+                                className="text-gray-400 hover:text-white transition"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="overflow-y-auto flex-1 p-4">
+                            {isLoadingFiles ? (
+                                <div className="text-center py-8 text-gray-400">
+                                    <div className="animate-spin w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-3" />
+                                    Carregando arquivos...
+                                </div>
+                            ) : files.length === 0 ? (
+                                <div className="text-center py-8 text-gray-500">
+                                    <FileText size={32} className="mx-auto mb-3 opacity-50" />
+                                    <p>Nenhum arquivo baixado ainda.</p>
+                                    <p className="text-xs mt-1">Clique em "Sincronizar" para baixar os capítulos.</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-1">
+                                    <p className="text-xs text-gray-500 mb-3">{files.length} capítulo{files.length > 1 ? 's' : ''} baixado{files.length > 1 ? 's' : ''}</p>
+                                    {files.map((file, i) => (
+                                        <div
+                                            key={i}
+                                            onClick={() => { setShowFiles(false); setReadingFile(file.name); }}
+                                            className="flex items-center gap-3 px-3 py-2 rounded-md bg-background-dark border border-gray-800/50 hover:border-blue-600/50 hover:bg-blue-950/20 cursor-pointer transition"
+                                        >
+                                            <FileText size={16} className="text-blue-400 flex-shrink-0" />
+                                            <span className="text-sm flex-1 truncate">{file.name}</span>
+                                            <span className="text-xs text-gray-500 flex-shrink-0">{file.size_mb} MB</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
             )}
-          </div>
-          {manhwa.rating && (
-            <div className="flex items-center gap-1 text-yellow-500">
-              <Star size={14} fill="currentColor" className="sm:w-4 sm:h-4" />
-              <span className="text-xs sm:text-sm">{manhwa.rating}/5</span>
-            </div>
-          )}
-        </div>
-
-        {manhwa.current_chapter !== undefined && (
-          <p className="text-xs sm:text-sm text-gray-400 mb-2">
-            Capítulo: {manhwa.current_chapter}
-            {manhwa.total_chapters && ` / ${manhwa.total_chapters}`}
-          </p>
-        )}
-
-        <select
-          value={manhwa.status}
-          onClick={(e) => e.stopPropagation()}
-          onChange={updateStatus}
-          className="w-full bg-background-dark text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm hover:bg-gray-800 transition border border-gray-800"
-        >
-          <option value="plan_to_read">Planejo Ler</option>
-          <option value="reading">Lendo</option>
-          <option value="completed">Completo</option>
-        </select>
-      </div>
-    </div>
-  )
+            {readingFile && (
+                <CbzReader
+                    manhwaId={manhwa.id}
+                    filename={readingFile}
+                    onClose={() => setReadingFile(null)}
+                />
+            )}
+        </>
+    )
 }
-
