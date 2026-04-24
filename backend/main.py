@@ -381,6 +381,14 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
                 try:
                     dl_result = await scraper.download_cbz_from_topic(manhwa.notes, manhwa.title)
                     dl_result["manhwa_title"] = manhwa.title
+                    
+                    # Atualizar total de capítulos no banco de dados
+                    if dl_result.get("success") and "total" in dl_result:
+                        total_found = dl_result["total"]
+                        if manhwa.total_chapters != total_found:
+                            manhwa.total_chapters = total_found
+                            db.add(manhwa)
+                            
                     return dl_result
                 except Exception as e:
                     return {
@@ -395,6 +403,9 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
         # Disparar todos os downloads em paralelo (limitado pelo semáforo)
         tasks = [download_one_manhwa(m) for m in manhwas_to_download]
         results_list = await asyncio.gather(*tasks)
+        
+        # Salvar no banco as alterações de total_chapters
+        await db.commit()
 
         # Agregar totais
         total_downloaded = sum(r.get("downloaded", 0) for r in results_list)
