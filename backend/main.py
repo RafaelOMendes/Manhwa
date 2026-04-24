@@ -29,8 +29,8 @@ app = FastAPI(title="Manhwa Tracker API", lifespan=lifespan)
 # Configuração de CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -66,6 +66,35 @@ class TelegramImportRequest(BaseModel):
     limit: Optional[int] = 10
     auto_status: str = "plan_to_read"
 
+
+import asyncio
+
+_shared_scraper = None
+_scraper_lock = asyncio.Lock()
+
+async def get_telegram_scraper():
+    """Retorna uma instância única e conectada do scraper do Telegram para evitar erro de banco travado."""
+    global _shared_scraper
+    from telegram_scraper import TelegramManhwaScraper
+    
+    async with _scraper_lock:
+        if _shared_scraper is None:
+            try:
+                _shared_scraper = TelegramManhwaScraper()
+            except Exception as e:
+                if "database is locked" in str(e).lower():
+                    raise ValueError("O banco de dados do Telegram está travado por um processo zumbi. Cancele o backend (Ctrl+C) e inicie novamente.")
+                raise e
+            
+        if not _shared_scraper.client.is_connected():
+            try:
+                await _shared_scraper.connect()
+            except Exception as e:
+                if "database is locked" in str(e).lower():
+                    raise ValueError("O banco de dados do Telegram está travado por um processo zumbi. Cancele o backend (Ctrl+C) e inicie novamente.")
+                raise e
+                
+        return _shared_scraper
 
 # Rotas da API
 @app.get("/")
@@ -341,13 +370,11 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
         }
 
     try:
-        from telegram_scraper import TelegramManhwaScraper
-
-        scraper = TelegramManhwaScraper()
+        scraper = await get_telegram_scraper()
         results_list = []
 
-        # Semáforo para limitar manhwas simultâneos (3 manhwas ao mesmo tempo)
-        manhwa_sem = asyncio.Semaphore(3)
+        # Semáforo para limitar manhwas simultâneos (1 por vez para evitar Flood 429 do Telegram)
+        manhwa_sem = asyncio.Semaphore(1)
 
         async def download_one_manhwa(manhwa):
             async with manhwa_sem:
@@ -365,19 +392,9 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
                         "errors": 1,
                     }
 
-        try:
-            await scraper.connect()
-
-            # Disparar todos os downloads em paralelo (limitado pelo semáforo)
-            tasks = [download_one_manhwa(m) for m in manhwas_to_download]
-            results_list = await asyncio.gather(*tasks)
-
-        except Exception as scraper_err:
-            if "database is locked" in str(scraper_err):
-                return {"success": False, "message": "Erro: O banco de dados do Telegram está em uso. Reinicie o backend."}
-            raise scraper_err
-        finally:
-            await scraper.disconnect()
+        # Disparar todos os downloads em paralelo (limitado pelo semáforo)
+        tasks = [download_one_manhwa(m) for m in manhwas_to_download]
+        results_list = await asyncio.gather(*tasks)
 
         # Agregar totais
         total_downloaded = sum(r.get("downloaded", 0) for r in results_list)
@@ -410,21 +427,10 @@ async def import_from_telegram(request: TelegramImportRequest, db: AsyncSession 
     - TELEGRAM_PHONE
     """
     try:
-        from telegram_scraper import TelegramManhwaScraper
+        scraper = await get_telegram_scraper()
         
-        # Instantiate without connecting inside the try initially
-        scraper = TelegramManhwaScraper()
-        
-        try:
-            # Conectar e buscar um ou múltiplos manhwas a partir do tópico
-            await scraper.connect()
-            manhwa_data_list = await scraper.scrape_manhwa_topic(request.channel_link, limit=request.limit)
-        except Exception as scraper_err:
-            if "database is locked" in str(scraper_err):
-                return {"success": False, "message": "Erro: O banco de dados do Telegram está em uso por outro processo (talvez o servidor reiniciou). Reinicie o backend e tente novamente.", "imported": 0}
-            raise scraper_err
-        finally:
-            await scraper.disconnect()
+        # Conectar e buscar um ou múltiplos manhwas a partir do tópico
+        manhwa_data_list = await scraper.scrape_manhwa_topic(request.channel_link, limit=request.limit)
             
         if not manhwa_data_list:
             return {"success": False, "message": "Nenhum dado encontrado no tópico.", "imported": 0}

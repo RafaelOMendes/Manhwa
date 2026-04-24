@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { X, ChevronUp, ChevronLeft, ChevronRight, CheckCircle, SkipForward } from 'lucide-react'
+import { API_BASE } from '@/lib/api'
 
 interface ChapterFile {
     name: string
@@ -44,21 +45,23 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     const chapNum = files && currentIndex >= 0 ? currentIndex + 1 : (chapterNumber ?? extractChapterNumber(filename))
 
     const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+    const userHasInteracted = useRef(false)
 
     useEffect(() => {
         setLoading(true)
         setReachedEnd(false)
         hasMarkedRef.current = false
         setMarkedAsRead(false)
+        userHasInteracted.current = false
         const fetchInfo = async () => {
             try {
                 // Fetch info
-                const res = await fetch(`http://localhost:8000/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}`)
+                const res = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}`)
                 const data = await res.json()
                 setTotalPages(data.total_pages)
 
                 // Fetch scroll
-                const scrollRes = await fetch(`http://localhost:8000/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/scroll`)
+                const scrollRes = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/scroll`)
                 const scrollData = await scrollRes.json()
                 if (scrollData.scroll_position > 0) {
                     scrollRef.current?.setAttribute('data-saved-scroll', scrollData.scroll_position.toString())
@@ -78,13 +81,13 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
             setTimeout(() => {
                 const savedScrollAttr = scrollRef.current?.getAttribute('data-saved-scroll')
                 const savedScroll = savedScrollAttr ? parseInt(savedScrollAttr, 10) : 0
-                
+
                 if (savedScroll > 0 && scrollRef.current) {
                     scrollRef.current.scrollTo({ top: savedScroll })
                 } else if (scrollRef.current) {
                     scrollRef.current.scrollTo({ top: 0 })
                 }
-                
+
                 scrollRef.current?.removeAttribute('data-saved-scroll')
             }, 50)
         }
@@ -97,7 +100,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         setMarkedAsRead(true)
 
         try {
-            await fetch(`http://localhost:8000/api/manhwas/${manhwaId}/current-chapter`, {
+            await fetch(`${API_BASE}/api/manhwas/${manhwaId}/current-chapter`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ current_chapter: chapNum }),
@@ -118,12 +121,15 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         if (!container || loading || totalPages === 0) return
 
         const handleScroll = () => {
+            // Ignora eventos de scroll programáticos (ao abrir o capítulo)
+            if (!userHasInteracted.current) return
+
             const { scrollTop, scrollHeight, clientHeight } = container
-            
+
             // Save scroll position with a debounce to avoid performance issues
             if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
             scrollTimeoutRef.current = setTimeout(() => {
-                fetch(`http://localhost:8000/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/scroll`, {
+                fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/scroll`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ scroll_position: Math.floor(scrollTop) })
@@ -183,28 +189,26 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     }
 
     const pageUrl = (page: number) =>
-        `http://localhost:8000/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/page/${page}`
+        `${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/page/${page}`
 
     return (
         <div className="fixed inset-0 z-[100] bg-black flex flex-col">
             {/* Header — aparece/desaparece com animação */}
             <div
-                className={`absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-3 py-3 transition-all duration-300 ${
-                    showUI
+                className={`absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-3 py-3 transition-all duration-300 ${showUI
                         ? 'opacity-100 translate-y-0'
                         : 'opacity-0 -translate-y-full pointer-events-none'
-                }`}
+                    }`}
                 style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%)' }}
             >
                 {/* Botão capítulo anterior */}
                 <button
                     onClick={(e) => { e.stopPropagation(); prevChapter && goToChapter(prevChapter) }}
                     disabled={!prevChapter}
-                    className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm transition flex-shrink-0 ${
-                        prevChapter
+                    className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm transition flex-shrink-0 ${prevChapter
                             ? 'text-white/80 hover:text-white hover:bg-white/10'
                             : 'text-white/20 cursor-not-allowed'
-                    }`}
+                        }`}
                 >
                     <ChevronLeft size={18} />
                     <span className="hidden sm:inline">Anterior</span>
@@ -225,11 +229,10 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                     <button
                         onClick={(e) => { e.stopPropagation(); nextChapter && goToChapter(nextChapter) }}
                         disabled={!nextChapter}
-                        className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm transition ${
-                            nextChapter
+                        className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm transition ${nextChapter
                                 ? 'text-white/80 hover:text-white hover:bg-white/10'
                                 : 'text-white/20 cursor-not-allowed'
-                        }`}
+                            }`}
                     >
                         <span className="hidden sm:inline">Próximo</span>
                         <ChevronRight size={18} />
@@ -247,11 +250,10 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
 
             {/* Toast — capítulo marcado como lido */}
             <div
-                className={`absolute top-16 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-4 py-2.5 rounded-lg bg-green-600/90 backdrop-blur-sm text-white text-sm font-medium shadow-lg transition-all duration-500 ${
-                    showToast
+                className={`absolute top-16 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-4 py-2.5 rounded-lg bg-green-600/90 backdrop-blur-sm text-white text-sm font-medium shadow-lg transition-all duration-500 ${showToast
                         ? 'opacity-100 translate-y-0'
                         : 'opacity-0 -translate-y-4 pointer-events-none'
-                }`}
+                    }`}
             >
                 <CheckCircle size={16} />
                 <span>Capítulo {chapNum} marcado como lido!</span>
@@ -259,11 +261,10 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
 
             {/* Botão voltar ao topo — aparece com a UI */}
             <div
-                className={`absolute bottom-6 right-6 z-10 transition-all duration-300 ${
-                    showUI && !reachedEnd
+                className={`absolute bottom-6 right-6 z-10 transition-all duration-300 ${showUI && !reachedEnd
                         ? 'opacity-100 translate-y-0'
                         : 'opacity-0 translate-y-4 pointer-events-none'
-                }`}
+                    }`}
             >
                 <button
                     onClick={(e) => { e.stopPropagation(); scrollToTop(); }}
@@ -279,6 +280,10 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                 id="cbz-scroll-container"
                 className="flex-1 overflow-y-auto overflow-x-hidden"
                 onClick={toggleUI}
+                onTouchStart={() => { userHasInteracted.current = true }}
+                onWheel={() => { userHasInteracted.current = true }}
+                onKeyDown={() => { userHasInteracted.current = true }}
+                onMouseDown={() => { userHasInteracted.current = true }}
             >
                 {loading ? (
                     <div className="flex items-center justify-center h-full">

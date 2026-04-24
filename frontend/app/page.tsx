@@ -5,6 +5,7 @@ import { BookOpen, Plus, Download, Loader2, CheckCircle, XCircle } from 'lucide-
 import ManhwaCard from '@/components/ManhwaCard'
 import AddManhwaModal from '@/components/AddManhwaModal'
 import { Manhwa } from '@/types/manhwa'
+import { API_BASE } from '@/lib/api'
 
 export default function Home() {
     const [manhwas, setManhwas] = useState<Manhwa[]>([])
@@ -22,7 +23,7 @@ export default function Home() {
 
     const fetchManhwas = async () => {
         try {
-            const response = await fetch('http://localhost:8000/api/manhwas')
+            const response = await fetch(`${API_BASE}/api/manhwas`)
             const data = await response.json()
             setManhwas(data)
         } catch (error) {
@@ -37,7 +38,7 @@ export default function Home() {
         setSyncResult(null)
 
         try {
-            const response = await fetch('http://localhost:8000/api/manhwas/download-all', {
+            const response = await fetch(`${API_BASE}/api/manhwas/download-all`, {
                 method: 'POST',
             })
             const data = await response.json()
@@ -56,7 +57,7 @@ export default function Home() {
 
     const filteredManhwas = (() => {
         let result = [...manhwas]
-        
+
         if (showOnlyDownloaded) {
             result = result.filter(m => m.download === true)
         }
@@ -69,13 +70,13 @@ export default function Home() {
                 .sort((a, b) => (b.medium_reaction ?? 0) - (a.medium_reaction ?? 0))
                 .slice(0, 30)
         }
-        
+
         return result.filter(manhwa => {
             if (filter === 'all') return true
             if (filter === 'reading') {
                 if (showOnlyNew) {
-                    return manhwa.status === 'reading' && 
-                        manhwa.total_chapters !== undefined && 
+                    return manhwa.status === 'reading' &&
+                        manhwa.total_chapters !== undefined &&
                         manhwa.total_chapters !== null &&
                         manhwa.current_chapter !== undefined &&
                         manhwa.total_chapters > manhwa.current_chapter
@@ -173,8 +174,8 @@ export default function Home() {
 
                     <div className="mt-4 flex flex-wrap items-center gap-3">
                         <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer hover:text-white transition bg-background-darker/50 px-3 py-2 rounded-lg border border-gray-800/50">
-                            <input 
-                                type="checkbox" 
+                            <input
+                                type="checkbox"
                                 checked={showOnlyDownloaded}
                                 onChange={(e) => setShowOnlyDownloaded(e.target.checked)}
                                 className="w-4 h-4 rounded border-gray-600 bg-background-dark text-blue-500 focus:ring-blue-500 focus:ring-offset-background-dark"
@@ -184,8 +185,8 @@ export default function Home() {
 
                         {filter === 'reading' && (
                             <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer hover:text-white transition bg-background-darker/50 px-3 py-2 rounded-lg border border-gray-800/50">
-                                <input 
-                                    type="checkbox" 
+                                <input
+                                    type="checkbox"
                                     checked={showOnlyNew}
                                     onChange={(e) => setShowOnlyNew(e.target.checked)}
                                     className="w-4 h-4 rounded border-gray-600 bg-background-dark text-blue-500 focus:ring-blue-500 focus:ring-offset-background-dark"
@@ -196,8 +197,8 @@ export default function Home() {
 
                         {filter === 'top30' && (
                             <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer hover:text-white transition bg-background-darker/50 px-3 py-2 rounded-lg border border-rose-900/30">
-                                <input 
-                                    type="checkbox" 
+                                <input
+                                    type="checkbox"
                                     checked={showOnlyUnreadTop30}
                                     onChange={(e) => setShowOnlyUnreadTop30(e.target.checked)}
                                     className="w-4 h-4 rounded border-gray-600 bg-background-dark text-rose-500 focus:ring-rose-500 focus:ring-offset-background-dark"

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { X, Star } from 'lucide-react'
 import { CreateManhwaDto } from '@/types/manhwa'
+import { API_BASE } from '@/lib/api'
 
 interface AddManhwaModalProps {
     onClose: () => void
@@ -25,7 +26,7 @@ export default function AddManhwaModal({ onClose, onAdd }: AddManhwaModalProps) 
         e.preventDefault()
 
         try {
-            await fetch('http://localhost:8000/api/manhwas', {
+            await fetch(`${API_BASE}/api/manhwas`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
