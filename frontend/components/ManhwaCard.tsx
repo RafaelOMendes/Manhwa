@@ -131,7 +131,6 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
 
     const handleChapterRead = (chapterNum: number) => {
         setCurrentChapter(chapterNum)
-        onUpdate()
     }
 
     const isChapterRead = (index: number): boolean => {
@@ -346,7 +345,10 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                     filename={readingFile}
                     chapterNumber={readingChapterNum}
                     files={files}
-                    onClose={() => setReadingFile(null)}
+                    onClose={() => {
+                        setReadingFile(null)
+                        onUpdate()
+                    }}
                     onChapterRead={handleChapterRead}
                     onNavigate={(newFilename, newChapterNum) => {
                         setReadingFile(newFilename)

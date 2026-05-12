@@ -63,7 +63,6 @@ class Manhwa(ManhwaBase):
 
 class TelegramImportRequest(BaseModel):
     channel_link: str
-    limit: Optional[int] = 10
     auto_status: str = "plan_to_read"
 
 
@@ -440,8 +439,12 @@ async def import_from_telegram(request: TelegramImportRequest, db: AsyncSession 
     try:
         scraper = await get_telegram_scraper()
         
+        # Buscar títulos já existentes para ignorar no scraper e ganhar performance
+        result = await db.execute(select(ManhwaModel.title))
+        existing_titles = {title.lower() for title in result.scalars().all()}
+        
         # Conectar e buscar um ou múltiplos manhwas a partir do tópico
-        manhwa_data_list = await scraper.scrape_manhwa_topic(request.channel_link, limit=request.limit)
+        manhwa_data_list = await scraper.scrape_manhwa_topic(request.channel_link, existing_titles=existing_titles)
             
         if not manhwa_data_list:
             return {"success": False, "message": "Nenhum dado encontrado no tópico.", "imported": 0}
@@ -454,6 +457,10 @@ async def import_from_telegram(request: TelegramImportRequest, db: AsyncSession 
         skipped = 0
         
         for m_data in manhwa_data_list:
+            if m_data.get('skipped_because_exists'):
+                skipped += 1
+                continue
+                
             title_to_search = m_data['title']
             result = await db.execute(select(ManhwaModel).where(ManhwaModel.title.ilike(title_to_search)))
             db_manhwa = result.scalar_one_or_none()
@@ -463,7 +470,7 @@ async def import_from_telegram(request: TelegramImportRequest, db: AsyncSession 
                 continue
             
             # Detectar andamento pelo título original (antes de limpar)
-            raw_title = str(m_data['title'])
+            raw_title = str(m_data.get('raw_title', m_data['title']))
             title_lower = raw_title.lower()
             if "finalizado" in title_lower:
                 derived_andamento = "finalizado"

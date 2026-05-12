@@ -194,7 +194,7 @@ class TelegramManhwaScraper:
         except Exception as e:
             return {"success": False, "message": f"Erro: {str(e)}", "downloaded": 0, "skipped": 0, "errors": 0}
     
-    async def scrape_manhwa_topic(self, topic_link: str, limit: int = 50):
+    async def scrape_manhwa_topic(self, topic_link: str, existing_titles: set = None):
         """
         Lê apenas um tópico. O nome do manhwa é o nome do tópico.
         A partir da primeira mensagem deste tópico:
@@ -225,10 +225,10 @@ class TelegramManhwaScraper:
                 pass
             
             # Buscar as mensagens do tópico (reply_to=topic_id)
-            msgs = await self.client.get_messages(chat, reply_to=topic_id, min_id=1741, limit=limit, reverse=True)
+            msgs = await self.client.get_messages(chat, reply_to=topic_id, min_id=1741, limit=None, reverse=True)
             if not msgs:
                 # Fallback caso a reverse fetch falhe
-                msgs_raw = await self.client.get_messages(chat, min_id=1741, limit=limit)
+                msgs_raw = await self.client.get_messages(chat, min_id=1741, limit=None)
                 msgs = [m for m in msgs_raw if m]
             
             manhwas_encontrados = []
@@ -250,12 +250,21 @@ class TelegramManhwaScraper:
                     else:
                         msg_title = linhas[0]
                 
+                raw_title = msg_title
+
                 # Limpar título: remover sufixos como "Finalizado", "Em Andamento", etc.
                 _status_words = r'(finalizado|em andamento|completo|hiato|dropped)'
                 msg_title = re.sub(rf'\s*[-–—|/]\s*{_status_words}\s*$', '', msg_title, flags=re.IGNORECASE)
                 msg_title = re.sub(rf'\s*[\(\[]{_status_words}[\)\]]\s*$', '', msg_title, flags=re.IGNORECASE)
                 msg_title = re.sub(rf'\s+{_status_words}\s*$', '', msg_title, flags=re.IGNORECASE)
                 msg_title = msg_title.strip()
+                
+                if existing_titles and msg_title.lower() in existing_titles:
+                    manhwas_encontrados.append({
+                        "title": msg_title,
+                        "skipped_because_exists": True
+                    })
+                    continue
                 
                 # Extraindo URLs — primeiro tenta via entities do Telegram (mais confiável)
                 chapter_link = ""
@@ -295,6 +304,7 @@ class TelegramManhwaScraper:
                 
                 manhwas_encontrados.append({
                     "title": msg_title,
+                    "raw_title": raw_title,
                     "notes": chapter_link,
                     "cover_url": cover_url,
                     "total_chapters": total_chapters,
