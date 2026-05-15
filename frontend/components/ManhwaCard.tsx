@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Star, Trash2, ExternalLink, Heart, FileText, X, FolderOpen, CheckCircle2 } from 'lucide-react'
 import { Manhwa } from '@/types/manhwa'
 import CbzReader from './CbzReader'
+import { API_BASE } from '@/lib/api'
 
 interface CbzFile {
     name: string
@@ -25,6 +26,30 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
     const [readingFile, setReadingFile] = useState<string | null>(null)
     const [readingChapterNum, setReadingChapterNum] = useState<number | undefined>()
     const [currentChapter, setCurrentChapter] = useState(manhwa.current_chapter || 0)
+    
+    const firstUnreadRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        if (showFiles && !isLoadingFiles && files.length > 0) {
+            setTimeout(() => {
+                if (firstUnreadRef.current) {
+                    firstUnreadRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                }
+            }, 100)
+        }
+    }, [showFiles, isLoadingFiles, files.length])
+
+    // Bloquear scroll do fundo quando modal ou leitor estiverem abertos
+    useEffect(() => {
+        if (showFiles || readingFile) {
+            document.body.style.overflow = 'hidden'
+        } else {
+            document.body.style.overflow = ''
+        }
+        return () => {
+            document.body.style.overflow = ''
+        }
+    }, [showFiles, readingFile])
 
     const hasLink = manhwa.notes && manhwa.notes.startsWith('http')
     const hasTelegramLink = manhwa.notes && manhwa.notes.includes('t.me')
@@ -35,7 +60,7 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
             setIsLoadingFiles(true)
             setShowFiles(true)
             try {
-                const response = await fetch(`http://localhost:8000/api/manhwas/${manhwa.id}/files`)
+                const response = await fetch(`${API_BASE}/api/manhwas/${manhwa.id}/files`)
                 const data = await response.json()
                 setFiles(data.files || [])
                 setCurrentChapter(data.current_chapter || 0)
@@ -60,7 +85,7 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
 
         setIsDeleting(true)
         try {
-            await fetch(`http://localhost:8000/api/manhwas/${manhwa.id}`, {
+            await fetch(`${API_BASE}/api/manhwas/${manhwa.id}`, {
                 method: 'DELETE',
             })
             onUpdate()
@@ -76,7 +101,7 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
 
         setIsTogglingDownload(true)
         try {
-            await fetch(`http://localhost:8000/api/manhwas/${manhwa.id}`, {
+            await fetch(`${API_BASE}/api/manhwas/${manhwa.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...manhwa, download: !manhwa.download }),
@@ -93,7 +118,7 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
         e.stopPropagation()
         const newStatus = e.target.value
         try {
-            await fetch(`http://localhost:8000/api/manhwas/${manhwa.id}`, {
+            await fetch(`${API_BASE}/api/manhwas/${manhwa.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...manhwa, status: newStatus }),
@@ -106,7 +131,6 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
 
     const handleChapterRead = (chapterNum: number) => {
         setCurrentChapter(chapterNum)
-        onUpdate()
     }
 
     const isChapterRead = (index: number): boolean => {
@@ -237,14 +261,16 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                         className="bg-background-darker rounded-lg max-w-lg w-full max-h-[80vh] flex flex-col border border-gray-800 shadow-2xl"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="flex items-center justify-between p-4 border-b border-gray-800">
-                            <div className="flex items-center gap-2">
-                                <FolderOpen size={20} className="text-blue-400" />
-                                <h3 className="text-lg font-bold truncate">{manhwa.title}</h3>
-                            </div>
+                        <div className="flex items-start justify-between p-4 border-b border-gray-800 gap-4">
+                            <h3 className="font-semibold flex items-start gap-2 flex-1">
+                                <FolderOpen size={18} className="text-primary-500 mt-0.5 flex-shrink-0" />
+                                <span className="line-clamp-2 break-words text-left" title={manhwa.title}>
+                                    {manhwa.title}
+                                </span>
+                            </h3>
                             <button
                                 onClick={() => setShowFiles(false)}
-                                className="text-gray-400 hover:text-white transition"
+                                className="text-gray-400 hover:text-white transition p-1 flex-shrink-0"
                             >
                                 <X size={20} />
                             </button>
@@ -278,16 +304,16 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                                         return (
                                             <div
                                                 key={i}
+                                                ref={i === currentChapter ? firstUnreadRef : null}
                                                 onClick={() => {
                                                     setShowFiles(false)
                                                     setReadingChapterNum(chapterNumber)
                                                     setReadingFile(file.name)
                                                 }}
-                                                className={`flex items-center gap-3 px-3 py-2 rounded-md border cursor-pointer transition ${
-                                                    read
+                                                className={`flex items-center gap-3 px-3 py-2 rounded-md border cursor-pointer transition ${read
                                                         ? 'bg-green-950/20 border-green-800/40 hover:border-green-600/50 hover:bg-green-950/30'
                                                         : 'bg-background-dark border-gray-800/50 hover:border-blue-600/50 hover:bg-blue-950/20'
-                                                }`}
+                                                    }`}
                                             >
                                                 {read ? (
                                                     <CheckCircle2 size={16} className="text-green-400 flex-shrink-0" />
@@ -319,7 +345,10 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                     filename={readingFile}
                     chapterNumber={readingChapterNum}
                     files={files}
-                    onClose={() => setReadingFile(null)}
+                    onClose={() => {
+                        setReadingFile(null)
+                        onUpdate()
+                    }}
                     onChapterRead={handleChapterRead}
                     onNavigate={(newFilename, newChapterNum) => {
                         setReadingFile(newFilename)
