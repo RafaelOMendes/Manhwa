@@ -3,6 +3,7 @@ import time
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime
@@ -26,6 +27,12 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Manhwa Tracker API", lifespan=lifespan)
+
+# Serve cover images from the frontend public folder
+# This lets mobile clients load covers via http://<host>:8000/covers/<filename>
+_covers_dir = os.path.join(os.path.dirname(__file__), "..", "frontend", "public", "covers")
+os.makedirs(_covers_dir, exist_ok=True)
+app.mount("/covers", StaticFiles(directory=_covers_dir), name="covers")
 
 # Configuração de CORS
 app.add_middleware(

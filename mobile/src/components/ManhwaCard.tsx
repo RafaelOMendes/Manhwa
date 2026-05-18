@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, Modal, ScrollView, Linking } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, Modal, ScrollView, Linking, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { Star, Trash2, ExternalLink, Heart, FileText, X, FolderOpen, CheckCircle2, ChevronDown } from 'lucide-react-native';
 import { Manhwa } from '../types/manhwa';
@@ -60,8 +60,8 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
             `Tem certeza que deseja excluir "${manhwa.title}"?`,
             [
                 { text: "Cancelar", style: "cancel" },
-                { 
-                    text: "Excluir", 
+                {
+                    text: "Excluir",
                     style: "destructive",
                     onPress: async () => {
                         setIsDeleting(true);
@@ -72,7 +72,7 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                             console.error('Erro ao deletar:', error);
                             setIsDeleting(false);
                         }
-                    } 
+                    }
                 }
             ]
         );
@@ -138,97 +138,121 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
     };
 
     const readCount = files.filter((_, i) => isChapterRead(i)).length;
-    const imageUrl = manhwa.cover_url?.startsWith('/') ? `${API_BASE}${manhwa.cover_url}` : manhwa.cover_url;
+
+    // Fix: prefix API_BASE for relative URLs (covers served by the backend)
+    const imageUrl = manhwa.cover_url
+        ? (manhwa.cover_url.startsWith('/')
+            ? `${API_BASE}${manhwa.cover_url}`
+            : manhwa.cover_url)
+        : null;
 
     return (
         <>
-            <TouchableOpacity 
+            <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={handleCardClick}
-                className="bg-[#1f1c1c] rounded-lg overflow-hidden shadow-lg border border-gray-800 mb-5"
+                className="bg-[#1f1c1c] rounded-lg overflow-hidden shadow-lg border border-gray-800 mb-4"
             >
-                {imageUrl && (
-                    <View className="w-full h-56 bg-[#262525] items-center justify-center relative">
-                        <Image source={{ uri: imageUrl }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
-                        {manhwa.download && hasTelegramLink ? (
-                            <View className="absolute top-2 right-2 bg-blue-600/80 rounded-full p-1.5">
-                                <FolderOpen size={14} color="white" />
-                            </View>
-                        ) : hasLink ? (
-                            <View className="absolute top-2 right-2 bg-black/60 rounded-full p-1.5">
-                                <ExternalLink size={14} color="rgba(255,255,255,0.8)" />
-                            </View>
-                        ) : null}
-                    </View>
-                )}
+                {/* Cover image */}
+                <View className="w-full bg-[#262525] items-center justify-center relative" style={{ aspectRatio: 2 / 3 }}>
+                    {imageUrl ? (
+                        <Image
+                            source={{ uri: imageUrl }}
+                            style={{ width: '100%', height: '100%' }}
+                            contentFit="cover"
+                        />
+                    ) : (
+                        <View className="w-full h-full items-center justify-center">
+                            <FileText size={32} color="#4b5563" />
+                        </View>
+                    )}
+                    {manhwa.download && hasTelegramLink ? (
+                        <View className="absolute top-2 right-2 bg-blue-600/80 rounded-full p-1.5">
+                            <FolderOpen size={12} color="white" />
+                        </View>
+                    ) : hasLink ? (
+                        <View className="absolute top-2 right-2 bg-black/60 rounded-full p-1.5">
+                            <ExternalLink size={12} color="rgba(255,255,255,0.8)" />
+                        </View>
+                    ) : null}
+                </View>
 
-                <View className="p-3.5">
-                    <View className="flex-row items-start justify-between mb-2 gap-2">
-                        <Text className="text-base font-bold text-white flex-1" numberOfLines={2}>
+                <View className="p-2.5">
+                    {/* Title + delete */}
+                    <View className="flex-row items-start justify-between mb-1.5 gap-1">
+                        <Text className="text-sm font-bold text-white flex-1" numberOfLines={2}>
                             {manhwa.title}
                         </Text>
-                        <TouchableOpacity onPress={deleteManhwa} disabled={isDeleting} className="p-1 -mr-1">
-                            <Trash2 size={16} color="#ef4444" />
+                        <TouchableOpacity onPress={deleteManhwa} disabled={isDeleting} className="p-1 -mr-1 -mt-0.5">
+                            <Trash2 size={14} color="#ef4444" />
                         </TouchableOpacity>
                     </View>
 
-                    <View className="flex-row items-center justify-between mb-3 gap-2">
-                        <View className="flex-row items-center gap-1.5 flex-wrap">
+                    {/* Status badge + andamento + ratings */}
+                    <View className="flex-row items-center justify-between mb-2 gap-1 flex-wrap">
+                        <View className="flex-row items-center gap-1 flex-wrap flex-1">
                             {getStatusBadge()}
                             {manhwa.andamento && (
-                                <View className={`px-2 py-1 rounded-full ${manhwa.andamento === 'finalizado' ? 'bg-purple-600/80' : 'bg-teal-600/80'}`}>
-                                    <Text className="text-[10px] text-white font-medium">{manhwa.andamento === 'finalizado' ? 'Finalizado' : 'Em Andamento'}</Text>
+                                <View className={`px-1.5 py-0.5 rounded-full ${manhwa.andamento === 'finalizado' ? 'bg-purple-600/80' : 'bg-teal-600/80'}`}>
+                                    <Text className="text-[9px] text-white font-medium">{manhwa.andamento === 'finalizado' ? 'Finalizado' : 'Em Curso'}</Text>
                                 </View>
                             )}
                         </View>
-                        <View className="flex-row items-center gap-2">
-                            {manhwa.medium_reaction ? (
-                                <View className="flex-row items-center gap-1">
-                                    <Heart size={14} color="#fb7185" fill="#fb7185" />
-                                    <Text className="text-xs text-rose-400">{manhwa.medium_reaction}</Text>
+                        <View className="flex-row items-center gap-1.5">
+                            {manhwa.medium_reaction !== undefined && manhwa.medium_reaction !== null && manhwa.medium_reaction > 0 ? (
+                                <View className="flex-row items-center gap-0.5">
+                                    <Heart size={12} color="#fb7185" fill="#fb7185" />
+                                    <Text className="text-[11px] text-rose-400">{manhwa.medium_reaction}</Text>
                                 </View>
                             ) : null}
                             {manhwa.rating ? (
-                                <View className="flex-row items-center gap-1">
-                                    <Star size={14} color="#eab308" fill="#eab308" />
-                                    <Text className="text-xs text-yellow-500">{manhwa.rating}/5</Text>
+                                <View className="flex-row items-center gap-0.5">
+                                    <Star size={12} color="#eab308" fill="#eab308" />
+                                    <Text className="text-[11px] text-yellow-500">{manhwa.rating}/5</Text>
                                 </View>
                             ) : null}
                         </View>
                     </View>
 
+                    {/* Chapter info */}
                     {manhwa.current_chapter !== undefined && (
-                        <Text className="text-xs text-gray-400 mb-2">
-                            Capítulo: {manhwa.current_chapter} {manhwa.total_chapters ? `/ ${manhwa.total_chapters}` : ''}
+                        <Text className="text-[11px] text-gray-400 mb-2">
+                            Cap: {manhwa.current_chapter}{manhwa.total_chapters ? ` / ${manhwa.total_chapters}` : ''}
                         </Text>
                     )}
 
+                    {/* Sync toggle */}
                     {hasTelegramLink && (
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             onPress={toggleDownload}
-                            className="flex-row items-center justify-between mb-3 px-2 py-2 rounded-md bg-[#262525] border border-gray-800"
+                            className="flex-row items-center justify-between mb-2 px-2 py-1.5 rounded-md bg-[#262525] border border-gray-800"
                         >
-                            <Text className="text-xs text-gray-400">Sincronizar</Text>
-                            <View className={`w-9 h-5 rounded-full justify-center px-0.5 ${manhwa.download ? 'bg-blue-600' : 'bg-gray-700'}`}>
-                                <View className={`w-4 h-4 rounded-full bg-white shadow-sm ${manhwa.download ? 'self-end' : 'self-start'}`} />
+                            <Text className="text-[11px] text-gray-400">Sincronizar</Text>
+                            <View className={`w-8 h-4 rounded-full justify-center ${manhwa.download ? 'bg-blue-600' : 'bg-gray-700'}`}>
+                                <View
+                                    className="w-3 h-3 rounded-full bg-white shadow-sm"
+                                    style={{ marginLeft: manhwa.download ? 18 : 2 }}
+                                />
                             </View>
                         </TouchableOpacity>
                     )}
 
-                    <TouchableOpacity 
+                    {/* Status selector */}
+                    <TouchableOpacity
                         onPress={() => setShowStatusPicker(true)}
-                        className="w-full flex-row items-center justify-between bg-[#262525] px-3 py-2 rounded-lg border border-gray-800 mt-1"
+                        className="w-full flex-row items-center justify-between bg-[#262525] px-2.5 py-1.5 rounded-lg border border-gray-800"
                     >
-                        <Text className="text-white text-xs">{getStatusLabel(manhwa.status)}</Text>
-                        <ChevronDown size={14} color="#9ca3af" />
+                        <Text className="text-white text-[11px]">{getStatusLabel(manhwa.status)}</Text>
+                        <ChevronDown size={12} color="#9ca3af" />
                     </TouchableOpacity>
                 </View>
             </TouchableOpacity>
 
+            {/* Status picker modal */}
             <Modal visible={showStatusPicker} transparent={true} animationType="fade" onRequestClose={() => setShowStatusPicker(false)}>
-                <TouchableOpacity 
-                    activeOpacity={1} 
-                    onPress={() => setShowStatusPicker(false)} 
+                <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => setShowStatusPicker(false)}
                     className="flex-1 bg-black/60 justify-center p-6"
                 >
                     <View className="bg-[#1f1c1c] rounded-xl border border-gray-800 overflow-hidden w-full" onStartShouldSetResponder={() => true}>
@@ -248,13 +272,13 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                 </TouchableOpacity>
             </Modal>
 
-            {/* Modal de arquivos */}
+            {/* Files modal */}
             <Modal visible={showFiles} transparent={true} animationType="fade" onRequestClose={() => setShowFiles(false)}>
                 <View className="flex-1 bg-black/70 justify-center p-4">
                     <View className="bg-[#1f1c1c] rounded-lg border border-gray-800 max-h-[80%] overflow-hidden flex-1 shadow-2xl">
                         <View className="p-4 border-b border-gray-800 flex-row items-start justify-between">
                             <View className="flex-row items-start flex-1 mr-2">
-                                <FolderOpen size={18} color="#ed4545" className="mt-0.5 mr-2" />
+                                <FolderOpen size={18} color="#ed4545" style={{ marginTop: 2, marginRight: 8 }} />
                                 <Text className="text-white font-bold flex-1" numberOfLines={2}>{manhwa.title}</Text>
                             </View>
                             <TouchableOpacity onPress={() => setShowFiles(false)} className="p-1">

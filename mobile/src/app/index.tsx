@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BookOpen, Plus, Download, CheckCircle, XCircle } from 'lucide-react-native';
 import ManhwaCard from '../components/ManhwaCard';
@@ -7,9 +7,19 @@ import AddManhwaModal from '../components/AddManhwaModal';
 import { Manhwa } from '../types/manhwa';
 import { API_BASE } from '../lib/api';
 
+const FILTERS = [
+    { id: 'all', label: 'Todos' },
+    { id: 'reading', label: 'Lendo' },
+    { id: 'top30', label: '🔥 Top 30' },
+    { id: 'completed', label: 'Completos' },
+    { id: 'plan_to_read', label: 'Planejo Ler' },
+] as const;
+
+type FilterId = typeof FILTERS[number]['id'];
+
 export default function Home() {
     const [manhwas, setManhwas] = useState<Manhwa[]>([]);
-    const [filter, setFilter] = useState<'all' | 'reading' | 'completed' | 'plan_to_read' | 'top30'>('all');
+    const [filter, setFilter] = useState<FilterId>('all');
     const [showOnlyNew, setShowOnlyNew] = useState(false);
     const [showOnlyUnreadTop30, setShowOnlyUnreadTop30] = useState(false);
     const [showOnlyDownloaded, setShowOnlyDownloaded] = useState(false);
@@ -85,88 +95,92 @@ export default function Home() {
         });
     })();
 
+    const Checkbox = ({
+        value,
+        onChange,
+        label,
+        accentClass = 'bg-blue-500 border-blue-500',
+    }: {
+        value: boolean;
+        onChange: (v: boolean) => void;
+        label: string;
+        accentClass?: string;
+    }) => (
+        <TouchableOpacity
+            onPress={() => onChange(!value)}
+            className="flex-row items-center px-3 py-2 rounded-lg bg-[#1f1c1c]/50 border border-gray-800/50"
+        >
+            <View className={`w-4 h-4 rounded mr-2 items-center justify-center border ${value ? accentClass : 'border-gray-600 bg-[#262525]'}`}>
+                {value && <View className="w-2 h-2 rounded-sm bg-white" />}
+            </View>
+            <Text className="text-sm text-gray-300">{label}</Text>
+        </TouchableOpacity>
+    );
+
     const renderHeader = () => (
-        <View className="mb-6 mt-4 px-4">
-            <View className="flex-row items-center justify-between mb-6">
-                <View className="flex-row items-center gap-2">
-                    <BookOpen size={28} color="#ed4545" />
-                    <Text className="text-2xl font-bold text-white">Manhwa Tracker</Text>
-                </View>
+        <View className="mb-4 mt-4 px-4">
+            {/* App title */}
+            <View className="flex-row items-center gap-2 mb-6">
+                <BookOpen size={28} color="#ed4545" />
+                <Text className="text-2xl font-bold text-white">Manhwa Tracker</Text>
             </View>
 
-            <View className="flex-row gap-2 mb-6">
-                <TouchableOpacity
-                    onPress={syncDownloads}
-                    disabled={isSyncing}
-                    className="flex-1 flex-row items-center justify-center gap-2 bg-blue-600 py-3 rounded-xl"
-                >
-                    {isSyncing ? (
-                        <ActivityIndicator size="small" color="#fff" />
-                    ) : (
-                        <Download size={18} color="#fff" />
-                    )}
-                    <Text className="text-white font-medium">{isSyncing ? 'Sincronizando...' : 'Sincronizar'}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={() => setIsModalOpen(true)}
-                    className="flex-1 flex-row items-center justify-center gap-2 bg-primary-500 py-3 rounded-xl"
-                >
-                    <Plus size={18} color="#fff" />
-                    <Text className="text-white font-medium">Adicionar</Text>
-                </TouchableOpacity>
-            </View>
-
+            {/* Sync result feedback */}
             {syncResult && (
                 <View className={`flex-row items-center gap-2 mb-4 px-4 py-3 rounded-xl ${syncResult.success ? 'bg-green-900/40 border border-green-800/50' : 'bg-red-900/40 border border-red-800/50'}`}>
-                    {syncResult.success ? <CheckCircle size={18} color="#4ade80" /> : <XCircle size={18} color="#f87171" />}
-                    <Text className={`text-sm ${syncResult.success ? 'text-green-400' : 'text-red-400'}`}>{syncResult.message}</Text>
+                    {syncResult.success
+                        ? <CheckCircle size={18} color="#4ade80" />
+                        : <XCircle size={18} color="#f87171" />}
+                    <Text className={`text-sm flex-1 ${syncResult.success ? 'text-green-400' : 'text-red-400'}`}>
+                        {syncResult.message}
+                    </Text>
                 </View>
             )}
 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
-                <View className="flex-row gap-2 pr-4">
-                    {[
-                        { id: 'all', label: 'Todos' },
-                        { id: 'reading', label: 'Lendo' },
-                        { id: 'top30', label: '🔥 Top 30' },
-                        { id: 'completed', label: 'Completos' },
-                        { id: 'plan_to_read', label: 'Planejo Ler' },
-                    ].map(f => (
-                        <TouchableOpacity
-                            key={f.id}
-                            onPress={() => setFilter(f.id as any)}
-                            className={`px-4 py-2.5 rounded-lg border border-gray-800 ${filter === f.id ? (f.id === 'top30' ? 'bg-rose-600 border-rose-600' : 'bg-primary-500 border-primary-500') : 'bg-[#1f1c1c]'}`}
-                        >
-                            <Text className={`font-medium ${filter === f.id ? 'text-white' : 'text-gray-300'}`}>{f.label}</Text>
-                        </TouchableOpacity>
-                    ))}
-                </View>
+            {/* Horizontal filter tabs — igual à web */}
+            <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ gap: 8, paddingRight: 4 }}
+                className="mb-4"
+            >
+                {FILTERS.map(f => (
+                    <TouchableOpacity
+                        key={f.id}
+                        onPress={() => setFilter(f.id)}
+                        className={`px-4 py-2 rounded-lg ${filter === f.id
+                            ? (f.id === 'top30' ? 'bg-rose-600' : 'bg-primary-500')
+                            : 'bg-[#1f1c1c]'
+                            }`}
+                    >
+                        <Text className={`font-medium text-sm ${filter === f.id ? 'text-white' : 'text-gray-300'}`}>
+                            {f.label}
+                        </Text>
+                    </TouchableOpacity>
+                ))}
             </ScrollView>
 
+            {/* Checkboxes */}
             <View className="flex-row flex-wrap gap-2 mb-2">
-                <TouchableOpacity
-                    onPress={() => setShowOnlyDownloaded(!showOnlyDownloaded)}
-                    className={`flex-row items-center px-3 py-2 rounded-lg border ${showOnlyDownloaded ? 'bg-blue-900/30 border-blue-800' : 'bg-[#1f1c1c] border-gray-800'}`}
-                >
-                    <Text className={`text-xs ${showOnlyDownloaded ? 'text-blue-400' : 'text-gray-400'}`}>Apenas baixados</Text>
-                </TouchableOpacity>
-
+                <Checkbox
+                    value={showOnlyDownloaded}
+                    onChange={setShowOnlyDownloaded}
+                    label="Apenas baixados"
+                />
                 {filter === 'reading' && (
-                    <TouchableOpacity
-                        onPress={() => setShowOnlyNew(!showOnlyNew)}
-                        className={`flex-row items-center px-3 py-2 rounded-lg border ${showOnlyNew ? 'bg-blue-900/30 border-blue-800' : 'bg-[#1f1c1c] border-gray-800'}`}
-                    >
-                        <Text className={`text-xs ${showOnlyNew ? 'text-blue-400' : 'text-gray-400'}`}>Capítulos novos</Text>
-                    </TouchableOpacity>
+                    <Checkbox
+                        value={showOnlyNew}
+                        onChange={setShowOnlyNew}
+                        label="Apenas com capítulos novos"
+                    />
                 )}
-
                 {filter === 'top30' && (
-                    <TouchableOpacity
-                        onPress={() => setShowOnlyUnreadTop30(!showOnlyUnreadTop30)}
-                        className={`flex-row items-center px-3 py-2 rounded-lg border ${showOnlyUnreadTop30 ? 'bg-rose-900/30 border-rose-800' : 'bg-[#1f1c1c] border-gray-800'}`}
-                    >
-                        <Text className={`text-xs ${showOnlyUnreadTop30 ? 'text-rose-400' : 'text-gray-400'}`}>Não lidos</Text>
-                    </TouchableOpacity>
+                    <Checkbox
+                        value={showOnlyUnreadTop30}
+                        onChange={setShowOnlyUnreadTop30}
+                        label="Apenas os que não li nenhum capítulo"
+                        accentClass="bg-rose-500 border-rose-500"
+                    />
                 )}
             </View>
         </View>
@@ -174,29 +188,56 @@ export default function Home() {
 
     return (
         <SafeAreaView className="flex-1 bg-[#262525]">
+            {/* Card grid — 2 colunas igual à web */}
             <FlatList
                 data={filteredManhwas}
                 keyExtractor={(item) => item.id.toString()}
+                numColumns={2}
                 ListHeaderComponent={renderHeader}
-                contentContainerStyle={{ paddingBottom: 24 }}
-                ListEmptyComponent={() => (
+                contentContainerStyle={{ paddingBottom: 100 }}
+                columnWrapperStyle={{ paddingHorizontal: 12, gap: 10 }}
+                ListEmptyComponent={() =>
                     !isLoading ? (
                         <View className="items-center py-16 px-4">
                             <BookOpen size={48} color="#4b5563" style={{ marginBottom: 16 }} />
-                            <Text className="text-gray-400 text-lg text-center">Nenhum manhwa encontrado. Adicione seu primeiro manhwa!</Text>
+                            <Text className="text-gray-400 text-lg text-center">
+                                Nenhum manhwa encontrado. Adicione seu primeiro manhwa!
+                            </Text>
                         </View>
                     ) : (
                         <View className="py-16 items-center">
                             <ActivityIndicator size="large" color="#ed4545" />
                         </View>
                     )
-                )}
+                }
                 renderItem={({ item }) => (
-                    <View className="px-4">
+                    <View style={{ flex: 1 }}>
                         <ManhwaCard manhwa={item} onUpdate={fetchManhwas} />
                     </View>
                 )}
             />
+
+            {/* FABs — Sincronizar (acima) + Adicionar (abaixo) */}
+            <View style={styles.fabContainer}>
+                <TouchableOpacity
+                    onPress={syncDownloads}
+                    disabled={isSyncing}
+                    style={[styles.fab, styles.fabSecondary]}
+                    activeOpacity={0.85}
+                >
+                    {isSyncing
+                        ? <ActivityIndicator size="small" color="#fff" />
+                        : <Download size={20} color="#fff" />
+                    }
+                </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => setIsModalOpen(true)}
+                    style={[styles.fab, styles.fabPrimary]}
+                    activeOpacity={0.85}
+                >
+                    <Plus size={24} color="#fff" />
+                </TouchableOpacity>
+            </View>
 
             <AddManhwaModal
                 visible={isModalOpen}
@@ -206,3 +247,34 @@ export default function Home() {
         </SafeAreaView>
     );
 }
+
+const styles = StyleSheet.create({
+    fabContainer: {
+        position: 'absolute',
+        bottom: 28,
+        right: 20,
+        alignItems: 'center',
+        gap: 12,
+    },
+    fab: {
+        width: 52,
+        height: 52,
+        borderRadius: 26,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.35,
+        shadowRadius: 8,
+        elevation: 8,
+    },
+    fabPrimary: {
+        backgroundColor: '#ed4545',
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+    },
+    fabSecondary: {
+        backgroundColor: '#2563eb',
+    },
+});

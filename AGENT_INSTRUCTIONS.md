@@ -1,0 +1,122 @@
+# Instruções para Agentes 🤖
+
+Bem-vindo ao repositório **Manhwa Tracker**! Este documento foi criado para ajudar futuros agentes de IA a entender rapidamente a arquitetura, as tecnologias e como o projeto está estruturado. **Sempre leia este documento e pesquise por outros arquivos `.md` antes de começar a fazer alterações significativas no código.**
+
+## 📂 Visão Geral da Arquitetura
+
+O projeto Manhwa Tracker é composto por três partes principais:
+
+### 1. Backend (FastAPI / Python)
+- **Diretório:** `/backend`
+- **Descrição:** Uma API construída com FastAPI para gerenciar a coleção de manhwas. 
+- **Arquivos principais:**
+  - `main.py`: Ponto de entrada da API, com as definições das rotas.
+  - `database.py`: Lógica de gerenciamento de dados (atualmente baseada em arquivos JSON/simples).
+  - `models.py`: Modelos de dados usando Pydantic.
+  - `telegram_scraper.py`: Integração com o Telegram para importar/scrapear capítulos de manhwas.
+- **Rodando o backend:** Acesse o diretório, ative o `venv` (`venv\Scripts\activate`) e execute `python main.py` na porta 8000.
+
+### 2. Frontend (Next.js / React Web)
+- **Diretório:** `/frontend`
+- **Descrição:** Aplicação web para consumo da API utilizando **Next.js 14**, **TypeScript** e **Tailwind CSS**.
+- **Estrutura:** 
+  - `/frontend/app`: Utiliza o App Router do Next.js.
+  - `/frontend/components`: Componentes visuais reusáveis (ex: `ManhwaCard`, `AddManhwaModal`).
+  - `/frontend/types`: Tipagens TypeScript, como `manhwa.ts`.
+- **Rodando o frontend:** Acesse o diretório e execute `npm run dev` na porta 3000.
+
+### 3. Mobile (Expo / React Native)
+- **Diretório:** `/mobile`
+- **Descrição:** Aplicativo mobile cross-platform construído com **Expo SDK 54**, **React Native** e **NativeWind**. Consome a mesma API do backend via Tailscale (IP fixo configurado em `src/lib/api.ts`).
+- **Rodando o mobile:** Acesse o diretório e execute `npx expo start`.
+
+#### 📁 Estrutura Interna (`/mobile`)
+```
+mobile/
+├── app.json                  # Configuração do Expo: ícones, splash screen, plugins, orientation
+├── babel.config.js           # Configuração do Babel (necessário para NativeWind/expo-router)
+├── tailwind.config.js        # Configuração do Tailwind/NativeWind
+├── package.json              # Dependências do projeto mobile
+└── src/
+    ├── app/
+    │   ├── _layout.tsx       # Layout raiz: configura Stack, StatusBar e modo imersivo
+    │   └── index.tsx         # Tela principal: lista de manhwas, filtros e modais
+    ├── components/
+    │   ├── ManhwaCard.tsx    # Card visual de cada manhwa na lista
+    │   ├── AddManhwaModal.tsx# Modal de criação/edição de manhwa
+    │   └── CbzReader.tsx     # Leitor nativo de arquivos CBZ (capítulos)
+    ├── lib/
+    │   └── api.ts            # BASE_URL da API (Tailscale: http://100.78.119.19:8000)
+    ├── constants/
+    │   └── theme.ts          # Paleta de cores (dark/light), fontes e espaçamentos
+    ├── hooks/
+    │   ├── use-color-scheme.ts      # Hook de detecção de tema (nativo)
+    │   ├── use-color-scheme.web.ts  # Hook de detecção de tema (web)
+    │   └── use-theme.ts             # Hook que retorna as cores do tema ativo
+    └── types/
+        └── manhwa.ts         # Interfaces TypeScript: Manhwa e CreateManhwaDto
+```
+
+#### ⚙️ Configurações Importantes
+- **API Base:** definida em `src/lib/api.ts` como `http://100.78.119.19:8000` (IP Tailscale). **Altere aqui** se o IP mudar.
+- **Tema:** cores centralizadas em `src/constants/theme.ts` — altere lá para mudar a paleta do app.
+- **Tipagens:** `src/types/manhwa.ts` deve estar sincronizado com `backend/models.py` e `frontend/types/manhwa.ts`.
+
+#### 🖥️ Modo Tela Cheia (Imersivo) — apenas no leitor CBZ
+O modo imersivo (sem barra de status e sem barra de navegação) é ativado **somente ao abrir o `CbzReader`** e restaurado ao fechar. O restante do app exibe as barras normalmente.
+- Implementado em `src/components/CbzReader.tsx`:
+  - `<StatusBar hidden={true} />` dentro do `<Modal>` — oculta a barra de status superior apenas durante a leitura.
+  - `NavigationBar.setVisibilityAsync('hidden')` no `useEffect` de montagem — oculta a barra inferior ao abrir o reader.
+  - O `return` do mesmo `useEffect` chama `setVisibilityAsync('visible')` — restaura a barra ao fechar o reader.
+- Usa o pacote `expo-navigation-bar` (já instalado).
+- **Para alterar:** edite o `useEffect` de imersivo e o `<StatusBar>` dentro de `src/components/CbzReader.tsx`.
+- **Atenção:** se criar novas telas com modal em tela cheia, aplique o mesmo padrão localizado (não globalmente no `_layout.tsx`).
+
+- **❗ AVISO CRÍTICO PARA O MOBILE:** O Expo mudou. Verifique sempre o arquivo `/mobile/AGENTS.md` (e a documentação oficial da versão correta da SDK) antes de alterar rotas ou configurações.
+
+---
+
+## 🔍 Como se Orientar (Instruções para Agentes)
+
+Sempre que você for iniciar uma nova tarefa neste projeto, siga este fluxo:
+
+1. **Leia este arquivo** (`AGENT_INSTRUCTIONS.md`) para entender o panorama do projeto.
+2. **Leia o `README.md` principal** na raiz do repositório para detalhes de instalação e endpoints.
+3. **Leia os `README.md` e `AGENTS.md` locais:**
+   - Se for trabalhar no mobile, **LEIA obrigatoriamente** o `/mobile/AGENTS.md` e o `/mobile/README.md`.
+4. **Respeite a comunicação:** Modificações no modelo de dados do Backend (`/backend/models.py`) devem ser refletidas nos tipos do Frontend (`/frontend/types/manhwa.ts`) e do Mobile.
+5. **Utilize o Terminal com Sabedoria:** Para iniciar os serviços, utilize os arquivos `.bat` na raiz (ex: `iniciaBack.bat` e `iniciaFront.bat`) caso já estejam configurados.
+
+## 🎯 Próximos Passos (Para a IA)
+Ao receber um prompt do usuário pedindo uma alteração, analise se a alteração afeta:
+- Apenas a interface de uma plataforma (modifique apenas a respectiva pasta).
+- A lógica de negócios (modifique o backend e garanta que os clientes `frontend` e `mobile` não quebrem com novos campos ou retornos diferentes).
+
+**Boas práticas de código neste repositório:**
+- Frontend e Mobile compartilham a mesma paleta de cores e estilo visual (Tailwind/NativeWind).
+- Respeite as tipagens estritas em TypeScript.
+- No Backend, documente novos endpoints via tipagem do Pydantic/FastAPI, que gera o Swagger em `/docs`.
+
+---
+
+## 📝 Manutenção deste Arquivo (Obrigatório para Agentes)
+
+**Sempre que você realizar uma alteração significativa no projeto, você DEVE atualizar este arquivo** (`AGENT_INSTRUCTIONS.md`) para refletir o que mudou.
+
+### Como editar este arquivo corretamente
+
+1. **Localize o trecho correspondente:** Identifique qual seção do arquivo descreve a parte do projeto que você alterou (ex: seção `### 1. Backend` se mexeu no backend).
+2. **Edite apenas o bloco relevante:** Não reescreva o arquivo inteiro. Altere somente o parágrafo, bullet point ou subseção que ficou desatualizado.
+3. **Siga o padrão existente:** Use o mesmo estilo de formatação Markdown (bullets com `-`, negrito para termos-chave, emojis de aviso para alertas críticos como `❗`).
+4. **Se criar algo novo** (novo módulo, novo script, nova pasta importante), **adicione uma subseção** nova seguindo o modelo das seções existentes.
+5. **Documente o que mudou no final**, adicionando um bullet na seção `🎯 Próximos Passos` se a mudança introduzir um novo padrão ou responsabilidade.
+
+### Exemplo de fluxo
+
+> Você adicionou um novo endpoint no backend e criou um novo arquivo `auth.py`.  
+> → Vá até a seção `### 1. Backend > Arquivos principais` e adicione `auth.py` na lista com uma descrição.  
+> → Se isso quebrar alguma convenção antiga, atualize a seção `🎯 Próximos Passos`.
+
+---
+
+Bom trabalho! 🚀
