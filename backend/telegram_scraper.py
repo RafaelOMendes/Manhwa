@@ -1,6 +1,7 @@
 import os
 import re
 import html
+import time
 from telethon import TelegramClient
 from telethon.tl.types import MessageService, MessageActionTopicCreate, Message, DocumentAttributeFilename
 from telethon.tl.functions.channels import GetForumTopicsByIDRequest
@@ -49,6 +50,7 @@ class TelegramManhwaScraper:
         """
         chat_id_or_username, topic_id = self._parse_telegram_link(topic_link)
         if not chat_id_or_username or not topic_id:
+            print(f"      ⚠️  Link inválido para stats: {topic_link}")
             return {"cbz_count": 0, "avg_reactions": 0}
         
         try:
@@ -82,10 +84,11 @@ class TelegramManhwaScraper:
                     total_reactions += msg_reactions
             
             avg_reactions = round(total_reactions / cbz_count) if cbz_count > 0 else 0
+            print(f"      📊 Stats: {cbz_count} CBZs | reação média: {avg_reactions}")
             
             return {"cbz_count": cbz_count, "avg_reactions": avg_reactions}
         except Exception as e:
-            print(f"Erro ao obter stats do tópico {topic_link}: {e}")
+            print(f"      ❌ Erro ao obter stats: {e}")
             return {"cbz_count": 0, "avg_reactions": 0}
 
     async def download_cbz_from_topic(self, topic_link: str, manhwa_title: str, base_dir: str = r"D:\Manhwas", max_concurrent: int = 5) -> dict:
@@ -114,6 +117,7 @@ class TelegramManhwaScraper:
             chat = await self.client.get_entity(chat_id_or_username)
 
             # Fase 1: Coletar arquivos .cbz pendentes ou com tamanho diferente
+            print(f"   🔎 Listando arquivos .cbz no tópico...")
             files_to_download = []
             skipped = 0
             replaced = 0
@@ -148,6 +152,8 @@ class TelegramManhwaScraper:
                         print(f"  ↻ [{manhwa_title}] {file_name} (local: {local_size}b ≠ telegram: {telegram_size}b)")
 
                 files_to_download.append((msg, file_path, file_name))
+
+            print(f"   📋 Encontrados: {len(files_to_download)} para baixar | {skipped} já existem")
 
             if not files_to_download:
                 total = skipped
@@ -201,6 +207,8 @@ class TelegramManhwaScraper:
         - Obtém o link da imagem (cover)
         - Obtém o link para os capítulos (no texto)
         """
+        scrape_start = time.time()
+        print(f"\n   🔍 Scraper: Analisando tópico {topic_link}")
         chat_id_or_username, topic_id = self._parse_telegram_link(topic_link)
         if not chat_id_or_username:
             raise ValueError("O link fornecido não parece ser um link de tópico válido.")
@@ -214,29 +222,32 @@ class TelegramManhwaScraper:
             title = "Manhwa Desconhecido"
             
             try:
-                # Buscando infos do tópico pelo ID
                 topics_result = await self.client(GetForumTopicsByIDRequest(
                     channel=chat,
                     topics=[topic_id]
                 ))
                 if topics_result.topics:
                     title = topics_result.topics[0].title
+                    print(f"   📌 Tópico: {title}")
             except Exception:
                 pass
             
             # Buscar as mensagens do tópico (reply_to=topic_id)
+            print(f"   📨 Buscando mensagens do tópico...")
             msgs = await self.client.get_messages(chat, reply_to=topic_id, min_id=1741, limit=None, reverse=True)
             if not msgs:
-                # Fallback caso a reverse fetch falhe
                 msgs_raw = await self.client.get_messages(chat, min_id=1741, limit=None)
                 msgs = [m for m in msgs_raw if m]
             
+            print(f"   📨 Total de mensagens: {len(msgs)}")
             manhwas_encontrados = []
+            msg_com_foto = 0
             
             for msg in msgs:
                 # O usuário pediu para só pegar as que têm foto
                 if not getattr(msg, 'photo', None):
                     continue
+                msg_com_foto += 1
                 
                 text = msg.text or ""
                 # O título geralmente é a primeira linha
@@ -298,6 +309,7 @@ class TelegramManhwaScraper:
                 total_chapters = 0
                 medium_reaction = 0
                 if chapter_link and 't.me' in chapter_link:
+                    print(f"      🔗 Buscando stats de: {msg_title}...")
                     stats = await self._get_topic_stats(chapter_link)
                     total_chapters = stats["cbz_count"]
                     medium_reaction = stats["avg_reactions"]
@@ -311,7 +323,10 @@ class TelegramManhwaScraper:
                     "medium_reaction": medium_reaction
                 })
                 
+            elapsed = time.time() - scrape_start
+            print(f"   ✅ Scraper concluído: {len(manhwas_encontrados)} manhwas ({msg_com_foto} msgs com foto) em {elapsed:.1f}s")
             return manhwas_encontrados
                     
         except Exception as e:
+            print(f"   ❌ Scraper erro: {str(e)}")
             raise ValueError(f"Não foi possível buscar o manhwa: {str(e)}")

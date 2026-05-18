@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import time
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -349,16 +350,28 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
     """
     import asyncio
 
+    sync_start = time.time()
+    print("\n" + "=" * 60)
+    print("📥 SINCRONIZAÇÃO DE DOWNLOADS INICIADA")
+    print(f"⏰ Horário: {datetime.now().strftime('%H:%M:%S')}")
+    print("=" * 60)
+
     # Buscar todos os manhwas com link do Telegram
+    print("\n🔍 Buscando manhwas no banco de dados...")
     result = await db.execute(select(ManhwaModel))
     all_manhwas = result.scalars().all()
+    print(f"   Total de manhwas no banco: {len(all_manhwas)}")
 
     manhwas_to_download = [
         m for m in all_manhwas
         if m.notes and 't.me' in m.notes and m.download
     ]
 
+    print(f"   Com link Telegram + download ativo: {len(manhwas_to_download)}")
+    
     if not manhwas_to_download:
+        print("⚠️  Nenhum manhwa elegível para sincronização.")
+        print("=" * 60 + "\n")
         return {
             "success": True,
             "message": "Nenhum manhwa com link do Telegram encontrado.",
@@ -368,28 +381,54 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
             "total_errors": 0,
         }
 
+    # Listar os manhwas que serão processados
+    print("\n📋 Fila de sincronização:")
+    for i, m in enumerate(manhwas_to_download, 1):
+        print(f"   {i}. {m.title}")
+
     try:
+        print("\n🔌 Conectando ao Telegram...")
         scraper = await get_telegram_scraper()
+        print("   ✅ Conexão com Telegram estabelecida.")
         results_list = []
 
         # Semáforo para limitar manhwas simultâneos (1 por vez para evitar Flood 429 do Telegram)
         manhwa_sem = asyncio.Semaphore(1)
+        processed_count = 0
 
         async def download_one_manhwa(manhwa):
+            nonlocal processed_count
             async with manhwa_sem:
+                processed_count += 1
+                manhwa_start = time.time()
+                print(f"\n{'─' * 50}")
+                print(f"📦 [{processed_count}/{len(manhwas_to_download)}] Processando: {manhwa.title}")
+                print(f"   Link: {manhwa.notes}")
                 try:
                     dl_result = await scraper.download_cbz_from_topic(manhwa.notes, manhwa.title)
                     dl_result["manhwa_title"] = manhwa.title
+                    
+                    elapsed = time.time() - manhwa_start
+                    dl = dl_result.get('downloaded', 0)
+                    sk = dl_result.get('skipped', 0)
+                    rp = dl_result.get('replaced', 0)
+                    er = dl_result.get('errors', 0)
+                    
+                    print(f"   📊 Resultado: {dl} baixados | {sk} já existiam | {rp} substituídos | {er} erros")
+                    print(f"   ⏱️  Tempo: {elapsed:.1f}s")
                     
                     # Atualizar total de capítulos no banco de dados
                     if dl_result.get("success") and "total" in dl_result:
                         total_found = dl_result["total"]
                         if manhwa.total_chapters != total_found:
+                            print(f"   🔄 Atualizando total de capítulos: {manhwa.total_chapters} → {total_found}")
                             manhwa.total_chapters = total_found
                             db.add(manhwa)
                             
                     return dl_result
                 except Exception as e:
+                    elapsed = time.time() - manhwa_start
+                    print(f"   ❌ ERRO após {elapsed:.1f}s: {str(e)}")
                     return {
                         "manhwa_title": manhwa.title,
                         "success": False,
@@ -404,12 +443,24 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
         results_list = await asyncio.gather(*tasks)
         
         # Salvar no banco as alterações de total_chapters
+        print("\n💾 Salvando alterações no banco de dados...")
         await db.commit()
+        print("   ✅ Banco atualizado.")
 
         # Agregar totais
         total_downloaded = sum(r.get("downloaded", 0) for r in results_list)
         total_skipped = sum(r.get("skipped", 0) for r in results_list)
         total_errors = sum(r.get("errors", 0) for r in results_list)
+        total_elapsed = time.time() - sync_start
+
+        print(f"\n{'=' * 60}")
+        print(f"✅ SINCRONIZAÇÃO CONCLUÍDA")
+        print(f"   Manhwas processados: {len(manhwas_to_download)}")
+        print(f"   Capítulos baixados:  {total_downloaded}")
+        print(f"   Já existiam:        {total_skipped}")
+        print(f"   Erros:              {total_errors}")
+        print(f"   Tempo total:        {total_elapsed:.1f}s")
+        print(f"{'=' * 60}\n")
 
         return {
             "success": True,
@@ -422,8 +473,10 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
         }
 
     except ImportError:
+        print("❌ ERRO CRÍTICO: Módulo telegram_scraper não encontrado.")
         raise HTTPException(status_code=500, detail="Módulo telegram_scraper não encontrado.")
     except Exception as e:
+        print(f"❌ ERRO CRÍTICO na sincronização: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erro na sincronização: {str(e)}")
 
 @app.post("/api/telegram/import")
@@ -436,29 +489,53 @@ async def import_from_telegram(request: TelegramImportRequest, db: AsyncSession 
     - TELEGRAM_API_HASH
     - TELEGRAM_PHONE
     """
+    import_start = time.time()
+    print("\n" + "=" * 60)
+    print("📡 IMPORTAÇÃO DO TELEGRAM INICIADA")
+    print(f"⏰ Horário: {datetime.now().strftime('%H:%M:%S')}")
+    print(f"🔗 Link: {request.channel_link}")
+    print(f"📌 Status padrão: {request.auto_status}")
+    print("=" * 60)
+    
     try:
+        print("\n🔌 Conectando ao Telegram...")
         scraper = await get_telegram_scraper()
+        print("   ✅ Conexão estabelecida.")
         
         # Buscar títulos já existentes para ignorar no scraper e ganhar performance
+        print("\n🔍 Buscando títulos já existentes no banco...")
         result = await db.execute(select(ManhwaModel.title))
         existing_titles = {title.lower() for title in result.scalars().all()}
+        print(f"   Títulos existentes: {len(existing_titles)}")
         
         # Conectar e buscar um ou múltiplos manhwas a partir do tópico
+        print("\n📥 Fazendo scraping do tópico do Telegram...")
+        scrape_start = time.time()
         manhwa_data_list = await scraper.scrape_manhwa_topic(request.channel_link, existing_titles=existing_titles)
+        scrape_elapsed = time.time() - scrape_start
+        print(f"   ⏱️  Scraping concluído em {scrape_elapsed:.1f}s")
             
         if not manhwa_data_list:
+            print("⚠️  Nenhum dado encontrado no tópico.")
+            print("=" * 60 + "\n")
             return {"success": False, "message": "Nenhum dado encontrado no tópico.", "imported": 0}
             
         # Transformar para lista se ele resolver retornar 1 item só (compatibilidade)
         if isinstance(manhwa_data_list, dict):
             manhwa_data_list = [manhwa_data_list]
+        
+        print(f"   📋 Manhwas encontrados no tópico: {len(manhwa_data_list)}")
             
         imported = 0
         skipped = 0
         
-        for m_data in manhwa_data_list:
+        print("\n📝 Processando manhwas encontrados:")
+        for i, m_data in enumerate(manhwa_data_list, 1):
+            title_display = m_data.get('title', 'Sem título')
+            
             if m_data.get('skipped_because_exists'):
                 skipped += 1
+                print(f"   {i}. ⏭️  {title_display} — já existe (pulado no scraper)")
                 continue
                 
             title_to_search = m_data['title']
@@ -467,6 +544,7 @@ async def import_from_telegram(request: TelegramImportRequest, db: AsyncSession 
             
             if db_manhwa:
                 skipped += 1
+                print(f"   {i}. ⏭️  {title_display} — já existe no banco (pulado)")
                 continue
             
             # Detectar andamento pelo título original (antes de limpar)
@@ -497,9 +575,23 @@ async def import_from_telegram(request: TelegramImportRequest, db: AsyncSession 
             )
             db.add(new_manhwa)
             imported += 1
+            chaps = m_data.get('total_chapters', '?')
+            react = m_data.get('medium_reaction', '?')
+            print(f"   {i}. ✅ {clean_title} — andamento: {derived_andamento} | caps: {chaps} | reações: {react}")
             
         # Salvar alterações no banco
+        print("\n💾 Salvando no banco de dados...")
         await db.commit()
+        print("   ✅ Banco atualizado.")
+        
+        total_elapsed = time.time() - import_start
+        print(f"\n{'=' * 60}")
+        print(f"✅ IMPORTAÇÃO CONCLUÍDA")
+        print(f"   Encontrados: {len(manhwa_data_list)}")
+        print(f"   Importados:  {imported}")
+        print(f"   Ignorados:   {skipped}")
+        print(f"   Tempo total: {total_elapsed:.1f}s")
+        print(f"{'=' * 60}\n")
         
         return {
             "success": True,
@@ -510,16 +602,19 @@ async def import_from_telegram(request: TelegramImportRequest, db: AsyncSession 
         }
         
     except ImportError:
+        print("❌ ERRO: Módulo telegram_scraper não encontrado.")
         raise HTTPException(
             status_code=500,
             detail="Módulo telegram_scraper não encontrado. Instale as dependências: pip install telethon cryptg"
         )
     except ValueError as e:
+        print(f"❌ ERRO de configuração: {str(e)}")
         raise HTTPException(
             status_code=400,
             detail=f"Erro de configuração: {str(e)}"
         )
     except Exception as e:
+        print(f"❌ ERRO na importação: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail=f"Erro ao importar do Telegram: {str(e)}"
