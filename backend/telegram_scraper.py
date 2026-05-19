@@ -91,13 +91,17 @@ class TelegramManhwaScraper:
             print(f"      ❌ Erro ao obter stats: {e}")
             return {"cbz_count": 0, "avg_reactions": 0}
 
-    async def download_cbz_from_topic(self, topic_link: str, manhwa_title: str, base_dir: str = r"D:\Manhwas", max_concurrent: int = 5) -> dict:
+    async def download_cbz_from_topic(self, topic_link: str, manhwa_title: str, base_dir: str = None, max_concurrent: int = 5) -> dict:
         """
         Baixa todos os arquivos .cbz de um tópico do Telegram em paralelo.
         Salva em base_dir/manhwa_title/
         Pula arquivos que já existem localmente.
+        Também recalcula a média de reações por capítulo no mesmo loop (sem custo extra).
         """
         import asyncio
+
+        if base_dir is None:
+            base_dir = os.environ.get("DOWNLOAD_DIR", r"D:\Manhwas")
 
         chat_id_or_username, topic_id = self._parse_telegram_link(topic_link)
         if not chat_id_or_username or not topic_id:
@@ -121,6 +125,8 @@ class TelegramManhwaScraper:
             files_to_download = []
             skipped = 0
             replaced = 0
+            cbz_count = 0
+            total_reactions = 0
 
             async for msg in self.client.iter_messages(chat, reply_to=topic_id):
                 if not msg.document:
@@ -134,6 +140,11 @@ class TelegramManhwaScraper:
 
                 if not file_name or not file_name.lower().endswith('.cbz'):
                     continue
+
+                # Aproveita o loop para contabilizar reações (sem requisições adicionais)
+                cbz_count += 1
+                if msg.reactions and msg.reactions.results:
+                    total_reactions += sum(r.count for r in msg.reactions.results)
 
                 file_path = os.path.join(download_dir, file_name)
 
@@ -153,17 +164,18 @@ class TelegramManhwaScraper:
 
                 files_to_download.append((msg, file_path, file_name))
 
-            print(f"   📋 Encontrados: {len(files_to_download)} para baixar | {skipped} já existem")
+            avg_reactions = round(total_reactions / cbz_count) if cbz_count > 0 else 0
+            print(f"   📋 Encontrados: {len(files_to_download)} para baixar | {skipped} já existem | reação média: {avg_reactions}")
 
             if not files_to_download:
-                total = skipped
                 return {
                     "success": True,
                     "downloaded": 0,
                     "skipped": skipped,
                     "replaced": 0,
                     "errors": 0,
-                    "total": total,
+                    "total": cbz_count,
+                    "medium_reaction": avg_reactions,
                     "path": download_dir,
                     "message": f"Nenhum arquivo novo. {skipped} já existiam."
                 }
@@ -193,7 +205,8 @@ class TelegramManhwaScraper:
                 "skipped": skipped,
                 "replaced": replaced,
                 "errors": errors,
-                "total": downloaded + skipped + errors,
+                "total": cbz_count,
+                "medium_reaction": avg_reactions,
                 "path": download_dir,
                 "message": f"{downloaded} baixados, {replaced} substituídos, {skipped} já existiam, {errors} erros."
             }

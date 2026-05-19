@@ -8,13 +8,19 @@ O projeto Manhwa Tracker é composto por três partes principais:
 
 ### 1. Backend (FastAPI / Python)
 - **Diretório:** `/backend`
-- **Descrição:** Uma API construída com FastAPI para gerenciar a coleção de manhwas. 
+- **Descrição:** API FastAPI assíncrona para gerenciar a coleção de manhwas, com persistência em **PostgreSQL** via SQLAlchemy async.
 - **Arquivos principais:**
-  - `main.py`: Ponto de entrada da API, com as definições das rotas.
-  - `database.py`: Lógica de gerenciamento de dados (atualmente baseada em arquivos JSON/simples).
-  - `models.py`: Modelos de dados usando Pydantic.
-  - `telegram_scraper.py`: Integração com o Telegram para importar/scrapear capítulos de manhwas.
-- **Rodando o backend:** Acesse o diretório, ative o `venv` (`venv\Scripts\activate`) e execute `python main.py` na porta 8000.
+  - `main.py`: Ponto de entrada da API, com as definições das rotas (CRUD, leitor CBZ, importação/sincronização Telegram).
+  - `database.py`: Setup do engine assíncrono SQLAlchemy + `get_db()` dependency. Lê `DATABASE_URL` do `.env`.
+  - `models.py`: Modelos SQLAlchemy (`Manhwa`, `ChapterProgress`). Os modelos Pydantic ficam dentro do `main.py`.
+  - `telegram_scraper.py`: Integração com Telegram (Telethon) — scraping de tópicos e download paralelo de `.cbz`.
+  - `init_db.py`: Script para criar/resetar as tabelas (`python init_db.py [--reset]`).
+  - `add_col.py`: Migração ad-hoc (adiciona coluna `andamento`). Use só se atualizar um banco antigo.
+- **Variáveis de ambiente (`backend/.env`):**
+  - `DATABASE_URL` — string `postgresql+asyncpg://...` (default: `postgres:postgres@localhost:5432/manhwa_tracker`).
+  - `DOWNLOAD_DIR` — pasta onde os `.cbz` baixados ficam (default: `D:\Manhwas`). Altere aqui para mover a biblioteca.
+  - `TELEGRAM_API_ID`, `TELEGRAM_API_HASH`, `TELEGRAM_PHONE` — credenciais Telegram (obrigatórias para importar/baixar).
+- **Rodando o backend:** Acesse o diretório, ative o `venv` (`venv\Scripts\activate`) e execute `python main.py` na porta 8000. Ou use `iniciaBack.bat` na raiz.
 
 ### 2. Frontend (Next.js / React Web)
 - **Diretório:** `/frontend`
@@ -27,7 +33,8 @@ O projeto Manhwa Tracker é composto por três partes principais:
 
 ### 3. Mobile (Expo / React Native)
 - **Diretório:** `/mobile`
-- **Descrição:** Aplicativo mobile cross-platform construído com **Expo SDK 54**, **React Native** e **NativeWind**. Consome a mesma API do backend via Tailscale (IP fixo configurado em `src/lib/api.ts`).
+- **Descrição:** Aplicativo mobile cross-platform construído com **Expo SDK 54**, **React Native** e **NativeWind**. Consome a mesma API do backend via Tailscale.
+- **API base:** `src/lib/api.ts` lê `EXPO_PUBLIC_API_BASE` do ambiente (com fallback para o IP Tailscale `http://100.78.119.19:8000`). Para usar em outra rede, defina `EXPO_PUBLIC_API_BASE` num `.env` na raiz de `/mobile`.
 - **Rodando o mobile:** Acesse o diretório e execute `npx expo start`.
 
 #### 📁 Estrutura Interna (`/mobile`)
@@ -58,9 +65,9 @@ mobile/
 ```
 
 #### ⚙️ Configurações Importantes
-- **API Base:** definida em `src/lib/api.ts` como `http://100.78.119.19:8000` (IP Tailscale). **Altere aqui** se o IP mudar.
+- **API Base:** `src/lib/api.ts` lê `EXPO_PUBLIC_API_BASE` com fallback para o IP Tailscale `http://100.78.119.19:8000`. Para sobrescrever, crie `mobile/.env` com `EXPO_PUBLIC_API_BASE=http://...`.
 - **Tema:** cores centralizadas em `src/constants/theme.ts` — altere lá para mudar a paleta do app.
-- **Tipagens:** `src/types/manhwa.ts` deve estar sincronizado com `backend/models.py` e `frontend/types/manhwa.ts`.
+- **Tipagens:** `src/types/manhwa.ts` deve estar sincronizado com `backend/models.py` e `frontend/types/manhwa.ts` (sincronização manual, por enquanto sem pacote compartilhado).
 
 #### 🖥️ Modo Tela Cheia (Imersivo) — apenas no leitor CBZ
 O modo imersivo (sem barra de status e sem barra de navegação) é ativado **somente ao abrir o `CbzReader`** e restaurado ao fechar. O restante do app exibe as barras normalmente.

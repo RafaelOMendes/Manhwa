@@ -16,6 +16,8 @@ from contextlib import asynccontextmanager
 from database import get_db, create_tables
 from models import Manhwa as ManhwaModel, ChapterProgress
 
+DOWNLOAD_DIR = os.environ.get("DOWNLOAD_DIR", r"D:\Manhwas")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -189,7 +191,7 @@ async def list_manhwa_files(manhwa_id: int, db: AsyncSession = Depends(get_db)):
     safe_name = "".join(c for c in manhwa.title if c.isalnum() or c in " _-().").strip()
     if not safe_name:
         safe_name = "Manhwa_Desconhecido"
-    download_dir = os.path.join(r"D:\Manhwas", safe_name)
+    download_dir = os.path.join(DOWNLOAD_DIR, safe_name)
 
     if not os.path.exists(download_dir):
         return {"files": [], "path": download_dir}
@@ -290,7 +292,7 @@ async def get_cbz_info(manhwa_id: int, filename: str, db: AsyncSession = Depends
         raise HTTPException(status_code=404, detail="Manhwa não encontrado")
 
     safe_name = "".join(c for c in manhwa.title if c.isalnum() or c in " _-().").strip() or "Manhwa_Desconhecido"
-    cbz_path = os.path.join(r"D:\Manhwas", safe_name, filename)
+    cbz_path = os.path.join(DOWNLOAD_DIR, safe_name, filename)
 
     if not os.path.exists(cbz_path):
         raise HTTPException(status_code=404, detail="Arquivo não encontrado")
@@ -317,7 +319,7 @@ async def get_cbz_page(manhwa_id: int, filename: str, page_num: int, db: AsyncSe
         raise HTTPException(status_code=404, detail="Manhwa não encontrado")
 
     safe_name = "".join(c for c in manhwa.title if c.isalnum() or c in " _-().").strip() or "Manhwa_Desconhecido"
-    cbz_path = os.path.join(r"D:\Manhwas", safe_name, filename)
+    cbz_path = os.path.join(DOWNLOAD_DIR, safe_name, filename)
 
     if not os.path.exists(cbz_path):
         raise HTTPException(status_code=404, detail="Arquivo não encontrado")
@@ -431,7 +433,15 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
                             print(f"   🔄 Atualizando total de capítulos: {manhwa.total_chapters} → {total_found}")
                             manhwa.total_chapters = total_found
                             db.add(manhwa)
-                            
+
+                    # Atualizar reação média (recalculada no mesmo loop do download)
+                    if dl_result.get("success") and "medium_reaction" in dl_result:
+                        new_reaction = dl_result["medium_reaction"]
+                        if manhwa.medium_reaction != new_reaction:
+                            print(f"   ❤️ Atualizando reação média: {manhwa.medium_reaction} → {new_reaction}")
+                            manhwa.medium_reaction = new_reaction
+                            db.add(manhwa)
+
                     return dl_result
                 except Exception as e:
                     elapsed = time.time() - manhwa_start

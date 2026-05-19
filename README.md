@@ -1,139 +1,170 @@
 # 📚 Manhwa Tracker
 
-Um aplicativo completo para gerenciar seus manhwas favoritos, acompanhar o que você está lendo, o que já leu, avaliar e adicionar notas.
+Um aplicativo completo para gerenciar seus manhwas favoritos, acompanhar o que você está lendo, o que já leu, avaliar e adicionar notas. Inclui leitor nativo de arquivos `.cbz` (web e mobile) e importação/download automático de capítulos a partir de tópicos do Telegram.
 
 ## 🚀 Tecnologias
 
-### Frontend
-- **Next.js 14** - Framework React
-- **TypeScript** - Tipagem estática
-- **Tailwind CSS** - Estilização
-- **Lucide React** - Ícones
+### Frontend (web)
+- **Next.js 14** com App Router
+- **TypeScript**
+- **Tailwind CSS**
+- **Lucide React** para ícones
 
 ### Backend
-- **FastAPI** - Framework Python de alta performance
-- **Pydantic** - Validação de dados
-- **JSON File Storage** - Armazenamento simples (pode ser migrado para PostgreSQL/SQLite)
+- **FastAPI** (Python, assíncrono)
+- **SQLAlchemy async** + **asyncpg**
+- **PostgreSQL** como banco de dados
+- **Telethon** para integração com Telegram (scraping de tópicos e download de `.cbz`)
+
+### Mobile
+- **Expo SDK 54** + **React Native** + **NativeWind**
+- `expo-router` para rotas baseadas em arquivos
+- Mesma API REST do backend (default via Tailscale)
 
 ## 📋 Funcionalidades
 
 - ✅ Adicionar manhwas com informações detalhadas
 - ✅ Gerenciar status (Lendo, Completo, Planejo Ler)
-- ✅ Avaliar com sistema de estrelas (1-5)
-- ✅ Acompanhar capítulos lidos
-- ✅ Adicionar notas pessoais
-- ✅ Filtrar por status
-- ✅ Interface moderna e responsiva
+- ✅ Avaliar com sistema de estrelas (1–5)
+- ✅ Acompanhar capítulos lidos (com posição de scroll salva)
+- ✅ Leitor `.cbz` integrado, com modo imersivo no mobile
+- ✅ Importar manhwas a partir de tópicos do Telegram (com capa e contagem de capítulos)
+- ✅ Sincronizar/baixar capítulos `.cbz` em paralelo direto do Telegram
+- ✅ Ranking "Top 30" por média de reações por capítulo
+- ✅ Filtros por status / com capítulos novos / apenas baixados
+- ✅ Interface moderna e responsiva (web e mobile)
 
 ## 🛠️ Instalação e Execução
 
-### Backend (FastAPI)
+### Backend (FastAPI + PostgreSQL)
 
-1. Navegue até a pasta do backend:
+Pré-requisito: PostgreSQL 12+ rodando localmente com banco `manhwa_tracker` criado (ver `backend/README.md` para detalhes).
+
+1. Entre na pasta do backend:
 ```powershell
 cd backend
 ```
 
-2. Crie um ambiente virtual Python:
+2. Crie e ative um ambiente virtual:
 ```powershell
 python -m venv venv
-```
-
-3. Ative o ambiente virtual:
-```powershell
 .\venv\Scripts\activate
 ```
 
-4. Instale as dependências:
+3. Instale as dependências:
 ```powershell
 pip install -r requirements.txt
 ```
 
-5. Execute o servidor:
+4. Configure o `.env` (na pasta `backend/`):
+```env
+DATABASE_URL=postgresql+asyncpg://postgres:senha@localhost:5432/manhwa_tracker
+DOWNLOAD_DIR=D:\Manhwas
+TELEGRAM_API_ID=...
+TELEGRAM_API_HASH=...
+TELEGRAM_PHONE=+55...
+```
+
+5. Inicialize as tabelas:
+```powershell
+python init_db.py
+```
+
+6. Inicie o servidor:
 ```powershell
 python main.py
 ```
 
-O backend estará rodando em: `http://localhost:8000`
-Documentação interativa (Swagger): `http://localhost:8000/docs`
+Backend disponível em `http://localhost:8000` (Swagger em `/docs`).
+Atalho: rode `iniciaBack.bat` na raiz do projeto.
 
 ### Frontend (Next.js)
 
-1. Abra um novo terminal e navegue até a pasta do frontend:
 ```powershell
 cd frontend
-```
-
-2. Instale as dependências:
-```powershell
 npm install
-```
-
-3. Execute o servidor de desenvolvimento:
-```powershell
 npm run dev
 ```
 
-O frontend estará rodando em: `http://localhost:3000`
+Web em `http://localhost:3000`. Atalho: `iniciaFront.bat`.
+
+### Mobile (Expo)
+
+```powershell
+cd mobile
+npm install
+npx expo start
+```
+
+O `API_BASE` padrão aponta para o IP Tailscale configurado em `src/lib/api.ts`. Para sobrescrever (por exemplo, durante desenvolvimento em rede local), crie `mobile/.env`:
+
+```env
+EXPO_PUBLIC_API_BASE=http://192.168.0.10:8000
+```
 
 ## 📁 Estrutura do Projeto
 
 ```
 Manhwa/
-├── backend/
-│   ├── main.py              # API FastAPI
-│   ├── requirements.txt     # Dependências Python
-│   ├── manhwas.json        # Arquivo de dados (gerado automaticamente)
+├── backend/                 # FastAPI + PostgreSQL + Telethon
+│   ├── main.py              # API e rotas
+│   ├── database.py          # Engine async SQLAlchemy
+│   ├── models.py            # Manhwa, ChapterProgress (SQLAlchemy)
+│   ├── telegram_scraper.py  # Scraping + download de .cbz
+│   ├── init_db.py           # Criação/reset das tabelas
+│   ├── requirements.txt
 │   └── README.md
 │
-└── frontend/
-    ├── app/
-    │   ├── layout.tsx       # Layout principal
-    │   ├── page.tsx         # Página inicial
-    │   └── globals.css      # Estilos globais
-    ├── components/
-    │   ├── ManhwaCard.tsx   # Card de manhwa
-    │   └── AddManhwaModal.tsx # Modal para adicionar
-    ├── types/
-    │   └── manhwa.ts        # Tipos TypeScript
-    ├── package.json
-    ├── tsconfig.json
-    ├── tailwind.config.ts
-    └── next.config.js
+├── frontend/                # Next.js 14 (web)
+│   ├── app/                 # Rotas (App Router)
+│   ├── components/          # ManhwaCard, AddManhwaModal, CbzReader
+│   ├── lib/api.ts           # API base dinâmico (window.location.hostname)
+│   └── types/manhwa.ts
+│
+├── mobile/                  # Expo SDK 54 (React Native)
+│   ├── src/app/             # Rotas (expo-router)
+│   ├── src/components/      # ManhwaCard, AddManhwaModal, CbzReader
+│   ├── src/lib/api.ts       # API base (EXPO_PUBLIC_API_BASE)
+│   └── src/types/manhwa.ts
+│
+├── AGENT_INSTRUCTIONS.md    # Guia para agentes de IA
+├── iniciaBack.bat           # Inicia o backend
+└── iniciaFront.bat          # Inicia o frontend
 ```
 
 ## 🔧 Próximas Melhorias
 
-- [ ] Migrar para banco de dados (PostgreSQL/SQLite)
 - [ ] Autenticação de usuários
-- [ ] Upload de capas de manhwas
 - [ ] Sistema de busca avançada
 - [ ] Estatísticas de leitura
 - [ ] Dark/Light mode toggle
 - [ ] Exportar/Importar lista
 - [ ] Integração com APIs de manhwas (MAL, AniList, etc)
 - [ ] PWA (Progressive Web App)
+- [ ] Unificar tipos compartilhados em pacote único
 
-## 📝 API Endpoints
+## 📝 API Endpoints (resumido)
 
-### GET /api/manhwas
-Retorna todos os manhwas (opcional: filtrar por status)
+CRUD básico:
+- `GET    /api/manhwas` — lista todos (filtro opcional `?status=...`)
+- `GET    /api/manhwas/{id}` — detalhe
+- `POST   /api/manhwas` — criar
+- `PUT    /api/manhwas/{id}` — atualizar
+- `DELETE /api/manhwas/{id}` — excluir
+- `PATCH  /api/manhwas/{id}/current-chapter` — atualiza capítulo atual
 
-### GET /api/manhwas/{id}
-Retorna um manhwa específico
+Leitor CBZ:
+- `GET /api/manhwas/{id}/files` — lista `.cbz` em `DOWNLOAD_DIR/{titulo}/`
+- `GET /api/manhwas/{id}/read/{filename}` — info do CBZ (nº de páginas)
+- `GET /api/manhwas/{id}/read/{filename}/page/{n}` — serve uma página
+- `GET /PUT /api/manhwas/{id}/read/{filename}/scroll` — posição de scroll
 
-### POST /api/manhwas
-Cria um novo manhwa
+Telegram:
+- `POST /api/telegram/import` — importa manhwas de um tópico
+- `POST /api/manhwas/download-all` — baixa `.cbz` de todos com `download=true`
+- `GET  /api/telegram/test` — testa credenciais do `.env`
 
-### PUT /api/manhwas/{id}
-Atualiza um manhwa existente
-
-### DELETE /api/manhwas/{id}
-Deleta um manhwa
-
-## 🎨 Screenshots
-
-*Screenshots serão adicionados após a primeira execução*
+Documentação completa interativa: `http://localhost:8000/docs`.
 
 ## 📄 Licença
 
