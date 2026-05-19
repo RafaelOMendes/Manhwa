@@ -1,11 +1,35 @@
+import { useEffect, useRef } from 'react';
+import { AppState, AppStateStatus } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { cleanupExpired, trimAllCached } from '../lib/cache';
+import { drainQueue } from '../lib/sync-queue';
 
 export default function RootLayout() {
+  const appState = useRef(AppState.currentState);
+
+  useEffect(() => {
+    // Startup: limpa cached expirado + trim de 5-caps + drena fila offline
+    cleanupExpired().catch(err => console.warn('[cache] cleanup falhou:', err));
+    trimAllCached().catch(err => console.warn('[cache] trim falhou:', err));
+    drainQueue().catch(err => console.warn('[sync] drain inicial falhou:', err));
+
+    // Quando o app voltar do background, drena a fila (usuário pode ter voltado online)
+    const sub = AppState.addEventListener('change', (next: AppStateStatus) => {
+      const prev = appState.current;
+      appState.current = next;
+      if (prev.match(/inactive|background/) && next === 'active') {
+        drainQueue().catch(err => console.warn('[sync] drain foreground falhou:', err));
+      }
+    });
+
+    return () => sub.remove();
+  }, []);
+
   return (
     <>
       <StatusBar style="light" />
-      <Stack screenOptions={{ 
+      <Stack screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: '#262525' }
       }}>

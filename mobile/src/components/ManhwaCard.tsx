@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, Modal, ScrollView, Linking, ActivityIndicator } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, TouchableOpacity, Alert, Modal, ScrollView, Linking, ActivityIndicator, LayoutChangeEvent } from 'react-native';
 import { Image } from 'expo-image';
-import { Star, Trash2, ExternalLink, Heart, FileText, X, FolderOpen, CheckCircle2, ChevronDown } from 'lucide-react-native';
+import { Star, Trash2, ExternalLink, Heart, FileText, X, FolderOpen, CheckCircle2, ChevronDown, Download as DownloadIcon } from 'lucide-react-native';
 import { Manhwa } from '../types/manhwa';
 import CbzReader from './CbzReader';
 import { API_BASE } from '../lib/api';
+import {
+    getLocalChaptersSet,
+    removeManhwaLocal,
+    getLocalCoverUri,
+    saveManhwaFiles,
+    loadManhwaFiles,
+    getReadChaptersSet,
+    migrateCumulativeIfNeeded,
+} from '../lib/cache';
 
 interface CbzFile {
     name: string;
@@ -27,6 +36,57 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
     const [readingChapterNum, setReadingChapterNum] = useState<number | undefined>();
     const [currentChapter, setCurrentChapter] = useState(manhwa.current_chapter || 0);
     const [showStatusPicker, setShowStatusPicker] = useState(false);
+    const [localFiles, setLocalFiles] = useState<Set<string>>(new Set());
+    const [readChapters, setReadChapters] = useState<Set<string>>(new Set());
+    const [localCoverUri, setLocalCoverUri] = useState<string | null>(null);
+
+    // Re-checa a cover local sempre que o manhwa mudar de identidade (após fetchManhwas / sync)
+    useEffect(() => {
+        setLocalCoverUri(getLocalCoverUri(manhwa.id));
+    }, [manhwa]);
+
+    const filesScrollRef = useRef<ScrollView>(null);
+    const itemYsRef = useRef<Record<number, number>>({});
+    const hasAutoScrolledRef = useRef(false);
+
+    // Reseta o estado de autoscroll a cada abertura do menu
+    useEffect(() => {
+        if (showFiles) {
+            itemYsRef.current = {};
+            hasAutoScrolledRef.current = false;
+        }
+    }, [showFiles]);
+
+    const handleItemLayout = (index: number) => (e: LayoutChangeEvent) => {
+        itemYsRef.current[index] = e.nativeEvent.layout.y;
+    };
+
+    // Autoscroll para o primeiro capítulo não-lido (per-chapter, baseado em readChapters)
+    useEffect(() => {
+        if (!showFiles || isLoadingFiles || hasAutoScrolledRef.current || files.length === 0) return;
+
+        // Índice do primeiro filename que NÃO está em readChapters
+        const firstUnreadIdx = files.findIndex(f => !readChapters.has(f.name));
+        // Se não tem unread ou o primeiro unread já é o topo, não precisa rolar
+        if (firstUnreadIdx <= 0) return;
+
+        let attempts = 0;
+        const tryScroll = () => {
+            const y = itemYsRef.current[firstUnreadIdx];
+            if (y !== undefined) {
+                hasAutoScrolledRef.current = true;
+                filesScrollRef.current?.scrollTo({
+                    y: Math.max(0, y - 60),
+                    animated: true,
+                });
+            } else if (attempts < 8) {
+                attempts++;
+                setTimeout(tryScroll, 50);
+            }
+        };
+        const initial = setTimeout(tryScroll, 320);
+        return () => clearTimeout(initial);
+    }, [showFiles, isLoadingFiles, files.length, readChapters]);
 
     const hasLink = manhwa.notes && manhwa.notes.startsWith('http');
     const hasTelegramLink = manhwa.notes && manhwa.notes.includes('t.me');
@@ -35,14 +95,56 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
         if (manhwa.download && hasTelegramLink) {
             setIsLoadingFiles(true);
             setShowFiles(true);
+
             try {
-                const response = await fetch(`${API_BASE}/api/manhwas/${manhwa.id}/files`);
-                const data = await response.json();
-                setFiles(data.files || []);
-                setCurrentChapter(data.current_chapter || 0);
-            } catch (error) {
-                console.error('Erro ao buscar arquivos:', error);
-                setFiles([]);
+                // Local sempre roda (independente de rede)
+                const [local, readSet] = await Promise.all([
+                    getLocalChaptersSet(manhwa.id),
+                    getReadChaptersSet(manhwa.id),
+                ]);
+                setLocalFiles(local);
+                setReadChapters(readSet);
+
+                let loadedFiles: { name: string; size_mb: number; chapter_number: number }[] = [];
+                let loadedCurrentChapter = 0;
+
+                try {
+                    const response = await fetch(`${API_BASE}/api/manhwas/${manhwa.id}/files`);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const data = await response.json();
+                    loadedFiles = data.files || [];
+                    loadedCurrentChapter = data.current_chapter || 0;
+                    saveManhwaFiles(manhwa.id, loadedFiles).catch(() => {});
+                } catch (error) {
+                    console.warn('[fetch] /files falhou, usando cache offline:', error);
+                    const saved = await loadManhwaFiles(manhwa.id).catch(() => null);
+                    if (saved && saved.length > 0) {
+                        loadedFiles = saved.filter(f => local.has(f.name));
+                    } else {
+                        loadedFiles = [...local].sort().map((name, i) => ({
+                            name,
+                            size_mb: 0,
+                            chapter_number: i + 1,
+                        }));
+                    }
+                    loadedCurrentChapter = manhwa.current_chapter || 0;
+                }
+
+                setFiles(loadedFiles);
+                setCurrentChapter(loadedCurrentChapter);
+
+                // Migração one-shot: importa reads cumulativos pro set per-chapter
+                if (loadedCurrentChapter > 0 && loadedFiles.length > 0) {
+                    try {
+                        const mig = await migrateCumulativeIfNeeded(manhwa.id, loadedCurrentChapter, loadedFiles);
+                        if (mig.migrated > 0) {
+                            const updated = await getReadChaptersSet(manhwa.id);
+                            setReadChapters(updated);
+                        }
+                    } catch (e) {
+                        console.warn('[cache] migrateCumulativeIfNeeded:', e);
+                    }
+                }
             } finally {
                 setIsLoadingFiles(false);
             }
@@ -81,12 +183,18 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
     const toggleDownload = async () => {
         if (isTogglingDownload) return;
         setIsTogglingDownload(true);
+        const wasDownload = manhwa.download;
         try {
             await fetch(`${API_BASE}/api/manhwas/${manhwa.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...manhwa, download: !manhwa.download }),
+                body: JSON.stringify({ ...manhwa, download: !wasDownload }),
             });
+            // Desligando sync → apaga tudo localmente
+            if (wasDownload) {
+                await removeManhwaLocal(manhwa.id);
+                setLocalFiles(new Set());
+            }
             onUpdate();
         } catch (error) {
             console.error('Erro ao alterar download:', error);
@@ -109,12 +217,20 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
         }
     };
 
-    const handleChapterRead = (chapterNum: number) => {
-        setCurrentChapter(chapterNum);
+    const handleChapterRead = (chapterNum: number, filename: string) => {
+        // Mantém o currentChapter cumulativo (usado no card "Cap: X/Y" e no servidor),
+        // mas marca per-chapter pra UI da lista.
+        if (chapterNum > currentChapter) setCurrentChapter(chapterNum);
+        setReadChapters(prev => {
+            if (prev.has(filename)) return prev;
+            const next = new Set(prev);
+            next.add(filename);
+            return next;
+        });
     };
 
-    const isChapterRead = (index: number): boolean => {
-        return index + 1 <= currentChapter;
+    const isChapterRead = (filename: string): boolean => {
+        return readChapters.has(filename);
     };
 
     const getStatusBadge = () => {
@@ -137,14 +253,13 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
         return 'Planejo Ler';
     };
 
-    const readCount = files.filter((_, i) => isChapterRead(i)).length;
+    const readCount = files.filter(f => isChapterRead(f.name)).length;
 
-    // Fix: prefix API_BASE for relative URLs (covers served by the backend)
-    const imageUrl = manhwa.cover_url
-        ? (manhwa.cover_url.startsWith('/')
-            ? `${API_BASE}${manhwa.cover_url}`
-            : manhwa.cover_url)
-        : null;
+    // Prefere a cover local (modo offline funciona); senão, fallback pra remota
+    const imageUrl = localCoverUri
+        ?? (manhwa.cover_url
+            ? (manhwa.cover_url.startsWith('/') ? `${API_BASE}${manhwa.cover_url}` : manhwa.cover_url)
+            : null);
 
     return (
         <>
@@ -276,17 +391,21 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
             <Modal visible={showFiles} transparent={true} animationType="fade" onRequestClose={() => setShowFiles(false)}>
                 <View className="flex-1 bg-black/70 justify-center p-4">
                     <View className="bg-[#1f1c1c] rounded-lg border border-gray-800 max-h-[80%] overflow-hidden flex-1 shadow-2xl">
-                        <View className="p-4 border-b border-gray-800 flex-row items-start justify-between">
-                            <View className="flex-row items-start flex-1 mr-2">
-                                <FolderOpen size={18} color="#ed4545" style={{ marginTop: 2, marginRight: 8 }} />
-                                <Text className="text-white font-bold flex-1" numberOfLines={2}>{manhwa.title}</Text>
+                        <View className="p-4 border-b border-gray-800 flex-row items-start justify-between gap-4">
+                            <View className="flex-row items-start flex-1 gap-2">
+                                <FolderOpen size={18} color="#ed4545" style={{ marginTop: 2 }} />
+                                <Text className="text-white font-semibold flex-1" numberOfLines={2}>{manhwa.title}</Text>
                             </View>
                             <TouchableOpacity onPress={() => setShowFiles(false)} className="p-1">
                                 <X size={20} color="#9ca3af" />
                             </TouchableOpacity>
                         </View>
 
-                        <ScrollView className="p-4" contentContainerStyle={{ paddingBottom: 24 }}>
+                        <ScrollView
+                            ref={filesScrollRef}
+                            className="p-4"
+                            contentContainerStyle={{ paddingBottom: 24 }}
+                        >
                             {isLoadingFiles ? (
                                 <View className="py-8 items-center">
                                     <ActivityIndicator size="small" color="#3b82f6" style={{ marginBottom: 12 }} />
@@ -296,40 +415,59 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                                 <View className="py-8 items-center">
                                     <FileText size={32} color="#6b7280" style={{ marginBottom: 12, opacity: 0.5 }} />
                                     <Text className="text-gray-500 text-center">Nenhum arquivo baixado ainda.</Text>
-                                    <Text className="text-xs text-gray-600 text-center mt-1">Sincronize para baixar.</Text>
+                                    <Text className="text-xs text-gray-600 text-center mt-1">Clique em "Sincronizar" para baixar os capítulos.</Text>
                                 </View>
                             ) : (
                                 <View>
                                     <Text className="text-xs text-gray-500 mb-3">
-                                        {files.length} capítulo(s) baixado(s)
-                                        {readCount > 0 && <Text className="text-green-400"> · {readCount} lido(s)</Text>}
+                                        {files.length} capítulo{files.length > 1 ? 's' : ''} baixado{files.length > 1 ? 's' : ''}
+                                        {readCount > 0 && (
+                                            <Text className="text-green-400"> · {readCount} lido{readCount > 1 ? 's' : ''}</Text>
+                                        )}
                                     </Text>
                                     {files.map((file, i) => {
-                                        const read = isChapterRead(i);
+                                        const read = isChapterRead(file.name);
                                         const chapterNumber = i + 1;
                                         return (
                                             <TouchableOpacity
                                                 key={i}
+                                                activeOpacity={0.75}
+                                                onLayout={handleItemLayout(i)}
                                                 onPress={() => {
                                                     setShowFiles(false);
                                                     setReadingChapterNum(chapterNumber);
                                                     setReadingFile(file.name);
                                                 }}
-                                                className={`flex-row items-center gap-3 px-3 py-2 rounded-md border mb-2 ${read ? 'bg-green-950/20 border-green-800/40' : 'bg-[#262525] border-gray-800/50'}`}
+                                                style={{
+                                                    marginBottom: 8,
+                                                    paddingVertical: 11,
+                                                    paddingHorizontal: 14,
+                                                    flexDirection: 'row',
+                                                    alignItems: 'center',
+                                                    gap: 10,
+                                                    borderRadius: 6,
+                                                    borderWidth: 1,
+                                                    backgroundColor: read ? '#142119' : '#262525',
+                                                    borderColor: read ? '#14532d' : '#1f2937',
+                                                }}
                                             >
                                                 {read ? (
                                                     <CheckCircle2 size={16} color="#4ade80" />
                                                 ) : (
                                                     <FileText size={16} color="#60a5fa" />
                                                 )}
-                                                <View className="flex-1 flex-row items-center">
-                                                    <Text className="text-gray-500 font-mono text-xs mr-2">#{chapterNumber}</Text>
-                                                    <Text className={`text-sm flex-1 ${read ? 'text-green-300/80' : 'text-white'}`} numberOfLines={1}>
-                                                        {file.name}
-                                                    </Text>
-                                                </View>
+                                                <Text
+                                                    className={`text-sm flex-1 ${read ? 'text-green-300/80' : 'text-white'}`}
+                                                    numberOfLines={1}
+                                                >
+                                                    <Text className="text-gray-500 font-mono text-xs">#{chapterNumber} </Text>
+                                                    {file.name}
+                                                </Text>
                                                 {read && (
-                                                    <Text className="text-[10px] text-green-500 uppercase tracking-wider font-medium mr-2">Lido</Text>
+                                                    <Text className="text-[10px] text-green-500 uppercase tracking-wider font-medium">Lido</Text>
+                                                )}
+                                                {localFiles.has(file.name) && (
+                                                    <DownloadIcon size={12} color="#60a5fa" />
                                                 )}
                                                 <Text className="text-xs text-gray-500">{file.size_mb} MB</Text>
                                             </TouchableOpacity>

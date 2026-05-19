@@ -53,7 +53,8 @@ mobile/
     │   ├── AddManhwaModal.tsx# Modal de criação/edição de manhwa
     │   └── CbzReader.tsx     # Leitor nativo de arquivos CBZ (capítulos)
     ├── lib/
-    │   └── api.ts            # BASE_URL da API (Tailscale: http://100.78.119.19:8000)
+    │   ├── api.ts            # BASE_URL da API (Tailscale: http://100.78.119.19:8000)
+    │   └── cache.ts          # Cache local de capítulos (AsyncStorage + FileSystem)
     ├── constants/
     │   └── theme.ts          # Paleta de cores (dark/light), fontes e espaçamentos
     ├── hooks/
@@ -72,9 +73,11 @@ mobile/
 #### 🖥️ Modo Tela Cheia (Imersivo) — apenas no leitor CBZ
 O modo imersivo (sem barra de status e sem barra de navegação) é ativado **somente ao abrir o `CbzReader`** e restaurado ao fechar. O restante do app exibe as barras normalmente.
 - Implementado em `src/components/CbzReader.tsx`:
+  - `<Modal statusBarTranslucent navigationBarTranslucent>` — faz o modal renderizar atrás da barra de status (área do notch/câmera) e da barra de navegação no Android.
   - `<StatusBar hidden={true} />` dentro do `<Modal>` — oculta a barra de status superior apenas durante a leitura.
   - `NavigationBar.setVisibilityAsync('hidden')` no `useEffect` de montagem — oculta a barra inferior ao abrir o reader.
   - O `return` do mesmo `useEffect` chama `setVisibilityAsync('visible')` — restaura a barra ao fechar o reader.
+  - O header e o botão "voltar ao topo" usam `useSafeAreaInsets()` para não ficarem embaixo do notch/gesture bar quando visíveis.
 - Usa o pacote `expo-navigation-bar` (já instalado).
 - **Para alterar:** edite o `useEffect` de imersivo e o `<StatusBar>` dentro de `src/components/CbzReader.tsx`.
 - **Atenção:** se criar novas telas com modal em tela cheia, aplique o mesmo padrão localizado (não globalmente no `_layout.tsx`).

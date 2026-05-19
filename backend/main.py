@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import time
 from fastapi import FastAPI, HTTPException, Depends
-from fastapi.responses import Response
+from fastapi.responses import Response, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from typing import List, Optional
@@ -307,6 +307,32 @@ async def get_cbz_info(manhwa_id: int, filename: str, db: AsyncSession = Depends
         ])
 
     return {"filename": filename, "total_pages": len(pages), "pages": list(range(len(pages)))}
+
+@app.get("/api/manhwas/{manhwa_id}/read/{filename}/download")
+async def download_cbz_file(manhwa_id: int, filename: str, db: AsyncSession = Depends(get_db)):
+    """Serve o .cbz inteiro pra download (usado pelo cache local do mobile)."""
+    result = await db.execute(select(ManhwaModel).where(ManhwaModel.id == manhwa_id))
+    manhwa = result.scalar_one_or_none()
+    if not manhwa:
+        print(f"📵 [APP-DOWNLOAD] 404 — manhwa_id={manhwa_id} não existe")
+        raise HTTPException(status_code=404, detail="Manhwa não encontrado")
+
+    safe_name = "".join(c for c in manhwa.title if c.isalnum() or c in " _-().").strip() or "Manhwa_Desconhecido"
+    cbz_path = os.path.join(DOWNLOAD_DIR, safe_name, filename)
+
+    if not os.path.exists(cbz_path):
+        print(f"📵 [APP-DOWNLOAD] 404 — {manhwa.title} / {filename} (não está em disco)")
+        raise HTTPException(status_code=404, detail="Arquivo não encontrado")
+
+    size_mb = os.path.getsize(cbz_path) / (1024 * 1024)
+    print(f"📤 [APP-DOWNLOAD] {manhwa.title} / {filename} → enviando {size_mb:.1f}MB pro celular")
+
+    return FileResponse(
+        cbz_path,
+        media_type="application/zip",
+        filename=filename,
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
 
 @app.get("/api/manhwas/{manhwa_id}/read/{filename}/page/{page_num}")
 async def get_cbz_page(manhwa_id: int, filename: str, page_num: int, db: AsyncSession = Depends(get_db)):

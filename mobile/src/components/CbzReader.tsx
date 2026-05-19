@@ -8,6 +8,8 @@ import { X, ChevronUp, ChevronLeft, ChevronRight, CheckCircle, SkipForward } fro
 import { StatusBar } from 'expo-status-bar';
 import * as NavigationBar from 'expo-navigation-bar';
 import { API_BASE } from '../lib/api';
+import { getLocalChapter, markChapterReadLocal, saveLocalScroll, getLocalScroll } from '../lib/cache';
+import { enqueueChapterRead, enqueueScroll } from '../lib/sync-queue';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface ChapterFile {
@@ -21,7 +23,7 @@ interface CbzReaderProps {
     chapterNumber?: number;
     files?: ChapterFile[];
     onClose: () => void;
-    onChapterRead?: (chapterNumber: number) => void;
+    onChapterRead?: (chapterNumber: number, filename: string) => void;
     onNavigate?: (filename: string, chapterNumber: number) => void;
 }
 
@@ -44,6 +46,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     const [showToast, setShowToast] = useState(false);
     const [aspectRatios, setAspectRatios] = useState<Record<string, number>>({});
     const [savedScrollOffset, setSavedScrollOffset] = useState(0);
+    const [localPageUri, setLocalPageUri] = useState<((page: number) => string) | null>(null);
 
     const insets = useSafeAreaInsets();
     const flatListRef = useRef<FlatList>(null);
@@ -80,22 +83,40 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         hasMarkedRef.current = false;
         userHasInteracted.current = false;
         setSavedScrollOffset(0);
+        setLocalPageUri(null);
 
         const fetchInfo = async () => {
             try {
-                const res = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}`);
-                const data = await res.json();
-                setTotalPages(data.total_pages);
+                // 1. Info do chapter: local first, server apenas se não-baixado
+                const local = await getLocalChapter(manhwaId, filename);
+                const isLocal = local.available && !!local.totalPages && !!local.getPageUri;
 
-                // Fetch saved scroll position (same API as web)
-                try {
-                    const scrollRes = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/scroll`);
-                    const scrollData = await scrollRes.json();
-                    if (scrollData.scroll_position > 0) {
-                        setSavedScrollOffset(scrollData.scroll_position);
+                if (isLocal) {
+                    setTotalPages(local.totalPages!);
+                    setLocalPageUri(() => local.getPageUri!);
+                } else {
+                    const res = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}`);
+                    const data = await res.json();
+                    setTotalPages(data.total_pages);
+                }
+
+                // 2. Scroll: SEMPRE tenta local primeiro (instant, funciona offline)
+                const localScroll = await getLocalScroll(manhwaId, filename);
+                if (localScroll !== null && localScroll > 0) {
+                    setSavedScrollOffset(localScroll);
+                } else {
+                    // Sem scroll local: tenta servidor (hidrata local na primeira leitura)
+                    try {
+                        const scrollRes = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/scroll`);
+                        const scrollData = await scrollRes.json();
+                        if (scrollData.scroll_position > 0) {
+                            setSavedScrollOffset(scrollData.scroll_position);
+                            // Espelha pro local pra próximas leituras (offline OK)
+                            saveLocalScroll(manhwaId, filename, scrollData.scroll_position).catch(() => {});
+                        }
+                    } catch {
+                        // Offline ou erro — começa do topo
                     }
-                } catch {
-                    // Scroll endpoint may not exist — ignore
                 }
             } catch (error) {
                 console.error('Erro ao carregar CBZ:', error);
@@ -158,22 +179,32 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         hasMarkedRef.current = true;
         setMarkedAsRead(true);
 
+        // 1. Move local pending → cached (sempre, mesmo offline)
+        markChapterReadLocal(manhwaId, filename).catch(err =>
+            console.warn('[cache] markChapterReadLocal:', err)
+        );
+
+        // 2. UI feedback imediato (filename também, pra rastreamento per-chapter no card)
+        onChapterRead?.(chapNum, filename);
+        setShowToast(true);
+        showToastAnimation();
+        setTimeout(() => setShowToast(false), 3500);
+
+        // 3. Sincroniza com servidor; enfileira se offline/falhar
         try {
-            await fetch(`${API_BASE}/api/manhwas/${manhwaId}/current-chapter`, {
+            const res = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/current-chapter`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ current_chapter: chapNum }),
             });
-            onChapterRead?.(chapNum);
-            setShowToast(true);
-            showToastAnimation();
-            setTimeout(() => setShowToast(false), 3500);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
         } catch (error) {
-            console.error('Erro ao marcar capítulo como lido:', error);
-            hasMarkedRef.current = false;
-            setMarkedAsRead(false);
+            console.warn('[sync] PATCH current-chapter falhou, enfileirando:', error);
+            enqueueChapterRead(manhwaId, chapNum).catch(err =>
+                console.warn('[sync] enqueueChapterRead:', err)
+            );
         }
-    }, [manhwaId, chapNum, onChapterRead]);
+    }, [manhwaId, chapNum, filename, onChapterRead]);
 
     const handleEndReached = () => {
         if (totalPages > 0 && !loading && !reachedEnd) {
@@ -185,12 +216,28 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     const saveScrollPosition = useCallback((offset: number) => {
         if (!userHasInteracted.current) return;
         if (scrollSaveTimeout.current) clearTimeout(scrollSaveTimeout.current);
-        scrollSaveTimeout.current = setTimeout(() => {
-            fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/scroll`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ scroll_position: Math.floor(offset) }),
-            }).catch(err => console.error('Erro ao salvar scroll:', err));
+        scrollSaveTimeout.current = setTimeout(async () => {
+            const position = Math.floor(offset);
+
+            // 1. Sempre persiste local (instantâneo, funciona offline)
+            saveLocalScroll(manhwaId, filename, position).catch(() => {});
+
+            // 2. Tenta servidor; se falhar, enfileira pra eventual sync
+            try {
+                const res = await fetch(
+                    `${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/scroll`,
+                    {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ scroll_position: position }),
+                    }
+                );
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            } catch (err) {
+                enqueueScroll(manhwaId, filename, position).catch(e =>
+                    console.warn('[sync] enqueueScroll:', e)
+                );
+            }
         }, 500);
     }, [manhwaId, filename]);
 
@@ -210,7 +257,9 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
 
     const pages = Array.from({ length: totalPages }, (_, i) => ({
         id: i.toString(),
-        url: `${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/page/${i}`,
+        url: localPageUri
+            ? localPageUri(i)
+            : `${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/page/${i}`,
     }));
 
     const renderFooter = () => {
@@ -257,7 +306,14 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     };
 
     return (
-        <Modal visible={true} transparent={false} animationType="slide" onRequestClose={onClose}>
+        <Modal
+            visible={true}
+            transparent={false}
+            animationType="slide"
+            onRequestClose={onClose}
+            statusBarTranslucent={true}
+            navigationBarTranslucent={true}
+        >
             <StatusBar hidden={true} />
             <View style={{ flex: 1, backgroundColor: '#000' }}>
 
