@@ -11,3 +11,4 @@ manhwas.json
 *.db
 .env
 manhwa_session.session
+*.session-journal
