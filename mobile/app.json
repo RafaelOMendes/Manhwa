@@ -8,12 +8,24 @@
     "scheme": "manhwa-tracker",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#262525",
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/7f530189-0ad5-4407-88e7-ed767b860d6f"
+    },
     "ios": {
       "icon": "./assets/expo.icon",
       "supportsTablet": true
     },
     "android": {
       "usesCleartextTraffic": true,
+      "permissions": [
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_DATA_SYNC",
+        "POST_NOTIFICATIONS",
+        "WAKE_LOCK"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#262525",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -45,7 +57,8 @@
             "usesCleartextTraffic": true
           }
         }
-      ]
+      ],
+      "./plugins/withNotifeeForegroundServiceType.js"
     ],
     "experiments": {
       "typedRoutes": true,

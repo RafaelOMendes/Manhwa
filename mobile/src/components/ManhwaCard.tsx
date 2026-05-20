@@ -26,7 +26,7 @@ interface ManhwaCardProps {
     onUpdate: () => void;
 }
 
-export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
+function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
     const [isDeleting, setIsDeleting] = useState(false);
     const [isTogglingDownload, setIsTogglingDownload] = useState(false);
     const [showFiles, setShowFiles] = useState(false);
@@ -500,3 +500,5 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
         </>
     );
 }
+
+export default React.memo(ManhwaCard);

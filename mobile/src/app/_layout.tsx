@@ -4,6 +4,8 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { cleanupExpired, trimAllCached } from '../lib/cache';
 import { drainQueue } from '../lib/sync-queue';
+// Side-effect: registra o handler do foreground service de download (uma vez).
+import '../lib/background-download';
 
 export default function RootLayout() {
   const appState = useRef(AppState.currentState);
@@ -34,6 +36,7 @@ export default function RootLayout() {
         contentStyle: { backgroundColor: '#262525' }
       }}>
         <Stack.Screen name="index" />
+        <Stack.Screen name="downloads" />
       </Stack>
     </>
   );

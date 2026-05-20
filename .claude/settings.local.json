@@ -3,7 +3,10 @@
     "allow": [
       "Bash(npx tsc *)",
       "Bash(npx expo-doctor *)",
-      "Bash(npx expo *)"
+      "Bash(npx expo *)",
+      "Bash(xargs grep -l \"class Directory\\\\|list\\(\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('app.json','utf8'\\)\\); JSON.parse\\(require\\('fs'\\).readFileSync\\('eas.json','utf8'\\)\\); console.log\\('✓ app.json e eas.json válidos'\\)\")",
+      "Bash(node -e \"console.log\\(require\\('@notifee/react-native/package.json'\\).version\\)\")"
     ]
   }
 }

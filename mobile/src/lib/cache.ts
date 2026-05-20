@@ -214,6 +214,13 @@ export interface SyncResult {
     errors: number;
 }
 
+export interface SyncProgress {
+    doneChapters: number;
+    totalChapters: number;
+    doneMB: number;
+    totalMB: number;
+}
+
 /**
  * Baixa a cover de um manhwa pra disco (uma vez). Idempotente.
  */
@@ -247,8 +254,9 @@ export function getLocalCoverUri(manhwaId: number): string | null {
 export async function syncManhwaLocal(
     manhwaId: number,
     currentChapter: number,
-    files: { name: string; chapter_number: number }[],
-    coverUrl?: string | null
+    files: { name: string; chapter_number: number; size_mb?: number }[],
+    coverUrl?: string | null,
+    onProgress?: (p: SyncProgress) => void
 ): Promise<SyncResult> {
     const tSync = Date.now();
     console.log(`[cache] 🔄 sync manhwa #${manhwaId} — ${files.length} caps no server, current_chapter=${currentChapter}`);
@@ -303,6 +311,14 @@ export async function syncManhwaLocal(
     const queue = [...toDownload];
     const downloaded: { filename: string; totalPages: number }[] = [];
 
+    // Progresso por capítulo + por MB (size_mb vem do endpoint /files)
+    const sizeByName = new Map(files.map(f => [f.name, f.size_mb ?? 0]));
+    const totalChapters = toDownload.length;
+    const totalMB = toDownload.reduce((s, fn) => s + (sizeByName.get(fn) ?? 0), 0);
+    let doneChapters = 0;
+    let doneMB = 0;
+    onProgress?.({ doneChapters, totalChapters, doneMB, totalMB });
+
     const worker = async () => {
         while (queue.length > 0) {
             const fn = queue.shift();
@@ -310,6 +326,9 @@ export async function syncManhwaLocal(
             try {
                 const totalPages = await downloadChapter(manhwaId, fn);
                 downloaded.push({ filename: fn, totalPages });
+                doneChapters++;
+                doneMB += sizeByName.get(fn) ?? 0;
+                onProgress?.({ doneChapters, totalChapters, doneMB, totalMB });
             } catch (e) {
                 console.warn(`[cache] download falhou pra ${fn}:`, e);
                 result.errors++;
@@ -553,6 +572,42 @@ export async function loadManhwaFiles(manhwaId: number): Promise<CbzFileSnapshot
     } catch {
         return null;
     }
+}
+
+// ============================================================
+// Uso de armazenamento (bytes em disco)
+// ============================================================
+
+function dirSizeBytes(dir: Directory): number {
+    let total = 0;
+    let entries: (File | Directory)[];
+    try {
+        entries = dir.list();
+    } catch {
+        return 0;
+    }
+    for (const entry of entries) {
+        if (entry instanceof File) {
+            try { total += entry.size ?? 0; } catch {}
+        } else if (entry instanceof Directory) {
+            total += dirSizeBytes(entry);
+        }
+    }
+    return total;
+}
+
+/** Bytes totais ocupados por tudo que foi baixado (todos os manhwas). */
+export async function getStorageUsage(): Promise<number> {
+    const root = new Directory(Paths.document, 'manhwas');
+    if (!root.exists) return 0;
+    return dirSizeBytes(root);
+}
+
+/** Bytes ocupados localmente por um manhwa específico. */
+export async function getManhwaStorage(manhwaId: number): Promise<number> {
+    const dir = new Directory(Paths.document, 'manhwas', String(manhwaId));
+    if (!dir.exists) return 0;
+    return dirSizeBytes(dir);
 }
 
 /** Remove cached com readAt > 7 dias. */
