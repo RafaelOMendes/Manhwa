@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { X, ChevronUp, ChevronLeft, ChevronRight, CheckCircle, SkipForward } from 'lucide-react-native';
-import { StatusBar } from 'expo-status-bar';
+import { StatusBar, setStatusBarHidden } from 'expo-status-bar';
 import * as NavigationBar from 'expo-navigation-bar';
 import { API_BASE } from '../lib/api';
 import { getLocalChapter, markChapterReadLocal, saveLocalScroll, getLocalScroll } from '../lib/cache';
@@ -54,12 +54,14 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     const userHasInteracted = useRef(false);
     const scrollSaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // Modo imersivo: oculta barras ao abrir o reader e restaura ao fechar
+    // Modo imersivo: oculta status bar + barra de navegação ao abrir o reader
+    // (tela limpa) e restaura ao fechar.
     useEffect(() => {
+        setStatusBarHidden(true, 'fade');
         NavigationBar.setVisibilityAsync('hidden');
         NavigationBar.setBehaviorAsync('overlay-swipe');
         return () => {
-            // Restaura a barra de navegação ao fechar o reader
+            setStatusBarHidden(false, 'fade');
             NavigationBar.setVisibilityAsync('visible');
         };
     }, []);
@@ -92,26 +94,33 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                 const isLocal = local.available && !!local.totalPages && !!local.getPageUri;
 
                 if (isLocal) {
+                    // Capítulo baixado: carrega 100% local, NUNCA toca no backend
+                    // (nem pra páginas nem pra scroll) — funciona offline na hora.
                     setTotalPages(local.totalPages!);
                     setLocalPageUri(() => local.getPageUri!);
-                } else {
-                    const res = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}`);
-                    const data = await res.json();
-                    setTotalPages(data.total_pages);
+
+                    const localScroll = await getLocalScroll(manhwaId, filename);
+                    if (localScroll !== null && localScroll > 0) {
+                        setSavedScrollOffset(localScroll);
+                    }
+                    return;
                 }
 
-                // 2. Scroll: SEMPRE tenta local primeiro (instant, funciona offline)
+                // Não-baixado: precisa do servidor pras páginas
+                const res = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}`);
+                const data = await res.json();
+                setTotalPages(data.total_pages);
+
+                // Scroll: local primeiro (instant, offline); senão tenta servidor
                 const localScroll = await getLocalScroll(manhwaId, filename);
                 if (localScroll !== null && localScroll > 0) {
                     setSavedScrollOffset(localScroll);
                 } else {
-                    // Sem scroll local: tenta servidor (hidrata local na primeira leitura)
                     try {
                         const scrollRes = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/scroll`);
                         const scrollData = await scrollRes.json();
                         if (scrollData.scroll_position > 0) {
                             setSavedScrollOffset(scrollData.scroll_position);
-                            // Espelha pro local pra próximas leituras (offline OK)
                             saveLocalScroll(manhwaId, filename, scrollData.scroll_position).catch(() => {});
                         }
                     } catch {
@@ -398,6 +407,12 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                             saveScrollPosition(offset);
                         }}
                         scrollEventThrottle={250}
+                        // Evita a "tela preta" do Android: por padrão o FlatList
+                        // clipa itens fora da tela e eles voltam em branco/preto.
+                        removeClippedSubviews={false}
+                        windowSize={5}
+                        initialNumToRender={3}
+                        maxToRenderPerBatch={4}
                         renderItem={({ item }) => {
                             const ratio = aspectRatios[item.id] || 0.7;
                             const height = SCREEN_WIDTH / ratio;
@@ -407,6 +422,8 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                                         source={{ uri: item.url }}
                                         style={{ width: SCREEN_WIDTH, height }}
                                         contentFit="contain"
+                                        cachePolicy="memory-disk"
+                                        recyclingKey={item.id}
                                         transition={200}
                                         onLoad={(e) => {
                                             const { width, height } = e.source;

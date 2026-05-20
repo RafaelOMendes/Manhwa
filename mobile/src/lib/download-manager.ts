@@ -77,6 +77,22 @@ export interface DownloadResult {
     errors: number;
 }
 
+/** Marca um manhwa como "na fila/baixando" pra feedback imediato na UI. */
+export function markQueued(manhwaId: number): void {
+    const existing = state.progress[manhwaId];
+    if (!existing || existing.status !== 'downloading') {
+        state.progress[manhwaId] = {
+            status: 'downloading',
+            doneChapters: 0,
+            totalChapters: 0,
+            doneMB: 0,
+            totalMB: 0,
+        };
+        state.active = true;
+        emit();
+    }
+}
+
 /**
  * Baixa (sincroniza localmente) os capítulos não-lidos de um manhwa,
  * publicando progresso no store. `files` pode ser pré-carregado pra evitar

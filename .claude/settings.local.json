@@ -6,7 +6,9 @@
       "Bash(npx expo *)",
       "Bash(xargs grep -l \"class Directory\\\\|list\\(\\)\")",
       "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('app.json','utf8'\\)\\); JSON.parse\\(require\\('fs'\\).readFileSync\\('eas.json','utf8'\\)\\); console.log\\('✓ app.json e eas.json válidos'\\)\")",
-      "Bash(node -e \"console.log\\(require\\('@notifee/react-native/package.json'\\).version\\)\")"
+      "Bash(node -e \"console.log\\(require\\('@notifee/react-native/package.json'\\).version\\)\")",
+      "Bash(node -e \"try{console.log\\('edge-to-edge:', require\\('react-native-edge-to-edge/package.json'\\).version\\)}catch\\(e\\){console.log\\('no edge-to-edge'\\)}\")",
+      "Bash(node -e \"try{const m=require\\('react-native-edge-to-edge'\\); console.log\\('exports:', Object.keys\\(m\\).join\\(', '\\)\\)}catch\\(e\\){console.log\\('require failed', e.message\\)}\")"
     ]
   }
 }
