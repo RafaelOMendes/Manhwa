@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-    View, Text, TouchableOpacity, Modal, ActivityIndicator,
-    FlatList, Dimensions, StyleSheet, Animated,
+    View, Text, TouchableOpacity, ActivityIndicator,
+    FlatList, Dimensions, StyleSheet, Animated, BackHandler,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { X, ChevronUp, ChevronLeft, ChevronRight, CheckCircle, SkipForward } from 'lucide-react-native';
@@ -55,14 +55,21 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     const scrollSaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Modo imersivo: oculta status bar + barra de navegação ao abrir o reader
-    // (tela limpa) e restaura ao fechar.
+    // (tela limpa) e restaura ao fechar. Como o reader agora é renderizado na
+    // raiz (sem Modal), isso vale pra janela única da activity.
     useEffect(() => {
         setStatusBarHidden(true, 'fade');
         NavigationBar.setVisibilityAsync('hidden');
         NavigationBar.setBehaviorAsync('overlay-swipe');
+        // Botão voltar do Android fecha o leitor (antes era o onRequestClose do Modal).
+        const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+            onClose();
+            return true;
+        });
         return () => {
             setStatusBarHidden(false, 'fade');
             NavigationBar.setVisibilityAsync('visible');
+            sub.remove();
         };
     }, []);
 
@@ -75,7 +82,11 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     const currentIndex = files?.findIndex(f => f.name === filename) ?? -1;
     const prevChapter = files && currentIndex > 0 ? files[currentIndex - 1] : null;
     const nextChapter = files && currentIndex >= 0 && currentIndex < files.length - 1 ? files[currentIndex + 1] : null;
-    const chapNum = files && currentIndex >= 0 ? currentIndex + 1 : (chapterNumber ?? extractChapterNumber(filename));
+    // chapNum = POSIÇÃO real do capítulo na lista completa (chapter_number),
+    // não o índice na lista (que offline contém só os baixados). É esse valor
+    // que vai pro servidor como current_chapter.
+    const currentFile = files && currentIndex >= 0 ? files[currentIndex] : undefined;
+    const chapNum = currentFile?.chapter_number ?? chapterNumber ?? extractChapterNumber(filename);
 
     // Load chapter info + saved scroll position
     useEffect(() => {
@@ -216,7 +227,11 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     }, [manhwaId, chapNum, filename, onChapterRead]);
 
     const handleEndReached = () => {
-        if (totalPages > 0 && !loading && !reachedEnd) {
+        // Só marca como lido quando TODAS as páginas já carregaram (altura final
+        // do conteúdo). Senão, enquanto as imagens carregam, o conteúdo fica curto
+        // e o "fim" dispara antes de você ler de verdade.
+        const allPagesLoaded = totalPages > 0 && Object.keys(aspectRatios).length >= totalPages;
+        if (totalPages > 0 && !loading && !reachedEnd && allPagesLoaded) {
             setReachedEnd(true);
             markChapterAsRead();
         }
@@ -315,14 +330,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     };
 
     return (
-        <Modal
-            visible={true}
-            transparent={false}
-            animationType="slide"
-            onRequestClose={onClose}
-            statusBarTranslucent={true}
-            navigationBarTranslucent={true}
-        >
+        <View style={styles.fullscreen}>
             <StatusBar hidden={true} />
             <View style={{ flex: 1, backgroundColor: '#000' }}>
 
@@ -470,11 +478,17 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                     </TouchableOpacity>
                 )}
             </View>
-        </Modal>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
+    fullscreen: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: '#000',
+        zIndex: 1000,
+        elevation: 1000,
+    },
     header: {
         position: 'absolute',
         top: 0,

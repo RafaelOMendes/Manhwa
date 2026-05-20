@@ -4,6 +4,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { cleanupExpired, trimAllCached } from '../lib/cache';
 import { drainQueue } from '../lib/sync-queue';
+import ReaderHost from '../components/ReaderHost';
 // Side-effect: registra o handler do foreground service de download (uma vez).
 import '../lib/background-download';
 
@@ -38,6 +39,7 @@ export default function RootLayout() {
         <Stack.Screen name="index" />
         <Stack.Screen name="downloads" />
       </Stack>
+      <ReaderHost />
     </>
   );
 }
