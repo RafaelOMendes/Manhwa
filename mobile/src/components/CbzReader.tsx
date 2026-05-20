@@ -403,16 +403,38 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                         ListFooterComponent={renderFooter}
                         onScrollBeginDrag={() => { userHasInteracted.current = true; }}
                         onScroll={(e) => {
-                            const offset = e.nativeEvent.contentOffset.y;
-                            saveScrollPosition(offset);
+                            const { contentOffset, layoutMeasurement, contentSize } = e.nativeEvent;
+                            saveScrollPosition(contentOffset.y);
+                            // Marca "lido" ao chegar no fim — só depois de ter rolado
+                            // (offset > 0) e com conteúdo de fato rolável, pra não
+                            // disparar ao entrar no capítulo (conteúdo ainda curto).
+                            if (
+                                contentOffset.y > 0 &&
+                                contentSize.height > layoutMeasurement.height &&
+                                contentOffset.y + layoutMeasurement.height >= contentSize.height - 120
+                            ) {
+                                handleEndReached();
+                            }
                         }}
                         scrollEventThrottle={250}
+                        // Reaplica a posição salva enquanto as imagens carregam e o
+                        // conteúdo "assenta" (alturas medidas async). Para quando o
+                        // usuário interage.
+                        onContentSizeChange={(_w, h) => {
+                            if (
+                                savedScrollOffset > 0 &&
+                                !userHasInteracted.current &&
+                                h >= savedScrollOffset + 10
+                            ) {
+                                flatListRef.current?.scrollToOffset({ offset: savedScrollOffset, animated: false });
+                            }
+                        }}
                         // Evita a "tela preta" do Android: por padrão o FlatList
                         // clipa itens fora da tela e eles voltam em branco/preto.
                         removeClippedSubviews={false}
-                        windowSize={5}
-                        initialNumToRender={3}
-                        maxToRenderPerBatch={4}
+                        windowSize={9}
+                        initialNumToRender={5}
+                        maxToRenderPerBatch={6}
                         renderItem={({ item }) => {
                             const ratio = aspectRatios[item.id] || 0.7;
                             const height = SCREEN_WIDTH / ratio;

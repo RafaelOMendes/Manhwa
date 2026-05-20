@@ -2,7 +2,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Directory, File, Paths } from 'expo-file-system';
 import JSZip from 'jszip';
 import { API_BASE } from './api';
-import { getPendingChapterRead } from './sync-queue';
 
 interface PendingEntry {
     downloadedAt: string;
@@ -266,14 +265,11 @@ export async function syncManhwaLocal(
     if (!index[manhwaId]) index[manhwaId] = { pending: {}, cached: {}, read: {} };
     const m = index[manhwaId];
 
-    // Reconcilia o set de lidos com o current_chapter do servidor (cumulativo,
-    // fonte de verdade). Ex.: leu o 201 offline e depois o 200 online → o banco
-    // está no 200, então o app passa a refletir 1..200 (o 201 deixa de constar).
-    // Leituras offline ainda na fila são consideradas pra não regredir o que
-    // ainda não subiu.
+    // Reconcilia o set de lidos com o current_chapter do servidor: o app passa a
+    // refletir EXATAMENTE 1..current_chapter (a fila offline é drenada antes do
+    // sync, então o servidor já tem as leituras feitas offline).
     if (files.length > 0) {
-        const pendingRead = await getPendingChapterRead(manhwaId);
-        applyReadReconcile(m, currentChapter, files, pendingRead);
+        applyReadReconcile(m, currentChapter, files);
     }
 
     const result: SyncResult = { downloaded: 0, movedToCached: 0, evicted: 0, errors: 0 };
@@ -432,19 +428,17 @@ export async function getReadChaptersSet(manhwaId: number): Promise<Set<string>>
 
 /**
  * Reconcilia o set de "lidos" com o current_chapter do servidor (fonte de
- * verdade cumulativa): lido = capítulos nas posições 1..effective. effective =
- * max(current_chapter, maior leitura offline ainda na fila) — assim não regride
- * uma leitura que ainda não subiu pro banco. Reescreve o set (remove leituras
- * além do current_chapter, ex.: leu o 201 mas o banco está no 200).
+ * verdade): lido = capítulos nas posições 1..current_chapter. Reescreve o set,
+ * fazendo o app refletir EXATAMENTE o que está online (remove leituras além do
+ * current_chapter). As leituras offline são drenadas pra fila ANTES de reconciliar,
+ * então já estão no servidor — por isso usamos o valor do servidor direto.
  */
 function applyReadReconcile(
     m: ManhwaCache,
     currentChapter: number,
-    files: { name: string }[],
-    pendingRead: number
+    files: { name: string }[]
 ): void {
-    const effective = Math.max(currentChapter || 0, pendingRead || 0);
-    const cutoff = Math.min(Math.max(effective, 0), files.length);
+    const cutoff = Math.min(Math.max(currentChapter || 0, 0), files.length);
     const reconciled: Record<string, string> = {};
     const now = new Date().toISOString();
     for (let i = 0; i < cutoff; i++) {
@@ -458,6 +452,8 @@ function applyReadReconcile(
 /**
  * Reconcilia o estado de leitura local com o current_chapter FRESCO do servidor.
  * Use ao sincronizar ou ao abrir o manhwa online (onde há um valor confiável).
+ * IMPORTANTE: drene a fila offline (drainQueue) ANTES de chamar, pra que leituras
+ * feitas offline já estejam refletidas no current_chapter do servidor.
  */
 export async function reconcileReadsWithServer(
     manhwaId: number,
@@ -468,8 +464,7 @@ export async function reconcileReadsWithServer(
     const index = await loadIndex();
     if (!index[manhwaId]) index[manhwaId] = { pending: {}, cached: {}, read: {} };
     const m = index[manhwaId];
-    const pendingRead = await getPendingChapterRead(manhwaId);
-    applyReadReconcile(m, currentChapter, files, pendingRead);
+    applyReadReconcile(m, currentChapter, files);
     await saveIndex(index);
 }
 

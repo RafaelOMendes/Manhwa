@@ -14,6 +14,7 @@ import {
     getReadChaptersSet,
     reconcileReadsWithServer,
 } from '../lib/cache';
+import { drainQueue } from '../lib/sync-queue';
 
 interface CbzFile {
     name: string;
@@ -110,6 +111,9 @@ function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                 let fetchedOnline = false;
 
                 try {
+                    // Drena leituras offline ANTES de buscar o current_chapter,
+                    // pra que o valor do servidor já reflita o que foi lido offline.
+                    await drainQueue().catch(() => {});
                     const response = await fetch(`${API_BASE}/api/manhwas/${manhwa.id}/files`);
                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
                     const data = await response.json();
