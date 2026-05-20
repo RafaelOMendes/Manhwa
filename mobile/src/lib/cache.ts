@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Directory, File, Paths } from 'expo-file-system';
 import JSZip from 'jszip';
 import { API_BASE } from './api';
+import { getPendingChapterRead } from './sync-queue';
 
 interface PendingEntry {
     downloadedAt: string;
@@ -265,17 +266,14 @@ export async function syncManhwaLocal(
     if (!index[manhwaId]) index[manhwaId] = { pending: {}, cached: {}, read: {} };
     const m = index[manhwaId];
 
-    // Migração one-shot: importa os reads cumulativos (current_chapter) pro set per-chapter.
-    if (!m.migratedAt && currentChapter > 0 && files.length > 0) {
-        const cutoff = Math.min(currentChapter, files.length);
-        const migratedAt = new Date().toISOString();
-        let migCount = 0;
-        for (let i = 0; i < cutoff; i++) {
-            const name = files[i].name;
-            if (!m.read[name]) { m.read[name] = migratedAt; migCount++; }
-        }
-        m.migratedAt = migratedAt;
-        if (migCount > 0) console.log(`[cache]   ↪️  migrado cumulativo → per-chapter: ${migCount} caps marcados como lidos`);
+    // Reconcilia o set de lidos com o current_chapter do servidor (cumulativo,
+    // fonte de verdade). Ex.: leu o 201 offline e depois o 200 online → o banco
+    // está no 200, então o app passa a refletir 1..200 (o 201 deixa de constar).
+    // Leituras offline ainda na fila são consideradas pra não regredir o que
+    // ainda não subiu.
+    if (files.length > 0) {
+        const pendingRead = await getPendingChapterRead(manhwaId);
+        applyReadReconcile(m, currentChapter, files, pendingRead);
     }
 
     const result: SyncResult = { downloaded: 0, movedToCached: 0, evicted: 0, errors: 0 };
@@ -368,6 +366,16 @@ export async function syncManhwaLocal(
 
     await saveIndex(index);
 
+    // Persiste o snapshot da lista (com chapter_number) pra leitura offline:
+    // garante que os números/ordem dos capítulos fiquem salvos no aparelho
+    // mesmo pra manhwas baixados em segundo plano (sem abrir online).
+    if (files.length > 0) {
+        await saveManhwaFiles(
+            manhwaId,
+            files.map(f => ({ name: f.name, size_mb: f.size_mb ?? 0, chapter_number: f.chapter_number }))
+        ).catch(() => {});
+    }
+
     // Cover é fire-and-forget (não bloqueia o sync)
     downloadCover(manhwaId, coverUrl).catch(() => {});
 
@@ -423,34 +431,46 @@ export async function getReadChaptersSet(manhwaId: number): Promise<Set<string>>
 }
 
 /**
- * Migração one-shot do esquema cumulativo (`current_chapter`) pro per-chapter.
- * Marca como `read` todos os filenames de posições 1..currentChapter na primeira execução.
- * Idempotente — só roda uma vez por manhwa (guard via `migratedAt`).
+ * Reconcilia o set de "lidos" com o current_chapter do servidor (fonte de
+ * verdade cumulativa): lido = capítulos nas posições 1..effective. effective =
+ * max(current_chapter, maior leitura offline ainda na fila) — assim não regride
+ * uma leitura que ainda não subiu pro banco. Reescreve o set (remove leituras
+ * além do current_chapter, ex.: leu o 201 mas o banco está no 200).
  */
-export async function migrateCumulativeIfNeeded(
+function applyReadReconcile(
+    m: ManhwaCache,
+    currentChapter: number,
+    files: { name: string }[],
+    pendingRead: number
+): void {
+    const effective = Math.max(currentChapter || 0, pendingRead || 0);
+    const cutoff = Math.min(Math.max(effective, 0), files.length);
+    const reconciled: Record<string, string> = {};
+    const now = new Date().toISOString();
+    for (let i = 0; i < cutoff; i++) {
+        const name = files[i].name;
+        reconciled[name] = m.read[name] ?? now;
+    }
+    m.read = reconciled;
+    m.migratedAt = m.migratedAt ?? now;
+}
+
+/**
+ * Reconcilia o estado de leitura local com o current_chapter FRESCO do servidor.
+ * Use ao sincronizar ou ao abrir o manhwa online (onde há um valor confiável).
+ */
+export async function reconcileReadsWithServer(
     manhwaId: number,
     currentChapter: number,
     files: { name: string }[]
-): Promise<{ migrated: number }> {
+): Promise<void> {
+    if (files.length === 0) return;
     const index = await loadIndex();
     if (!index[manhwaId]) index[manhwaId] = { pending: {}, cached: {}, read: {} };
     const m = index[manhwaId];
-    if (m.migratedAt) return { migrated: 0 };
-    if (currentChapter <= 0 || files.length === 0) return { migrated: 0 };
-
-    const cutoff = Math.min(currentChapter, files.length);
-    const now = new Date().toISOString();
-    let migrated = 0;
-    for (let i = 0; i < cutoff; i++) {
-        const name = files[i].name;
-        if (!m.read[name]) {
-            m.read[name] = now;
-            migrated++;
-        }
-    }
-    m.migratedAt = now;
+    const pendingRead = await getPendingChapterRead(manhwaId);
+    applyReadReconcile(m, currentChapter, files, pendingRead);
     await saveIndex(index);
-    return { migrated };
 }
 
 // ============================================================

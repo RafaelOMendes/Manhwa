@@ -65,11 +65,11 @@ interface FileInfo {
     size_mb?: number;
 }
 
-async function fetchFiles(manhwaId: number): Promise<FileInfo[]> {
+async function fetchFiles(manhwaId: number): Promise<{ files: FileInfo[]; currentChapter: number }> {
     const res = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/files`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    return data.files ?? [];
+    return { files: data.files ?? [], currentChapter: data.current_chapter ?? 0 };
 }
 
 export interface DownloadResult {
@@ -110,14 +110,21 @@ export async function downloadManhwa(m: Manhwa, files?: FileInfo[]): Promise<Dow
     emit();
 
     try {
-        const list = files ?? (await fetchFiles(m.id));
+        let list = files;
+        let serverCurrent = m.current_chapter ?? 0;
+        if (!list) {
+            const fetched = await fetchFiles(m.id);
+            list = fetched.files;
+            // current_chapter FRESCO do servidor pra reconciliar a leitura local
+            serverCurrent = fetched.currentChapter || serverCurrent;
+        }
         const onProgress = (p: SyncProgress) => {
             state.progress[m.id] = { status: 'downloading', ...p };
             emit();
         };
         const r = await syncManhwaLocal(
             m.id,
-            m.current_chapter ?? 0,
+            serverCurrent,
             list,
             m.cover_url ?? null,
             onProgress

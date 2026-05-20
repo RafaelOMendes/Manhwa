@@ -127,6 +127,12 @@ export async function drainQueue(): Promise<DrainResult> {
     return drainInFlight;
 }
 
+/** Maior chapNum de leitura ainda na fila (não enviada) pra um manhwa, ou 0. */
+export async function getPendingChapterRead(manhwaId: number): Promise<number> {
+    const q = await loadQueue();
+    return q.chapterReads[String(manhwaId)]?.chapNum ?? 0;
+}
+
 /** Total de operações pendentes — útil pra feedback de UI. */
 export async function queueSize(): Promise<number> {
     const q = await loadQueue();

@@ -12,7 +12,7 @@ import {
     saveManhwaFiles,
     loadManhwaFiles,
     getReadChaptersSet,
-    migrateCumulativeIfNeeded,
+    reconcileReadsWithServer,
 } from '../lib/cache';
 
 interface CbzFile {
@@ -107,6 +107,7 @@ function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
 
                 let loadedFiles: { name: string; size_mb: number; chapter_number: number }[] = [];
                 let loadedCurrentChapter = 0;
+                let fetchedOnline = false;
 
                 try {
                     const response = await fetch(`${API_BASE}/api/manhwas/${manhwa.id}/files`);
@@ -114,6 +115,7 @@ function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                     const data = await response.json();
                     loadedFiles = data.files || [];
                     loadedCurrentChapter = data.current_chapter || 0;
+                    fetchedOnline = true;
                     saveManhwaFiles(manhwa.id, loadedFiles).catch(() => {});
                 } catch (error) {
                     console.warn('[fetch] /files falhou, usando cache offline:', error);
@@ -133,16 +135,16 @@ function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                 setFiles(loadedFiles);
                 setCurrentChapter(loadedCurrentChapter);
 
-                // Migração one-shot: importa reads cumulativos pro set per-chapter
-                if (loadedCurrentChapter > 0 && loadedFiles.length > 0) {
+                // Reconcilia o set de lidos com o current_chapter do servidor,
+                // mas SÓ quando temos um valor fresco (online). Offline não mexe
+                // pra não regredir leituras com um valor defasado.
+                if (fetchedOnline && loadedFiles.length > 0) {
                     try {
-                        const mig = await migrateCumulativeIfNeeded(manhwa.id, loadedCurrentChapter, loadedFiles);
-                        if (mig.migrated > 0) {
-                            const updated = await getReadChaptersSet(manhwa.id);
-                            setReadChapters(updated);
-                        }
+                        await reconcileReadsWithServer(manhwa.id, loadedCurrentChapter, loadedFiles);
+                        const updated = await getReadChaptersSet(manhwa.id);
+                        setReadChapters(updated);
                     } catch (e) {
-                        console.warn('[cache] migrateCumulativeIfNeeded:', e);
+                        console.warn('[cache] reconcileReadsWithServer:', e);
                     }
                 }
             } finally {
