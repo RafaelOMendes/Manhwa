@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(npx tsc *)",
-      "Bash(npx expo-doctor *)"
+      "Bash(npx expo-doctor *)",
+      "Bash(npx expo *)"
     ]
   }
 }

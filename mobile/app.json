@@ -13,6 +13,7 @@
       "supportsTablet": true
     },
     "android": {
+      "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#262525",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -35,6 +36,14 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 120,
           "resizeMode": "contain"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
         }
       ]
     ],
