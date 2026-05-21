@@ -256,7 +256,8 @@ export async function syncManhwaLocal(
     currentChapter: number,
     files: { name: string; chapter_number: number; size_mb?: number }[],
     coverUrl?: string | null,
-    onProgress?: (p: SyncProgress) => void
+    onProgress?: (p: SyncProgress) => void,
+    shouldCancel?: () => boolean
 ): Promise<SyncResult> {
     const tSync = Date.now();
     console.log(`[cache] 🔄 sync manhwa #${manhwaId} — ${files.length} caps no server, current_chapter=${currentChapter}`);
@@ -315,6 +316,8 @@ export async function syncManhwaLocal(
 
     const worker = async () => {
         while (queue.length > 0) {
+            // Cancelamento: para de pegar novos capítulos (o atual termina e é salvo).
+            if (shouldCancel?.()) { queue.length = 0; return; }
             const fn = queue.shift();
             if (!fn) return;
             try {
@@ -623,6 +626,94 @@ export async function getManhwaStorage(manhwaId: number): Promise<number> {
     const dir = new Directory(Paths.document, 'manhwas', String(manhwaId));
     if (!dir.exists) return 0;
     return dirSizeBytes(dir);
+}
+
+/** Set de ids de manhwa que têm algo baixado no índice (1 leitura do índice). */
+export async function getManhwasWithLocalData(): Promise<Set<number>> {
+    const index = await loadIndex();
+    const ids = new Set<number>();
+    for (const idStr of Object.keys(index)) {
+        const m = index[idStr];
+        if (Object.keys(m.pending).length > 0 || Object.keys(m.cached).length > 0) {
+            ids.add(Number(idStr));
+        }
+    }
+    return ids;
+}
+
+/**
+ * Remove do disco o que está corrompido/órfão:
+ * - diretórios de manhwa que não estão no índice;
+ * - pastas de capítulo não presentes em pending/cached (downloads interrompidos);
+ * - capítulos no índice mas sem páginas (page_0.jpg ausente) — corrompidos;
+ * - arquivos .cbz temporários residuais (_chapter.cbz).
+ * NÃO deve rodar com download ativo (apagaria o que está baixando agora).
+ */
+export async function cleanupCorrupted(): Promise<{ removedChapters: number; removedManhwas: number }> {
+    const root = new Directory(Paths.document, 'manhwas');
+    if (!root.exists) return { removedChapters: 0, removedManhwas: 0 };
+
+    const index = await loadIndex();
+    let removedChapters = 0;
+    let removedManhwas = 0;
+    let indexChanged = false;
+
+    let manhwaDirs: (File | Directory)[];
+    try { manhwaDirs = root.list(); } catch { return { removedChapters: 0, removedManhwas: 0 }; }
+
+    for (const entry of manhwaDirs) {
+        if (!(entry instanceof Directory)) {
+            try { entry.delete(); } catch {}
+            continue;
+        }
+        const idStr = entry.name;
+        const m = index[idStr];
+
+        if (!m) {
+            // Manhwa não está no índice → tudo aqui é órfão.
+            try { entry.delete(); removedManhwas++; } catch {}
+            continue;
+        }
+
+        const known = new Set([...Object.keys(m.pending), ...Object.keys(m.cached)]);
+
+        let chapterDirs: (File | Directory)[];
+        try { chapterDirs = entry.list(); } catch { continue; }
+
+        for (const sub of chapterDirs) {
+            if (sub instanceof File) {
+                // arquivo solto: mantém a cover, remove .cbz temporário/residual
+                if (sub.name.toLowerCase().endsWith('.cbz')) {
+                    try { sub.delete(); } catch {}
+                }
+                continue;
+            }
+            if (!(sub instanceof Directory)) continue;
+
+            // Remove .cbz temporário dentro da pasta do capítulo
+            try {
+                const temp = new File(sub, '_chapter.cbz');
+                if (temp.exists) temp.delete();
+            } catch {}
+
+            const isKnown = known.has(sub.name);
+            const firstPage = new File(sub, 'page_0.jpg');
+            const hasPages = (() => { try { return firstPage.exists; } catch { return false; } })();
+
+            // Órfão (não no índice) OU conhecido mas sem páginas (corrompido) → remove.
+            if (!isKnown || !hasPages) {
+                try { sub.delete(); removedChapters++; } catch {}
+                if (m.pending[sub.name]) { delete m.pending[sub.name]; indexChanged = true; }
+                if (m.cached[sub.name]) { delete m.cached[sub.name]; indexChanged = true; }
+            }
+        }
+    }
+
+    if (indexChanged) await saveIndex(index);
+    if (removedChapters > 0 || removedManhwas > 0) {
+        console.log(`[cache] 🧹 cleanup: ${removedChapters} caps corrompidos/órfãos, ${removedManhwas} manhwas órfãos removidos`);
+    }
+    return { removedChapters, removedManhwas };
 }
 
 /** Remove cached com readAt > 7 dias. */

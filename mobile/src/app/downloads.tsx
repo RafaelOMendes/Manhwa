@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, Alert, Inter
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, HardDrive, CloudDownload, Trash2, Download, FileText, CheckCircle2 } from 'lucide-react-native';
+import { ArrowLeft, HardDrive, CloudDownload, Trash2, Download, FileText, CheckCircle2, Square } from 'lucide-react-native';
 import { Manhwa } from '../types/manhwa';
 import { API_BASE } from '../lib/api';
 import {
@@ -14,9 +14,11 @@ import {
     removeManhwaLocal,
     loadManhwaList,
     loadManhwaFiles,
+    getManhwasWithLocalData,
+    cleanupCorrupted,
 } from '../lib/cache';
-import { useDownloadProgress, clearFinishedProgress } from '../lib/download-manager';
-import { startBackgroundDownload } from '../lib/background-download';
+import { useDownloadProgress, clearFinishedProgress, getStoreState } from '../lib/download-manager';
+import { startBackgroundDownload, stopBackgroundDownload } from '../lib/background-download';
 
 type Unit = 'chapters' | 'mb';
 
@@ -114,6 +116,13 @@ export default function Downloads() {
 
     const loadAll = useCallback(async () => {
         setLoading(true);
+        setRows([]);
+
+        // Remove corrompidos/órfãos do disco (só quando não há download ativo,
+        // pra não apagar o que está baixando agora). Mantém os números consistentes.
+        if (!getStoreState().active) {
+            await cleanupCorrupted().catch(() => {});
+        }
 
         // lista de manhwas (server, com fallback offline)
         let list: Manhwa[] = [];
@@ -125,24 +134,27 @@ export default function Downloads() {
             list = (await loadManhwaList<Manhwa>()) ?? [];
         }
 
-        // candidatos: tem capítulos locais OU está marcado pra download (reading)
-        const candidates: Manhwa[] = [];
-        for (const m of list) {
-            const local = await getLocalChaptersSet(m.id);
-            if (local.size > 0 || (m.download && m.status === 'reading')) {
-                candidates.push(m);
-            }
-        }
+        // candidatos: tem capítulos locais OU está marcado pra download (reading).
+        // Uma única leitura do índice (em vez de uma por manhwa) — bem mais rápido.
+        const hasLocal = await getManhwasWithLocalData();
+        const candidates = list.filter(m => hasLocal.has(m.id) || (m.download && m.status === 'reading'));
 
-        const built = await poolMap(candidates, 4, buildRow);
-        // ordena: com pendência primeiro, depois por armazenamento
-        built.sort((a, b) => {
+        // Ordenação: com pendência primeiro, depois por armazenamento.
+        const sortFn = (a: RowInfo, b: RowInfo) => {
             if ((b.pendingCount > 0 ? 1 : 0) !== (a.pendingCount > 0 ? 1 : 0)) {
                 return (b.pendingCount > 0 ? 1 : 0) - (a.pendingCount > 0 ? 1 : 0);
             }
             return b.localBytes - a.localBytes;
+        };
+
+        // Renderiza progressivamente: cada linha aparece assim que fica pronta.
+        const acc: RowInfo[] = [];
+        await poolMap(candidates, 4, async (m) => {
+            const row = await buildRow(m);
+            acc.push(row);
+            acc.sort(sortFn);
+            setRows([...acc]);
         });
-        setRows(built);
         setLoading(false);
     }, []);
 
@@ -168,7 +180,7 @@ export default function Downloads() {
         for (const idStr of Object.keys(progress)) {
             const id = Number(idStr);
             const st = progress[id].status;
-            if ((st === 'done' || st === 'error') && handledStatusRef.current[id] !== st) {
+            if ((st === 'done' || st === 'error' || st === 'cancelled') && handledStatusRef.current[id] !== st) {
                 handledStatusRef.current[id] = st;
                 const row = rows.find(r => r.manhwa.id === id);
                 if (row) refreshRow(row.manhwa);
@@ -187,6 +199,12 @@ export default function Downloads() {
         if (pending.length === 0) return;
         startBackgroundDownload(pending);
     }, [rows]);
+
+    const handleStop = useCallback(async () => {
+        await stopBackgroundDownload();
+        // Recarrega pra refletir o que foi baixado até parar (e limpar parciais).
+        setTimeout(() => { loadAll(); }, 400);
+    }, [loadAll]);
 
     const handleRemove = useCallback((row: RowInfo) => {
         Alert.alert(
@@ -242,32 +260,38 @@ export default function Downloads() {
                 </View>
             </View>
 
-            {/* Baixar tudo */}
-            <TouchableOpacity
-                onPress={handleDownloadAll}
-                disabled={anyDownloading || totalPendingCount === 0}
-                activeOpacity={0.85}
-                className={`flex-row items-center justify-center gap-2 rounded-xl mt-1 mb-4 pb-2 ml-1 ${
-                    totalPendingCount === 0 ? 'bg-[#1f1c1c] border border-gray-800' : 'bg-blue-600'
-                }`}
-                style={{ height: 44 }}
-            >
-                {anyDownloading ? (
-                    <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                    <Download size={18} color={totalPendingCount === 0 ? '#6b7280' : '#fff'} />
-                )}
-                <Text
-                    className={`text-[15px] font-semibold ${totalPendingCount === 0 ? 'text-gray-500' : 'text-white'}`}
-                    style={{ includeFontPadding: false }}
+            {/* Baixar tudo / Parar */}
+            {anyDownloading ? (
+                <TouchableOpacity
+                    onPress={handleStop}
+                    activeOpacity={0.85}
+                    className="flex-row items-center justify-center gap-2 rounded-xl mt-1 mb-4 bg-red-600"
+                    style={{ height: 44 }}
                 >
-                    {anyDownloading
-                        ? 'Baixando...'
-                        : totalPendingCount === 0
-                        ? 'Tudo baixado'
-                        : `Baixar tudo (${totalPendingCount} cap.)`}
-                </Text>
-            </TouchableOpacity>
+                    <Square size={16} color="#fff" fill="#fff" />
+                    <Text className="text-[15px] font-semibold text-white" style={{ includeFontPadding: false }}>
+                        Parar download
+                    </Text>
+                </TouchableOpacity>
+            ) : (
+                <TouchableOpacity
+                    onPress={handleDownloadAll}
+                    disabled={totalPendingCount === 0}
+                    activeOpacity={0.85}
+                    className={`flex-row items-center justify-center gap-2 rounded-xl mt-1 mb-4 ${
+                        totalPendingCount === 0 ? 'bg-[#1f1c1c] border border-gray-800' : 'bg-blue-600'
+                    }`}
+                    style={{ height: 44 }}
+                >
+                    <Download size={18} color={totalPendingCount === 0 ? '#6b7280' : '#fff'} />
+                    <Text
+                        className={`text-[15px] font-semibold ${totalPendingCount === 0 ? 'text-gray-500' : 'text-white'}`}
+                        style={{ includeFontPadding: false }}
+                    >
+                        {totalPendingCount === 0 ? 'Tudo baixado' : `Baixar tudo (${totalPendingCount} cap.)`}
+                    </Text>
+                </TouchableOpacity>
+            )}
         </View>
     );
 
@@ -354,13 +378,15 @@ export default function Downloads() {
                     <TouchableOpacity activeOpacity={0.8} onPress={toggleUnit} className="px-3 pb-3">
                         <View className="h-2 rounded-full bg-[#262525] overflow-hidden">
                             <View
-                                className={`h-full rounded-full ${prog.status === 'error' ? 'bg-red-500' : 'bg-blue-500'}`}
+                                className={`h-full rounded-full ${prog.status === 'error' ? 'bg-red-500' : prog.status === 'cancelled' ? 'bg-gray-500' : 'bg-blue-500'}`}
                                 style={{ width: `${Math.round(Math.min(1, Math.max(0, fraction)) * 100)}%` }}
                             />
                         </View>
                         <Text className="text-[10px] text-gray-500 mt-1">
                             {prog.status === 'error'
                                 ? 'erro no download'
+                                : prog.status === 'cancelled'
+                                ? 'parado'
                                 : prog.status === 'done'
                                 ? 'concluído'
                                 : `${progLabel}`}

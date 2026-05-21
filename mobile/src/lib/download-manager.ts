@@ -10,7 +10,7 @@ import { syncManhwaLocal, SyncProgress } from './cache';
  */
 
 export interface ManhwaProgress {
-    status: 'downloading' | 'done' | 'error';
+    status: 'downloading' | 'done' | 'error' | 'cancelled';
     doneChapters: number;
     totalChapters: number;
     doneMB: number;
@@ -59,6 +59,34 @@ export function clearFinishedProgress(): void {
     emit();
 }
 
+// ============================================================
+// Cancelamento de download
+// ============================================================
+let cancelRequested = false;
+
+/** Recomeça uma sessão de download (limpa o pedido de cancelamento). */
+export function resetCancel(): void {
+    cancelRequested = false;
+}
+
+/** Verdadeiro se o usuário pediu pra parar — checado entre capítulos/manhwas. */
+export function isCancelRequested(): boolean {
+    return cancelRequested;
+}
+
+/** Pede pra parar tudo: o capítulo atual termina, o resto é abortado. */
+export function requestCancel(): void {
+    cancelRequested = true;
+    for (const id of Object.keys(state.progress)) {
+        const p = state.progress[Number(id)];
+        if (p.status === 'downloading') {
+            state.progress[Number(id)] = { ...p, status: 'cancelled' };
+        }
+    }
+    state.active = false;
+    emit();
+}
+
 interface FileInfo {
     name: string;
     chapter_number: number;
@@ -99,6 +127,9 @@ export function markQueued(manhwaId: number): void {
  * um fetch duplicado.
  */
 export async function downloadManhwa(m: Manhwa, files?: FileInfo[]): Promise<DownloadResult> {
+    // Cancelado antes de começar: nem inicia.
+    if (cancelRequested) return { downloaded: 0, errors: 0 };
+
     state.active = true;
     state.progress[m.id] = {
         status: 'downloading',
@@ -119,6 +150,8 @@ export async function downloadManhwa(m: Manhwa, files?: FileInfo[]): Promise<Dow
             serverCurrent = fetched.currentChapter || serverCurrent;
         }
         const onProgress = (p: SyncProgress) => {
+            // Não sobrescreve um estado já cancelado.
+            if (state.progress[m.id]?.status === 'cancelled') return;
             state.progress[m.id] = { status: 'downloading', ...p };
             emit();
         };
@@ -127,12 +160,13 @@ export async function downloadManhwa(m: Manhwa, files?: FileInfo[]): Promise<Dow
             serverCurrent,
             list,
             m.cover_url ?? null,
-            onProgress
+            onProgress,
+            isCancelRequested
         );
         const prev = state.progress[m.id];
         state.progress[m.id] = {
             ...prev,
-            status: r.errors > 0 ? 'error' : 'done',
+            status: cancelRequested ? 'cancelled' : r.errors > 0 ? 'error' : 'done',
         };
         emit();
         return { downloaded: r.downloaded, errors: r.errors };
@@ -154,12 +188,14 @@ const MANHWA_CONCURRENCY = 4;
 
 /** Baixa vários manhwas em paralelo (semáforo). Retorna agregado. */
 export async function downloadAll(manhwas: Manhwa[]): Promise<DownloadResult> {
+    resetCancel(); // nova sessão
     const queue = [...manhwas];
     let downloaded = 0;
     let errors = 0;
 
     const worker = async () => {
         while (queue.length > 0) {
+            if (cancelRequested) return;
             const m = queue.shift();
             if (!m) return;
             const r = await downloadManhwa(m);

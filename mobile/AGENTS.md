@@ -47,6 +47,16 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
   vários downloads individuais em paralelo, novos itens entram na fila durante a execução.
   notifee é carregado de forma **lazy/protegida** (try/catch) — sem o módulo nativo (Expo Go / build
   antigo), cai no download in-app sem quebrar.
+- **Baixar é só pela tela de Downloads** (Baixar tudo / individual). O botão **Sincronizar** (home) faz
+  APENAS o sync do servidor (`drainQueue` + `POST /download-all`), igual à web — NÃO baixa no celular.
+- **Parar** (`stopBackgroundDownload` / `requestCancel`): esvazia a fila e cancela; o capítulo em
+  andamento termina e é salvo, o resto é abortado (`syncManhwaLocal` checa `shouldCancel` entre caps).
+  Status `cancelled` no store. Botão "Parar" aparece na tela de Downloads enquanto baixa.
+- **Limpeza** (`cleanupCorrupted`): remove do disco o que está órfão/corrompido (pastas de manhwa/cap
+  fora do índice, capítulos sem `page_0.jpg`, `_chapter.cbz` residual). Roda na tela de Downloads
+  quando NÃO há download ativo — resolve o caso "X GB usado mas 0 baixado" de downloads interrompidos.
+- Tela de Downloads carrega **progressivamente** (linhas aparecem conforme prontas) e lê o índice uma
+  única vez (`getManhwasWithLocalData`) pra abrir rápido.
 
 ## Fila offline (`src/lib/sync-queue.ts`)
 - Leituras/scroll feitos offline são enfileirados e drenados (`drainQueue`) ao reconectar / foreground /

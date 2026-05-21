@@ -8,12 +8,10 @@ import AddManhwaModal from '../components/AddManhwaModal';
 import { Manhwa } from '../types/manhwa';
 import { API_BASE } from '../lib/api';
 import {
-    removeManhwaLocal,
     saveManhwaList,
     loadManhwaList,
     getLocalChaptersSet,
 } from '../lib/cache';
-import { startBackgroundDownload } from '../lib/background-download';
 import { drainQueue } from '../lib/sync-queue';
 
 const FILTERS = [
@@ -147,43 +145,21 @@ export default function Home() {
             const drain = await drainQueue();
             console.log(`[sync]   ↪ enviadas ${drain.sent}, ${drain.remaining} pendentes`);
 
-            // 1. Sincroniza no servidor (baixa do Telegram pro D:\Manhwas)
+            // 1. Sincroniza APENAS no servidor (baixa do Telegram pro D:\Manhwas),
+            //    igual à web. NÃO baixa nada no celular — isso é feito na tela de
+            //    Downloads (Baixar tudo / individual).
             console.log('[sync] ☁️  POST /download-all (servidor sincroniza com Telegram)...');
             const tServer = Date.now();
             const response = await fetch(`${API_BASE}/api/manhwas/download-all`, { method: 'POST' });
             const data = await response.json();
             console.log(`[sync]   ↪ servidor concluiu em ${Date.now() - tServer}ms: ${data.message}`);
 
-            // 2. Replica pro celular em paralelo: baixa unread chapters dos reading+download=true
-            //    e remove os locais dos com download=false.
-            const toSync = manhwas.filter(m => m.status === 'reading' && m.download === true);
-            const toRemove = manhwas.filter(m => m.download === false);
-            console.log(`[sync] 📚 ${toSync.length} manhwas pra replicar no celular, ${toRemove.length} pra remover localmente`);
-
-            // Cleanup local de quem foi desligado (paralelo total)
-            if (toRemove.length > 0) {
-                console.log('[sync] 🗑️  removendo locais dos desligados...');
-                await Promise.all(toRemove.map(m =>
-                    removeManhwaLocal(m.id)
-                        .then(() => console.log(`[sync]   ✓ ${m.title} removido localmente`))
-                        .catch(e => console.warn(`[sync]   ✗ ${m.title}:`, e))
-                ));
-            }
-
-            // Replica em segundo plano via foreground service: continua mesmo
-            // se o app for fechado, com notificação de progresso.
-            if (toSync.length > 0) {
-                startBackgroundDownload(toSync);
-                console.log(`[sync]   ▶️ replicação de ${toSync.length} manhwas iniciada em segundo plano`);
-            }
-
             const fullMs = Date.now() - tFull;
             console.log(`[sync] 🏁 Servidor concluído em ${fullMs}ms — ${drain.sent} leituras offline enviadas`);
             console.log('[sync] ═══════════════════════════════════════');
 
-            const localMsg = toSync.length > 0 ? ` · baixando ${toSync.length} no celular` : '';
             const drainMsg = drain.sent > 0 ? ` · ${drain.sent} leitura(s) offline enviada(s)` : '';
-            setSyncResult({ success: data.success, message: `${data.message}${localMsg}${drainMsg}` });
+            setSyncResult({ success: data.success, message: `${data.message}${drainMsg}` });
             setTimeout(() => setSyncResult(null), 10000);
             // Atualiza a lista pra refletir total_chapters/medium_reaction atualizados
             fetchManhwas();

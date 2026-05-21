@@ -1,19 +1,45 @@
 import { Platform } from 'react-native';
 import { Manhwa } from '../types/manhwa';
-import { downloadAll, downloadManhwa, markQueued, subscribeStore, getStoreState } from './download-manager';
+import { downloadAll, downloadManhwa, markQueued, subscribeStore, getStoreState, isCancelRequested, requestCancel, resetCancel } from './download-manager';
 
 // Carrega o notifee de forma lazy/protegida. Em Expo Go ou builds sem o módulo
 // nativo, o require falha e caímos no download in-app — sem quebrar o app.
 let notifee: any = null;
 let AndroidImportance: any = { LOW: 2 };
 let AndroidForegroundServiceType: any = { FOREGROUND_SERVICE_TYPE_DATA_SYNC: 1 };
+let EventType: any = { PRESS: 1 };
 try {
     const mod = require('@notifee/react-native');
     notifee = mod.default ?? mod;
     if (mod.AndroidImportance) AndroidImportance = mod.AndroidImportance;
     if (mod.AndroidForegroundServiceType) AndroidForegroundServiceType = mod.AndroidForegroundServiceType;
+    if (mod.EventType) EventType = mod.EventType;
+    // Handler de background obrigatório pro notifee (no-op: a navegação ao abrir
+    // é feita via getInitialNotification em setupDownloadNotificationPress).
+    notifee.onBackgroundEvent(async () => {});
 } catch (e) {
     console.warn('[bg-download] @notifee/react-native indisponível:', e);
+}
+
+/**
+ * Registra o toque na notificação de download → callback (ex.: ir pra tela de
+ * Downloads). Cobre app em foreground (onForegroundEvent) e app aberto a partir
+ * da notificação estando fechado (getInitialNotification). Retorna unsubscribe.
+ */
+export function setupDownloadNotificationPress(onPress: () => void): () => void {
+    if (!notifee) return () => {};
+    let unsub = () => {};
+    try {
+        unsub = notifee.onForegroundEvent(({ type }: { type: number }) => {
+            if (type === EventType.PRESS) onPress();
+        });
+        notifee.getInitialNotification?.()
+            .then((initial: unknown) => { if (initial) setTimeout(onPress, 300); })
+            .catch(() => {});
+    } catch (e) {
+        console.warn('[bg-download] setupDownloadNotificationPress:', e);
+    }
+    return unsub;
 }
 
 /**
@@ -39,6 +65,7 @@ async function drainQueue(): Promise<{ done: number; errors: number }> {
     let errors = 0;
     const worker = async () => {
         while (true) {
+            if (isCancelRequested()) { currentQueue.length = 0; return; }
             const m = currentQueue.shift();
             if (!m) return;
             inFlight.add(m.id);
@@ -58,7 +85,7 @@ async function drainQueue(): Promise<{ done: number; errors: number }> {
         await Promise.all(
             Array.from({ length: Math.min(MANHWA_CONCURRENCY, currentQueue.length || 1) }, worker)
         );
-    } while (currentQueue.length > 0);
+    } while (currentQueue.length > 0 && !isCancelRequested());
     return { done, errors };
 }
 
@@ -188,6 +215,7 @@ export async function startBackgroundDownload(manhwas: Manhwa[]): Promise<void> 
         return;
     }
     running = true;
+    resetCancel(); // nova sessão de download
 
     try {
         await notifee.requestPermission();
@@ -202,5 +230,18 @@ export async function startBackgroundDownload(manhwas: Manhwa[]): Promise<void> 
         currentQueue = [];
         // Fallback: roda in-app pra não deixar o usuário sem download.
         await downloadAll(fallback).catch(() => {});
+    }
+}
+
+/**
+ * Para o download: esvazia a fila, pede cancelamento (o capítulo atual termina
+ * e é salvo, o resto é abortado) e encerra o foreground service.
+ */
+export async function stopBackgroundDownload(): Promise<void> {
+    currentQueue = [];
+    requestCancel();
+    running = false;
+    if (notifee) {
+        try { await notifee.stopForegroundService(); } catch {}
     }
 }
