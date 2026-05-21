@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
     View, Text, TouchableOpacity, ActivityIndicator,
     FlatList, Dimensions, StyleSheet, Animated, BackHandler,
@@ -279,12 +279,18 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         onNavigate?.(file.name, file.chapter_number);
     };
 
-    const pages = Array.from({ length: totalPages }, (_, i) => ({
-        id: i.toString(),
-        url: localPageUri
-            ? localPageUri(i)
-            : `${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/page/${i}`,
-    }));
+    // Memoiza a lista de páginas: evita recriar um array de N itens a cada
+    // render (ex.: a cada imagem que carrega) e mantém a referência estável
+    // pro FlatList não reprocessar tudo.
+    const pages = useMemo(
+        () => Array.from({ length: totalPages }, (_, i) => ({
+            id: i.toString(),
+            url: localPageUri
+                ? localPageUri(i)
+                : `${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/page/${i}`,
+        })),
+        [totalPages, localPageUri, manhwaId, filename]
+    );
 
     const renderFooter = () => {
         if (loading || totalPages === 0) return null;
@@ -440,9 +446,9 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                         // Evita a "tela preta" do Android: por padrão o FlatList
                         // clipa itens fora da tela e eles voltam em branco/preto.
                         removeClippedSubviews={false}
-                        windowSize={9}
-                        initialNumToRender={5}
-                        maxToRenderPerBatch={6}
+                        windowSize={5}
+                        initialNumToRender={4}
+                        maxToRenderPerBatch={4}
                         renderItem={({ item }) => {
                             const ratio = aspectRatios[item.id] || 0.7;
                             const height = SCREEN_WIDTH / ratio;
@@ -452,7 +458,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                                         source={{ uri: item.url }}
                                         style={{ width: SCREEN_WIDTH, height }}
                                         contentFit="contain"
-                                        cachePolicy="memory-disk"
+                                        cachePolicy="disk"
                                         recyclingKey={item.id}
                                         transition={200}
                                         onLoad={(e) => {

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Star, Trash2, ExternalLink, Heart, FileText, X, FolderOpen, CheckCircle2 } from 'lucide-react'
 import { Manhwa } from '@/types/manhwa'
 import CbzReader from './CbzReader'
-import { API_BASE } from '@/lib/api'
+import { API_BASE, authHeaders } from '@/lib/api'
 
 interface CbzFile {
     name: string
@@ -60,7 +60,7 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
             setIsLoadingFiles(true)
             setShowFiles(true)
             try {
-                const response = await fetch(`${API_BASE}/api/manhwas/${manhwa.id}/files`)
+                const response = await fetch(`${API_BASE}/api/manhwas/${manhwa.id}/files`, { headers: authHeaders() })
                 const data = await response.json()
                 setFiles(data.files || [])
                 setCurrentChapter(data.current_chapter || 0)
@@ -87,6 +87,7 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
         try {
             await fetch(`${API_BASE}/api/manhwas/${manhwa.id}`, {
                 method: 'DELETE',
+                headers: authHeaders(),
             })
             onUpdate()
         } catch (error) {
@@ -103,7 +104,7 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
         try {
             await fetch(`${API_BASE}/api/manhwas/${manhwa.id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: authHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({ ...manhwa, download: !manhwa.download }),
             })
             onUpdate()
@@ -120,7 +121,7 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
         try {
             await fetch(`${API_BASE}/api/manhwas/${manhwa.id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: authHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({ ...manhwa, status: newStatus }),
             })
             onUpdate()

@@ -5,7 +5,7 @@ import { BookOpen, Plus, Download, Loader2, CheckCircle, XCircle } from 'lucide-
 import ManhwaCard from '@/components/ManhwaCard'
 import AddManhwaModal from '@/components/AddManhwaModal'
 import { Manhwa } from '@/types/manhwa'
-import { API_BASE } from '@/lib/api'
+import { API_BASE, authHeaders } from '@/lib/api'
 
 export default function Home() {
     const [manhwas, setManhwas] = useState<Manhwa[]>([])
@@ -23,7 +23,7 @@ export default function Home() {
 
     const fetchManhwas = async () => {
         try {
-            const response = await fetch(`${API_BASE}/api/manhwas`)
+            const response = await fetch(`${API_BASE}/api/manhwas`, { headers: authHeaders() })
             const data = await response.json()
             setManhwas(data)
         } catch (error) {
@@ -40,6 +40,7 @@ export default function Home() {
         try {
             const response = await fetch(`${API_BASE}/api/manhwas/download-all`, {
                 method: 'POST',
+                headers: authHeaders(),
             })
             const data = await response.json()
             setSyncResult({ success: data.success, message: data.message })

@@ -44,6 +44,7 @@ const STORAGE_KEY = 'manhwa-cache-v1';
 const LIST_KEY = 'manhwa-list-v1';
 const FILES_KEY = 'manhwa-files-v1';
 const SCROLL_KEY = 'manhwa-scroll-v1';
+const LASTREAD_KEY = 'manhwa-lastread-v1';
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_CACHED = 5;
 /** Chapters baixados em paralelo dentro de um mesmo manhwa. */
@@ -412,6 +413,8 @@ export async function markChapterReadLocal(manhwaId: number, filename: string): 
     const evicted = trimCached(m, manhwaId);
 
     await saveIndex(index);
+    // Registra "último lido" (ordena a home na hora, mesmo offline).
+    await markManhwaRead(manhwaId);
 
     console.log(
         `[cache] ✓ markRead #${manhwaId}/${filename} — ` +
@@ -419,6 +422,30 @@ export async function markChapterReadLocal(manhwaId: number, filename: string): 
         `${movedToCached ? ', pending→cached' : ''}` +
         `${evicted.length > 0 ? `, evictou ${evicted.length} antigos (${evicted.join(', ')})` : ''}`
     );
+}
+
+// ============================================================
+// "Último lido" por manhwa (pra ordenar na home na hora, mesmo offline)
+// ============================================================
+
+/** Marca o instante em que o usuário leu um capítulo deste manhwa. */
+export async function markManhwaRead(manhwaId: number): Promise<void> {
+    try {
+        const raw = await AsyncStorage.getItem(LASTREAD_KEY);
+        const map: Record<string, string> = raw ? JSON.parse(raw) : {};
+        map[String(manhwaId)] = new Date().toISOString();
+        await AsyncStorage.setItem(LASTREAD_KEY, JSON.stringify(map));
+    } catch {}
+}
+
+/** Mapa id→ISO da última leitura local. */
+export async function getLastReadMap(): Promise<Record<string, string>> {
+    try {
+        const raw = await AsyncStorage.getItem(LASTREAD_KEY);
+        return raw ? JSON.parse(raw) : {};
+    } catch {
+        return {};
+    }
 }
 
 /** Set de filenames que o usuário leu (per-chapter, sem cumulativo). */

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, ScrollView, StyleSheet, Pressable, Animated, Easing } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, ScrollView, StyleSheet, Pressable, Animated, Easing, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { BookOpen, Plus, Download, CheckCircle, XCircle, WifiOff, RefreshCw, RotateCw, FolderDown } from 'lucide-react-native';
@@ -12,6 +12,7 @@ import {
     loadManhwaList,
     getLocalChaptersSet,
     getManhwasWithLocalData,
+    getLastReadMap,
 } from '../lib/cache';
 import { drainQueue } from '../lib/sync-queue';
 
@@ -24,6 +25,10 @@ const FILTERS = [
 ] as const;
 
 type FilterId = typeof FILTERS[number]['id'];
+
+// Largura fixa de 1 coluna (grid de 2): padding 12+12 nas bordas, gap 10 no meio.
+// Garante que o último card (linha ímpar) não estique pra largura toda.
+const CARD_WIDTH = (Dimensions.get('window').width - 34) / 2;
 
 const Checkbox = React.memo(({
     value,
@@ -55,6 +60,8 @@ export default function Home() {
     const menuAnim = useRef(new Animated.Value(0)).current;
     // Ids dos manhwas com capítulos REALMENTE baixados no aparelho (pro filtro).
     const [localDownloadedIds, setLocalDownloadedIds] = useState<Set<number>>(new Set());
+    // Mapa id→ISO da última leitura local (ordena a home na hora, mesmo offline).
+    const [lastReadMap, setLastReadMap] = useState<Record<string, string>>({});
     const [filter, setFilter] = useState<FilterId>('all');
     const [showOnlyNew, setShowOnlyNew] = useState(false);
     const [showOnlyUnreadTop30, setShowOnlyUnreadTop30] = useState(false);
@@ -68,6 +75,7 @@ export default function Home() {
 
     const refreshLocalDownloaded = useCallback(() => {
         getManhwasWithLocalData().then(setLocalDownloadedIds).catch(() => {});
+        getLastReadMap().then(setLastReadMap).catch(() => {});
     }, []);
 
     useEffect(() => {
@@ -129,6 +137,13 @@ export default function Home() {
             setIsLoading(false);
         }
     }, []);
+
+    // Passado pros cards: ao fechar o leitor, recarrega lista + "último lido"
+    // (re-ordena a home na hora, mesmo offline).
+    const handleCardUpdate = useCallback(() => {
+        fetchManhwas();
+        refreshLocalDownloaded();
+    }, [fetchManhwas, refreshLocalDownloaded]);
 
     const tryReconnect = async () => {
         if (isReconnecting) return;
@@ -202,20 +217,34 @@ export default function Home() {
                 .slice(0, 30);
         }
 
-        return result.filter(manhwa => {
-            if (filter === 'all') return true;
-            if (filter === 'reading') {
-                if (showOnlyNew) {
-                    return manhwa.status === 'reading' &&
-                        manhwa.total_chapters !== undefined &&
-                        manhwa.total_chapters !== null &&
-                        manhwa.current_chapter !== undefined &&
-                        manhwa.total_chapters > manhwa.current_chapter;
+        // Mais recém-lido primeiro. Usa o maior entre a leitura local (instantânea,
+        // funciona offline) e o updated_at do servidor.
+        const recencyOf = (m: Manhwa) => {
+            const local = lastReadMap[String(m.id)] ? Date.parse(lastReadMap[String(m.id)]) : 0;
+            const server = m.updated_at ? Date.parse(m.updated_at) : 0;
+            return Math.max(local, server);
+        };
+        const byRecent = (a: Manhwa, b: Manhwa) => {
+            const diff = recencyOf(b) - recencyOf(a);
+            return diff !== 0 ? diff : b.id - a.id;
+        };
+
+        return result
+            .filter(manhwa => {
+                if (filter === 'all') return true;
+                if (filter === 'reading') {
+                    if (showOnlyNew) {
+                        return manhwa.status === 'reading' &&
+                            manhwa.total_chapters !== undefined &&
+                            manhwa.total_chapters !== null &&
+                            manhwa.current_chapter !== undefined &&
+                            manhwa.total_chapters > manhwa.current_chapter;
+                    }
+                    return manhwa.status === 'reading';
                 }
-                return manhwa.status === 'reading';
-            }
-            return manhwa.status === filter;
-        });
+                return manhwa.status === filter;
+            })
+            .sort(byRecent);
     })();
 
     const renderHeader = () => (
@@ -316,7 +345,7 @@ export default function Home() {
                 numColumns={2}
                 ListHeaderComponent={renderHeader}
                 contentContainerStyle={{ paddingBottom: 100 }}
-                columnWrapperStyle={{ paddingHorizontal: 12, gap: 10 }}
+                columnWrapperStyle={{ paddingHorizontal: 12, gap: 10, justifyContent: 'flex-start' }}
                 ListEmptyComponent={() =>
                     !isLoading ? (
                         <View className="items-center py-16 px-4">
@@ -332,8 +361,8 @@ export default function Home() {
                     )
                 }
                 renderItem={({ item }) => (
-                    <View style={{ flex: 1 }}>
-                        <ManhwaCard manhwa={item} onUpdate={fetchManhwas} />
+                    <View style={{ width: CARD_WIDTH }}>
+                        <ManhwaCard manhwa={item} onUpdate={handleCardUpdate} />
                     </View>
                 )}
             />

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { X, ChevronUp, ChevronLeft, ChevronRight, CheckCircle, SkipForward } from 'lucide-react'
-import { API_BASE } from '@/lib/api'
+import { API_BASE, authHeaders, withToken } from '@/lib/api'
 
 interface ChapterFile {
     name: string
@@ -56,12 +56,12 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         const fetchInfo = async () => {
             try {
                 // Fetch info
-                const res = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}`)
+                const res = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}`, { headers: authHeaders() })
                 const data = await res.json()
                 setTotalPages(data.total_pages)
 
                 // Fetch scroll
-                const scrollRes = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/scroll`)
+                const scrollRes = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/scroll`, { headers: authHeaders() })
                 const scrollData = await scrollRes.json()
                 if (scrollData.scroll_position > 0) {
                     scrollRef.current?.setAttribute('data-saved-scroll', scrollData.scroll_position.toString())
@@ -102,7 +102,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         try {
             await fetch(`${API_BASE}/api/manhwas/${manhwaId}/current-chapter`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: authHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({ current_chapter: chapNum }),
             })
             onChapterRead?.(chapNum)
@@ -131,7 +131,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
             scrollTimeoutRef.current = setTimeout(() => {
                 fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/scroll`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: authHeaders({ 'Content-Type': 'application/json' }),
                     body: JSON.stringify({ scroll_position: Math.floor(scrollTop) })
                 }).catch(err => console.error('Erro ao salvar scroll:', err))
             }, 500)
@@ -189,7 +189,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     }
 
     const pageUrl = (page: number) =>
-        `${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/page/${page}`
+        withToken(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/page/${page}`)
 
     return (
         <div className="fixed inset-0 z-[100] bg-black flex flex-col">

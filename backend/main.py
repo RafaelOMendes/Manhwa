@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import time
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.responses import Response, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -18,6 +18,27 @@ from models import Manhwa as ManhwaModel, ChapterProgress
 
 DOWNLOAD_DIR = os.environ.get("DOWNLOAD_DIR", r"D:\Manhwas")
 
+# Token de acesso. Se vazio (ex.: dev local), a auth fica desligada.
+# No VPS, defina API_TOKEN no ambiente para exigir o token em todas as rotas.
+API_TOKEN = os.environ.get("API_TOKEN", "").strip()
+
+
+async def verify_token(request: Request):
+    """Exige o token quando API_TOKEN está definido.
+
+    Aceita via header `Authorization: Bearer <token>` (usado pelos fetch)
+    ou via query `?token=<token>` (usado pelas <img> das páginas, que não
+    conseguem enviar headers).
+    """
+    if not API_TOKEN:
+        return
+    auth = request.headers.get("Authorization", "")
+    token = auth[7:].strip() if auth[:7].lower() == "bearer " else ""
+    if not token:
+        token = request.query_params.get("token", "")
+    if token != API_TOKEN:
+        raise HTTPException(status_code=401, detail="Token inválido ou ausente")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -28,7 +49,7 @@ async def lifespan(app: FastAPI):
     # Shutdown: limpeza (se necessário)
 
 
-app = FastAPI(title="Manhwa Tracker API", lifespan=lifespan)
+app = FastAPI(title="Manhwa Tracker API", lifespan=lifespan, dependencies=[Depends(verify_token)])
 
 # Serve cover images from the frontend public folder
 # This lets mobile clients load covers via http://<host>:8000/covers/<filename>
