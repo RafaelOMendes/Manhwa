@@ -15,7 +15,7 @@
       "url": "https://u.expo.dev/7f530189-0ad5-4407-88e7-ed767b860d6f"
     },
     "ios": {
-      "icon": "./assets/expo.icon",
+      "icon": "./assets/images/icon.png",
       "supportsTablet": true
     },
     "android": {
@@ -46,7 +46,7 @@
         {
           "backgroundColor": "#262525",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 120,
+          "imageWidth": 180,
           "resizeMode": "contain"
         }
       ],
