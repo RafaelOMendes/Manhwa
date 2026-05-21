@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, ScrollView, StyleSheet, Pressable, Animated, Easing } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { BookOpen, Plus, Download, CheckCircle, XCircle, WifiOff, RefreshCw, RotateCw, FolderDown } from 'lucide-react-native';
 import ManhwaCard from '../components/ManhwaCard';
 import AddManhwaModal from '../components/AddManhwaModal';
@@ -11,6 +11,7 @@ import {
     saveManhwaList,
     loadManhwaList,
     getLocalChaptersSet,
+    getManhwasWithLocalData,
 } from '../lib/cache';
 import { drainQueue } from '../lib/sync-queue';
 
@@ -52,6 +53,8 @@ export default function Home() {
     const [menuOpen, setMenuOpen] = useState(false);
     const [menuMounted, setMenuMounted] = useState(false);
     const menuAnim = useRef(new Animated.Value(0)).current;
+    // Ids dos manhwas com capítulos REALMENTE baixados no aparelho (pro filtro).
+    const [localDownloadedIds, setLocalDownloadedIds] = useState<Set<number>>(new Set());
     const [filter, setFilter] = useState<FilterId>('all');
     const [showOnlyNew, setShowOnlyNew] = useState(false);
     const [showOnlyUnreadTop30, setShowOnlyUnreadTop30] = useState(false);
@@ -63,9 +66,18 @@ export default function Home() {
     const [isOffline, setIsOffline] = useState(false);
     const [isReconnecting, setIsReconnecting] = useState(false);
 
+    const refreshLocalDownloaded = useCallback(() => {
+        getManhwasWithLocalData().then(setLocalDownloadedIds).catch(() => {});
+    }, []);
+
     useEffect(() => {
         fetchManhwas();
-    }, []);
+        refreshLocalDownloaded();
+    }, [refreshLocalDownloaded]);
+
+    // Ao voltar pra home (ex.: depois de baixar na tela de Downloads), reavalia
+    // o que está baixado localmente pro filtro "Apenas baixados".
+    useFocusEffect(refreshLocalDownloaded);
 
     // Anima abertura/fechamento do menu de download (fade + slide).
     useEffect(() => {
@@ -176,7 +188,9 @@ export default function Home() {
         let result = [...manhwas];
 
         if (showOnlyDownloaded) {
-            result = result.filter(m => m.download === true);
+            // "Apenas baixados" = o que está REALMENTE baixado no aparelho
+            // (capítulos locais), não a flag de sincronizar (m.download).
+            result = result.filter(m => localDownloadedIds.has(m.id));
         }
 
         if (filter === 'top30') {

@@ -278,7 +278,7 @@ export default function Downloads() {
                     onPress={handleDownloadAll}
                     disabled={totalPendingCount === 0}
                     activeOpacity={0.85}
-                    className={`flex-row items-center justify-center gap-2 rounded-xl mt-1 mb-4 ${
+                    className={`flex-row items-center justify-center gap-2 rounded-xl mt-1 mb-4 pb-2 ml-1 ${
                         totalPendingCount === 0 ? 'bg-[#1f1c1c] border border-gray-800' : 'bg-blue-600'
                     }`}
                     style={{ height: 44 }}

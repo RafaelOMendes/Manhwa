@@ -57,6 +57,9 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
   quando NÃO há download ativo — resolve o caso "X GB usado mas 0 baixado" de downloads interrompidos.
 - Tela de Downloads carrega **progressivamente** (linhas aparecem conforme prontas) e lê o índice uma
   única vez (`getManhwasWithLocalData`) pra abrir rápido.
+- ⚠️ **NÃO mexer no botão "Baixar tudo" (`downloads.tsx`) sem pedir permissão ao usuário.** O usuário
+  ajustou manualmente as classes desse botão (ex.: `pb-2 ml-1`) pra centralização correta — alterar
+  className/layout dele desalinha e empurra o texto. Pergunte antes de tocar nesse botão.
 
 ## Fila offline (`src/lib/sync-queue.ts`)
 - Leituras/scroll feitos offline são enfileirados e drenados (`drainQueue`) ao reconectar / foreground /
