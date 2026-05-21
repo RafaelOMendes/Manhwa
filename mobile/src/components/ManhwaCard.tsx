@@ -3,8 +3,8 @@ import { View, Text, TouchableOpacity, Alert, Modal, ScrollView, Linking, Activi
 import { Image } from 'expo-image';
 import { Star, Trash2, ExternalLink, Heart, FileText, X, FolderOpen, CheckCircle2, ChevronDown, Download as DownloadIcon } from 'lucide-react-native';
 import { Manhwa } from '../types/manhwa';
-import CbzReader from './CbzReader';
 import { API_BASE } from '../lib/api';
+import { openReader } from '../lib/reader-store';
 import {
     getLocalChaptersSet,
     removeManhwaLocal,
@@ -12,8 +12,9 @@ import {
     saveManhwaFiles,
     loadManhwaFiles,
     getReadChaptersSet,
-    migrateCumulativeIfNeeded,
+    reconcileReadsWithServer,
 } from '../lib/cache';
+import { drainQueue } from '../lib/sync-queue';
 
 interface CbzFile {
     name: string;
@@ -26,14 +27,12 @@ interface ManhwaCardProps {
     onUpdate: () => void;
 }
 
-export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
+function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
     const [isDeleting, setIsDeleting] = useState(false);
     const [isTogglingDownload, setIsTogglingDownload] = useState(false);
     const [showFiles, setShowFiles] = useState(false);
     const [files, setFiles] = useState<CbzFile[]>([]);
     const [isLoadingFiles, setIsLoadingFiles] = useState(false);
-    const [readingFile, setReadingFile] = useState<string | null>(null);
-    const [readingChapterNum, setReadingChapterNum] = useState<number | undefined>();
     const [currentChapter, setCurrentChapter] = useState(manhwa.current_chapter || 0);
     const [showStatusPicker, setShowStatusPicker] = useState(false);
     const [localFiles, setLocalFiles] = useState<Set<string>>(new Set());
@@ -107,19 +106,32 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
 
                 let loadedFiles: { name: string; size_mb: number; chapter_number: number }[] = [];
                 let loadedCurrentChapter = 0;
+                let fetchedOnline = false;
 
                 try {
+                    // Drena leituras offline ANTES de buscar o current_chapter,
+                    // pra que o valor do servidor já reflita o que foi lido offline.
+                    await drainQueue().catch(() => {});
                     const response = await fetch(`${API_BASE}/api/manhwas/${manhwa.id}/files`);
                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
                     const data = await response.json();
-                    loadedFiles = data.files || [];
+                    // chapter_number = POSIÇÃO na lista ordenada completa (1-based),
+                    // que é o que o servidor usa como current_chapter.
+                    const fullList = (data.files || []) as { name: string; size_mb: number }[];
+                    loadedFiles = fullList.map((f, i) => ({ name: f.name, size_mb: f.size_mb, chapter_number: i + 1 }));
                     loadedCurrentChapter = data.current_chapter || 0;
+                    fetchedOnline = true;
                     saveManhwaFiles(manhwa.id, loadedFiles).catch(() => {});
                 } catch (error) {
                     console.warn('[fetch] /files falhou, usando cache offline:', error);
                     const saved = await loadManhwaFiles(manhwa.id).catch(() => null);
                     if (saved && saved.length > 0) {
-                        loadedFiles = saved.filter(f => local.has(f.name));
+                        // Posição = índice na lista COMPLETA do snapshot (não na lista
+                        // filtrada). Assim "Capítulo 311" mantém o #311 offline.
+                        const positionByName = new Map(saved.map((f, i) => [f.name, i + 1]));
+                        loadedFiles = saved
+                            .filter(f => local.has(f.name))
+                            .map(f => ({ name: f.name, size_mb: f.size_mb, chapter_number: positionByName.get(f.name) ?? 0 }));
                     } else {
                         loadedFiles = [...local].sort().map((name, i) => ({
                             name,
@@ -133,16 +145,16 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                 setFiles(loadedFiles);
                 setCurrentChapter(loadedCurrentChapter);
 
-                // Migração one-shot: importa reads cumulativos pro set per-chapter
-                if (loadedCurrentChapter > 0 && loadedFiles.length > 0) {
+                // Reconcilia o set de lidos com o current_chapter do servidor,
+                // mas SÓ quando temos um valor fresco (online). Offline não mexe
+                // pra não regredir leituras com um valor defasado.
+                if (fetchedOnline && loadedFiles.length > 0) {
                     try {
-                        const mig = await migrateCumulativeIfNeeded(manhwa.id, loadedCurrentChapter, loadedFiles);
-                        if (mig.migrated > 0) {
-                            const updated = await getReadChaptersSet(manhwa.id);
-                            setReadChapters(updated);
-                        }
+                        await reconcileReadsWithServer(manhwa.id, loadedCurrentChapter, loadedFiles);
+                        const updated = await getReadChaptersSet(manhwa.id);
+                        setReadChapters(updated);
                     } catch (e) {
-                        console.warn('[cache] migrateCumulativeIfNeeded:', e);
+                        console.warn('[cache] reconcileReadsWithServer:', e);
                     }
                 }
             } finally {
@@ -427,7 +439,7 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                                     </Text>
                                     {files.map((file, i) => {
                                         const read = isChapterRead(file.name);
-                                        const chapterNumber = i + 1;
+                                        const chapterNumber = file.chapter_number || i + 1;
                                         return (
                                             <TouchableOpacity
                                                 key={i}
@@ -435,8 +447,14 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                                                 onLayout={handleItemLayout(i)}
                                                 onPress={() => {
                                                     setShowFiles(false);
-                                                    setReadingChapterNum(chapterNumber);
-                                                    setReadingFile(file.name);
+                                                    openReader({
+                                                        manhwaId: manhwa.id,
+                                                        filename: file.name,
+                                                        chapterNumber,
+                                                        files,
+                                                        onChapterRead: handleChapterRead,
+                                                        onClose: onUpdate,
+                                                    });
                                                 }}
                                                 style={{
                                                     marginBottom: 8,
@@ -479,24 +497,8 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                     </View>
                 </View>
             </Modal>
-
-            {readingFile && (
-                <CbzReader
-                    manhwaId={manhwa.id}
-                    filename={readingFile}
-                    chapterNumber={readingChapterNum}
-                    files={files}
-                    onClose={() => {
-                        setReadingFile(null);
-                        onUpdate();
-                    }}
-                    onChapterRead={handleChapterRead}
-                    onNavigate={(newFilename, newChapterNum) => {
-                        setReadingFile(newFilename);
-                        setReadingChapterNum(newChapterNum);
-                    }}
-                />
-            )}
         </>
     );
 }
+
+export default React.memo(ManhwaCard);

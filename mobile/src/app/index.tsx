@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, ScrollView, StyleSheet, Pressable, Animated, Easing } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BookOpen, Plus, Download, CheckCircle, XCircle, WifiOff, RefreshCw } from 'lucide-react-native';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { BookOpen, Plus, Download, CheckCircle, XCircle, WifiOff, RefreshCw, RotateCw, FolderDown } from 'lucide-react-native';
 import ManhwaCard from '../components/ManhwaCard';
 import AddManhwaModal from '../components/AddManhwaModal';
 import { Manhwa } from '../types/manhwa';
 import { API_BASE } from '../lib/api';
 import {
-    syncManhwaLocal,
-    removeManhwaLocal,
     saveManhwaList,
     loadManhwaList,
     getLocalChaptersSet,
+    getManhwasWithLocalData,
 } from '../lib/cache';
 import { drainQueue } from '../lib/sync-queue';
 
@@ -25,8 +25,36 @@ const FILTERS = [
 
 type FilterId = typeof FILTERS[number]['id'];
 
+const Checkbox = React.memo(({
+    value,
+    onChange,
+    label,
+    accentClass = 'bg-blue-500 border-blue-500',
+}: {
+    value: boolean;
+    onChange: (v: boolean) => void;
+    label: string;
+    accentClass?: string;
+}) => (
+    <TouchableOpacity
+        onPress={() => onChange(!value)}
+        className="flex-row items-center px-3 py-2 rounded-lg bg-[#1f1c1c]/50 border border-gray-800/50"
+    >
+        <View className={`w-4 h-4 rounded mr-2 items-center justify-center border ${value ? accentClass : 'border-gray-600 bg-[#262525]'}`}>
+            {value && <View className="w-2 h-2 rounded-sm bg-white" />}
+        </View>
+        <Text className="text-sm text-gray-300">{label}</Text>
+    </TouchableOpacity>
+));
+
 export default function Home() {
+    const router = useRouter();
     const [manhwas, setManhwas] = useState<Manhwa[]>([]);
+    const [menuOpen, setMenuOpen] = useState(false);
+    const [menuMounted, setMenuMounted] = useState(false);
+    const menuAnim = useRef(new Animated.Value(0)).current;
+    // Ids dos manhwas com capítulos REALMENTE baixados no aparelho (pro filtro).
+    const [localDownloadedIds, setLocalDownloadedIds] = useState<Set<number>>(new Set());
     const [filter, setFilter] = useState<FilterId>('all');
     const [showOnlyNew, setShowOnlyNew] = useState(false);
     const [showOnlyUnreadTop30, setShowOnlyUnreadTop30] = useState(false);
@@ -38,11 +66,42 @@ export default function Home() {
     const [isOffline, setIsOffline] = useState(false);
     const [isReconnecting, setIsReconnecting] = useState(false);
 
-    useEffect(() => {
-        fetchManhwas();
+    const refreshLocalDownloaded = useCallback(() => {
+        getManhwasWithLocalData().then(setLocalDownloadedIds).catch(() => {});
     }, []);
 
-    const fetchManhwas = async () => {
+    useEffect(() => {
+        fetchManhwas();
+        refreshLocalDownloaded();
+    }, [refreshLocalDownloaded]);
+
+    // Ao voltar pra home (ex.: depois de baixar na tela de Downloads), reavalia
+    // o que está baixado localmente pro filtro "Apenas baixados".
+    useFocusEffect(refreshLocalDownloaded);
+
+    // Anima abertura/fechamento do menu de download (fade + slide).
+    useEffect(() => {
+        if (menuOpen) {
+            setMenuMounted(true);
+            Animated.timing(menuAnim, {
+                toValue: 1,
+                duration: 130,
+                easing: Easing.out(Easing.quad),
+                useNativeDriver: true,
+            }).start();
+        } else {
+            Animated.timing(menuAnim, {
+                toValue: 0,
+                duration: 110,
+                easing: Easing.in(Easing.quad),
+                useNativeDriver: true,
+            }).start(({ finished }) => {
+                if (finished) setMenuMounted(false);
+            });
+        }
+    }, [menuOpen, menuAnim]);
+
+    const fetchManhwas = useCallback(async () => {
         try {
             const response = await fetch(`${API_BASE}/api/manhwas`);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -69,7 +128,7 @@ export default function Home() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
 
     const tryReconnect = async () => {
         if (isReconnecting) return;
@@ -98,78 +157,21 @@ export default function Home() {
             const drain = await drainQueue();
             console.log(`[sync]   ↪ enviadas ${drain.sent}, ${drain.remaining} pendentes`);
 
-            // 1. Sincroniza no servidor (baixa do Telegram pro D:\Manhwas)
+            // 1. Sincroniza APENAS no servidor (baixa do Telegram pro D:\Manhwas),
+            //    igual à web. NÃO baixa nada no celular — isso é feito na tela de
+            //    Downloads (Baixar tudo / individual).
             console.log('[sync] ☁️  POST /download-all (servidor sincroniza com Telegram)...');
             const tServer = Date.now();
             const response = await fetch(`${API_BASE}/api/manhwas/download-all`, { method: 'POST' });
             const data = await response.json();
             console.log(`[sync]   ↪ servidor concluiu em ${Date.now() - tServer}ms: ${data.message}`);
 
-            // 2. Replica pro celular em paralelo: baixa unread chapters dos reading+download=true
-            //    e remove os locais dos com download=false.
-            const toSync = manhwas.filter(m => m.status === 'reading' && m.download === true);
-            const toRemove = manhwas.filter(m => m.download === false);
-            console.log(`[sync] 📚 ${toSync.length} manhwas pra replicar no celular, ${toRemove.length} pra remover localmente`);
-
-            // Cleanup local de quem foi desligado (paralelo total)
-            if (toRemove.length > 0) {
-                console.log('[sync] 🗑️  removendo locais dos desligados...');
-                await Promise.all(toRemove.map(m =>
-                    removeManhwaLocal(m.id)
-                        .then(() => console.log(`[sync]   ✓ ${m.title} removido localmente`))
-                        .catch(e => console.warn(`[sync]   ✗ ${m.title}:`, e))
-                ));
-            }
-
-            // Sync paralelo dos manhwas (semáforo de MANHWA_CONCURRENCY)
-            const MANHWA_CONCURRENCY = 4;
-            const queue = [...toSync];
-            let localDownloaded = 0;
-            let localErrors = 0;
-            let processedCount = 0;
-
-            const syncWorker = async () => {
-                while (queue.length > 0) {
-                    const m = queue.shift();
-                    if (!m) return;
-                    processedCount++;
-                    console.log(`[sync] ▶️  [${processedCount}/${toSync.length}] ${m.title} (#${m.id})`);
-                    try {
-                        const filesRes = await fetch(`${API_BASE}/api/manhwas/${m.id}/files`);
-                        const filesData = await filesRes.json();
-                        const r = await syncManhwaLocal(
-                            m.id,
-                            m.current_chapter ?? 0,
-                            filesData.files ?? [],
-                            m.cover_url ?? null
-                        );
-                        localDownloaded += r.downloaded;
-                        localErrors += r.errors;
-                        console.log(`[sync]   ✓ ${m.title}: ${r.downloaded} baixados, ${r.errors} erros`);
-                    } catch (e) {
-                        console.warn(`[sync]   ✗ ${m.title} falhou:`, e);
-                        localErrors++;
-                    }
-                }
-            };
-
-            await Promise.all(
-                Array.from({ length: Math.min(MANHWA_CONCURRENCY, toSync.length || 1) }, syncWorker)
-            );
-
             const fullMs = Date.now() - tFull;
-            console.log(
-                `[sync] 🏁 Concluído em ${fullMs}ms — ` +
-                `${localDownloaded} caps confirmados no celular, ` +
-                `${localErrors} falhas, ${drain.sent} leituras offline enviadas`
-            );
+            console.log(`[sync] 🏁 Servidor concluído em ${fullMs}ms — ${drain.sent} leituras offline enviadas`);
             console.log('[sync] ═══════════════════════════════════════');
 
-            const localMsg = localDownloaded > 0
-                ? ` · ${localDownloaded} cap. no celular${localErrors > 0 ? ` (${localErrors} falhas)` : ''}`
-                : '';
             const drainMsg = drain.sent > 0 ? ` · ${drain.sent} leitura(s) offline enviada(s)` : '';
-            setSyncResult({ success: data.success, message: `${data.message}${localMsg}${drainMsg}` });
+            setSyncResult({ success: data.success, message: `${data.message}${drainMsg}` });
             setTimeout(() => setSyncResult(null), 10000);
             // Atualiza a lista pra refletir total_chapters/medium_reaction atualizados
             fetchManhwas();
@@ -186,7 +188,9 @@ export default function Home() {
         let result = [...manhwas];
 
         if (showOnlyDownloaded) {
-            result = result.filter(m => m.download === true);
+            // "Apenas baixados" = o que está REALMENTE baixado no aparelho
+            // (capítulos locais), não a flag de sincronizar (m.download).
+            result = result.filter(m => localDownloadedIds.has(m.id));
         }
 
         if (filter === 'top30') {
@@ -213,28 +217,6 @@ export default function Home() {
             return manhwa.status === filter;
         });
     })();
-
-    const Checkbox = ({
-        value,
-        onChange,
-        label,
-        accentClass = 'bg-blue-500 border-blue-500',
-    }: {
-        value: boolean;
-        onChange: (v: boolean) => void;
-        label: string;
-        accentClass?: string;
-    }) => (
-        <TouchableOpacity
-            onPress={() => onChange(!value)}
-            className="flex-row items-center px-3 py-2 rounded-lg bg-[#1f1c1c]/50 border border-gray-800/50"
-        >
-            <View className={`w-4 h-4 rounded mr-2 items-center justify-center border ${value ? accentClass : 'border-gray-600 bg-[#262525]'}`}>
-                {value && <View className="w-2 h-2 rounded-sm bg-white" />}
-            </View>
-            <Text className="text-sm text-gray-300">{label}</Text>
-        </TouchableOpacity>
-    );
 
     const renderHeader = () => (
         <View className="mb-4 mt-4 px-4">
@@ -356,11 +338,72 @@ export default function Home() {
                 )}
             />
 
-            {/* FABs — Sincronizar (acima) + Adicionar (abaixo) */}
+            {/* Backdrop do menu de download */}
+            {menuMounted && (
+                <Animated.View
+                    pointerEvents="auto"
+                    style={[styles.menuBackdrop, { opacity: menuAnim }]}
+                >
+                    <Pressable style={{ flex: 1 }} onPress={() => setMenuOpen(false)} />
+                </Animated.View>
+            )}
+
+            {/* FABs — Download (menu) + Adicionar */}
             <View style={styles.fabContainer}>
+                {menuMounted && (
+                    <Animated.View
+                        style={{
+                            alignItems: 'flex-end',
+                            gap: 10,
+                            marginBottom: 8,
+                            opacity: menuAnim,
+                        }}
+                    >
+                        <Animated.View
+                            style={{
+                                transform: [{
+                                    translateY: menuAnim.interpolate({ inputRange: [0, 1], outputRange: [24, 0] }),
+                                }],
+                            }}
+                        >
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setMenuOpen(false);
+                                    syncDownloads();
+                                }}
+                                disabled={isSyncing}
+                                style={styles.menuItem}
+                                activeOpacity={0.85}
+                            >
+                                {isSyncing
+                                    ? <ActivityIndicator size="small" color="#fff" />
+                                    : <RotateCw size={16} color="#fff" />}
+                                <Text style={styles.menuItemText}>Sincronizar</Text>
+                            </TouchableOpacity>
+                        </Animated.View>
+                        <Animated.View
+                            style={{
+                                transform: [{
+                                    translateY: menuAnim.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }),
+                                }],
+                            }}
+                        >
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setMenuOpen(false);
+                                    router.push('/downloads');
+                                }}
+                                style={styles.menuItem}
+                                activeOpacity={0.85}
+                            >
+                                <FolderDown size={16} color="#fff" />
+                                <Text style={styles.menuItemText}>Ver downloads</Text>
+                            </TouchableOpacity>
+                        </Animated.View>
+                    </Animated.View>
+                )}
                 <TouchableOpacity
-                    onPress={syncDownloads}
-                    disabled={isSyncing}
+                    onPress={() => setMenuOpen(v => !v)}
                     style={[styles.fab, styles.fabSecondary]}
                     activeOpacity={0.85}
                 >
@@ -388,11 +431,19 @@ export default function Home() {
 }
 
 const styles = StyleSheet.create({
+    menuBackdrop: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.55)',
+    },
     fabContainer: {
         position: 'absolute',
         bottom: 28,
         right: 20,
-        alignItems: 'center',
+        alignItems: 'flex-end',
         gap: 12,
     },
     fab: {
@@ -415,5 +466,26 @@ const styles = StyleSheet.create({
     },
     fabSecondary: {
         backgroundColor: '#2563eb',
+    },
+    menuItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 24,
+        backgroundColor: '#1f1c1c',
+        borderWidth: 1,
+        borderColor: '#374151',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.35,
+        shadowRadius: 6,
+        elevation: 6,
+    },
+    menuItemText: {
+        color: '#fff',
+        fontSize: 13,
+        fontWeight: '600',
     },
 });

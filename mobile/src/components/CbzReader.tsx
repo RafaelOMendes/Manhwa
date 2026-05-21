@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-    View, Text, TouchableOpacity, Modal, ActivityIndicator,
-    FlatList, Dimensions, StyleSheet, Animated,
+    View, Text, TouchableOpacity, ActivityIndicator,
+    FlatList, Dimensions, StyleSheet, Animated, BackHandler,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { X, ChevronUp, ChevronLeft, ChevronRight, CheckCircle, SkipForward } from 'lucide-react-native';
-import { StatusBar } from 'expo-status-bar';
+import { StatusBar, setStatusBarHidden } from 'expo-status-bar';
 import * as NavigationBar from 'expo-navigation-bar';
 import { API_BASE } from '../lib/api';
 import { getLocalChapter, markChapterReadLocal, saveLocalScroll, getLocalScroll } from '../lib/cache';
@@ -54,13 +54,22 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     const userHasInteracted = useRef(false);
     const scrollSaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // Modo imersivo: oculta barras ao abrir o reader e restaura ao fechar
+    // Modo imersivo: oculta status bar + barra de navegação ao abrir o reader
+    // (tela limpa) e restaura ao fechar. Como o reader agora é renderizado na
+    // raiz (sem Modal), isso vale pra janela única da activity.
     useEffect(() => {
+        setStatusBarHidden(true, 'fade');
         NavigationBar.setVisibilityAsync('hidden');
         NavigationBar.setBehaviorAsync('overlay-swipe');
+        // Botão voltar do Android fecha o leitor (antes era o onRequestClose do Modal).
+        const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+            onClose();
+            return true;
+        });
         return () => {
-            // Restaura a barra de navegação ao fechar o reader
+            setStatusBarHidden(false, 'fade');
             NavigationBar.setVisibilityAsync('visible');
+            sub.remove();
         };
     }, []);
 
@@ -73,7 +82,11 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     const currentIndex = files?.findIndex(f => f.name === filename) ?? -1;
     const prevChapter = files && currentIndex > 0 ? files[currentIndex - 1] : null;
     const nextChapter = files && currentIndex >= 0 && currentIndex < files.length - 1 ? files[currentIndex + 1] : null;
-    const chapNum = files && currentIndex >= 0 ? currentIndex + 1 : (chapterNumber ?? extractChapterNumber(filename));
+    // chapNum = POSIÇÃO real do capítulo na lista completa (chapter_number),
+    // não o índice na lista (que offline contém só os baixados). É esse valor
+    // que vai pro servidor como current_chapter.
+    const currentFile = files && currentIndex >= 0 ? files[currentIndex] : undefined;
+    const chapNum = currentFile?.chapter_number ?? chapterNumber ?? extractChapterNumber(filename);
 
     // Load chapter info + saved scroll position
     useEffect(() => {
@@ -92,26 +105,33 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                 const isLocal = local.available && !!local.totalPages && !!local.getPageUri;
 
                 if (isLocal) {
+                    // Capítulo baixado: carrega 100% local, NUNCA toca no backend
+                    // (nem pra páginas nem pra scroll) — funciona offline na hora.
                     setTotalPages(local.totalPages!);
                     setLocalPageUri(() => local.getPageUri!);
-                } else {
-                    const res = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}`);
-                    const data = await res.json();
-                    setTotalPages(data.total_pages);
+
+                    const localScroll = await getLocalScroll(manhwaId, filename);
+                    if (localScroll !== null && localScroll > 0) {
+                        setSavedScrollOffset(localScroll);
+                    }
+                    return;
                 }
 
-                // 2. Scroll: SEMPRE tenta local primeiro (instant, funciona offline)
+                // Não-baixado: precisa do servidor pras páginas
+                const res = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}`);
+                const data = await res.json();
+                setTotalPages(data.total_pages);
+
+                // Scroll: local primeiro (instant, offline); senão tenta servidor
                 const localScroll = await getLocalScroll(manhwaId, filename);
                 if (localScroll !== null && localScroll > 0) {
                     setSavedScrollOffset(localScroll);
                 } else {
-                    // Sem scroll local: tenta servidor (hidrata local na primeira leitura)
                     try {
                         const scrollRes = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/scroll`);
                         const scrollData = await scrollRes.json();
                         if (scrollData.scroll_position > 0) {
                             setSavedScrollOffset(scrollData.scroll_position);
-                            // Espelha pro local pra próximas leituras (offline OK)
                             saveLocalScroll(manhwaId, filename, scrollData.scroll_position).catch(() => {});
                         }
                     } catch {
@@ -207,7 +227,11 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     }, [manhwaId, chapNum, filename, onChapterRead]);
 
     const handleEndReached = () => {
-        if (totalPages > 0 && !loading && !reachedEnd) {
+        // Só marca como lido quando TODAS as páginas já carregaram (altura final
+        // do conteúdo). Senão, enquanto as imagens carregam, o conteúdo fica curto
+        // e o "fim" dispara antes de você ler de verdade.
+        const allPagesLoaded = totalPages > 0 && Object.keys(aspectRatios).length >= totalPages;
+        if (totalPages > 0 && !loading && !reachedEnd && allPagesLoaded) {
             setReachedEnd(true);
             markChapterAsRead();
         }
@@ -306,14 +330,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     };
 
     return (
-        <Modal
-            visible={true}
-            transparent={false}
-            animationType="slide"
-            onRequestClose={onClose}
-            statusBarTranslucent={true}
-            navigationBarTranslucent={true}
-        >
+        <View style={styles.fullscreen}>
             <StatusBar hidden={true} />
             <View style={{ flex: 1, backgroundColor: '#000' }}>
 
@@ -394,10 +411,38 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                         ListFooterComponent={renderFooter}
                         onScrollBeginDrag={() => { userHasInteracted.current = true; }}
                         onScroll={(e) => {
-                            const offset = e.nativeEvent.contentOffset.y;
-                            saveScrollPosition(offset);
+                            const { contentOffset, layoutMeasurement, contentSize } = e.nativeEvent;
+                            saveScrollPosition(contentOffset.y);
+                            // Marca "lido" ao chegar no fim — só depois de ter rolado
+                            // (offset > 0) e com conteúdo de fato rolável, pra não
+                            // disparar ao entrar no capítulo (conteúdo ainda curto).
+                            if (
+                                contentOffset.y > 0 &&
+                                contentSize.height > layoutMeasurement.height &&
+                                contentOffset.y + layoutMeasurement.height >= contentSize.height - 120
+                            ) {
+                                handleEndReached();
+                            }
                         }}
                         scrollEventThrottle={250}
+                        // Reaplica a posição salva enquanto as imagens carregam e o
+                        // conteúdo "assenta" (alturas medidas async). Para quando o
+                        // usuário interage.
+                        onContentSizeChange={(_w, h) => {
+                            if (
+                                savedScrollOffset > 0 &&
+                                !userHasInteracted.current &&
+                                h >= savedScrollOffset + 10
+                            ) {
+                                flatListRef.current?.scrollToOffset({ offset: savedScrollOffset, animated: false });
+                            }
+                        }}
+                        // Evita a "tela preta" do Android: por padrão o FlatList
+                        // clipa itens fora da tela e eles voltam em branco/preto.
+                        removeClippedSubviews={false}
+                        windowSize={9}
+                        initialNumToRender={5}
+                        maxToRenderPerBatch={6}
                         renderItem={({ item }) => {
                             const ratio = aspectRatios[item.id] || 0.7;
                             const height = SCREEN_WIDTH / ratio;
@@ -407,6 +452,8 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                                         source={{ uri: item.url }}
                                         style={{ width: SCREEN_WIDTH, height }}
                                         contentFit="contain"
+                                        cachePolicy="memory-disk"
+                                        recyclingKey={item.id}
                                         transition={200}
                                         onLoad={(e) => {
                                             const { width, height } = e.source;
@@ -431,11 +478,17 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                     </TouchableOpacity>
                 )}
             </View>
-        </Modal>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
+    fullscreen: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: '#000',
+        zIndex: 1000,
+        elevation: 1000,
+    },
     header: {
         position: 'absolute',
         top: 0,
