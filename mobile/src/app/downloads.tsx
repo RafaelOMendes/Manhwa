@@ -265,7 +265,7 @@ export default function Downloads() {
                 <TouchableOpacity
                     onPress={handleStop}
                     activeOpacity={0.85}
-                    className="flex-row items-center justify-center gap-2 rounded-xl mt-1 mb-4 bg-red-600"
+                    className="flex-row items-center justify-center gap-2 rounded-xl mt-1 mb-4 pb-2 ml-1 bg-red-600"
                     style={{ height: 44 }}
                 >
                     <Square size={16} color="#fff" fill="#fff" />
