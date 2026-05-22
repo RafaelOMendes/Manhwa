@@ -8,7 +8,7 @@ import { X, ChevronUp, ChevronLeft, ChevronRight, CheckCircle, SkipForward } fro
 import { StatusBar, setStatusBarHidden } from 'expo-status-bar';
 import * as NavigationBar from 'expo-navigation-bar';
 import { API_BASE } from '../lib/api';
-import { getLocalChapter, markChapterReadLocal, saveLocalScroll, getLocalScroll } from '../lib/cache';
+import { getLocalChapter, markChapterReadLocal, saveLocalScroll, getLocalScroll, markManhwaRead } from '../lib/cache';
 import { enqueueChapterRead, enqueueScroll } from '../lib/sync-queue';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -97,6 +97,11 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         userHasInteracted.current = false;
         setSavedScrollOffset(0);
         setLocalPageUri(null);
+        setAspectRatios({});
+
+        // "Último lido" = abrir o capítulo (mesmo sem terminar) → manhwa vai pro
+        // topo da home na hora, inclusive offline.
+        markManhwaRead(manhwaId).catch(() => {});
 
         const fetchInfo = async () => {
             try {

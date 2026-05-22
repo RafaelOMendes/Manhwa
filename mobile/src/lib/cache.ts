@@ -1,7 +1,25 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Directory, File, Paths } from 'expo-file-system';
+import * as LegacyFS from 'expo-file-system/legacy';
 import JSZip from 'jszip';
 import { API_BASE } from './api';
+
+/**
+ * Apaga uma pasta de capítulo de forma ASSÍNCRONA (fire-and-forget), pra NÃO
+ * travar a thread JS. `Directory.delete()` (API nova) é síncrono e apagar um
+ * capítulo com dezenas de páginas congela a UI — o que acontecia ao terminar de
+ * ler (trimCached). A API legacy `deleteAsync` roda fora da thread JS.
+ */
+function deleteChapterDirAsync(manhwaId: number, filename: string): void {
+    try {
+        const uri = chapterDir(manhwaId, filename).uri;
+        LegacyFS.deleteAsync(uri, { idempotent: true }).catch((e: unknown) =>
+            console.warn(`[cache] delete async ${filename}:`, e)
+        );
+    } catch (e) {
+        console.warn(`[cache] delete async ${filename}:`, e);
+    }
+}
 
 interface PendingEntry {
     downloadedAt: string;
@@ -125,12 +143,8 @@ function trimCached(m: ManhwaCache, manhwaId: number): string[] {
     entries.sort((a, b) => chapterNumberFor(b[1], b[0]) - chapterNumberFor(a[1], a[0]));
     const evicted: string[] = [];
     for (const [filename] of entries.slice(MAX_CACHED)) {
-        try {
-            const dir = chapterDir(manhwaId, filename);
-            if (dir.exists) dir.delete();
-        } catch (e) {
-            console.warn(`[cache] erro ao apagar ${filename}:`, e);
-        }
+        // Deleção assíncrona: não trava a UI ao terminar de ler um capítulo.
+        deleteChapterDirAsync(manhwaId, filename);
         delete m.cached[filename];
         evicted.push(filename);
     }

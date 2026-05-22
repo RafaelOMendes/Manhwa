@@ -5,14 +5,15 @@ import { useReaderRequest, navigateReader, closeReader } from '../lib/reader-sto
 /**
  * Renderiza o CbzReader UMA vez na raiz do app (fora de qualquer Modal), pra
  * que o modo imersivo (esconder barras) valha pra janela única da activity.
- * Mantém o leitor montado entre capítulos (key por manhwaId).
+ * Key por manhwa + capítulo: REMONTA a cada troca de capítulo, liberando a
+ * memória das imagens do capítulo anterior (evita travar lendo vários caps).
  */
 export default function ReaderHost() {
     const request = useReaderRequest();
     if (!request) return null;
     return (
         <CbzReader
-            key={request.manhwaId}
+            key={`${request.manhwaId}:${request.filename}`}
             manhwaId={request.manhwaId}
             filename={request.filename}
             chapterNumber={request.chapterNumber}

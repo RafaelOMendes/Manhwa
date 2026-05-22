@@ -4,6 +4,23 @@ This project uses **Expo SDK 54**. Read the exact versioned docs at https://docs
 
 When bumping the SDK, update both `mobile/package.json` (`"expo": "~XX.0.0"`) and this file at the same time.
 
+## ⚠️ Versão do app + OTA (LER antes de bumpar versão)
+A versão exibida na home vem de **`mobile/src/lib/version.ts` (`APP_VERSION`)** — uma constante no
+**bundle JS**. Bumpe ELA a cada mudança; o `eas update` (OTA) a atualiza. NÃO usar
+`Constants.expoConfig.version` (é gravada no build nativo e não muda via OTA).
+
+🚨 **`app.json` `expo.version` FAZ PARTE do fingerprint** (`runtimeVersion: fingerprint`). Mudar ele
+muda o `runtimeVersion` → o `eas update` passa a publicar pra um runtime que o APK instalado NÃO tem
+→ o update **não chega**. Regras:
+- Em update **só-JS** (`eas update`): **NÃO** toque no `expo.version` do `app.json`. Bumpe só o `version.ts`.
+- `app.json` `expo.version` só muda junto com um **`eas build`**, e deve ficar **igual à build instalada**.
+- Outras mudanças que também alteram o fingerprint e exigem rebuild: plugins, permissões, splash
+  (`imageWidth` etc.), dependências nativas, qualquer coisa em `android`/`ios` do `app.json`.
+
+Pra conferir se um update vai chegar: compare `eas update:list --branch preview` (runtimeVersion) com
+o runtimeVersion da build em `eas build:list`. Se diferirem, ou rebuilda, ou reverte a mudança nativa
+pra casar o fingerprint da build instalada.
+
 ---
 
 # Arquitetura do app (mobile)
