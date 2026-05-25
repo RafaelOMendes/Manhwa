@@ -37,6 +37,53 @@ function extractChapterNumber(filename: string): number {
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
+/**
+ * Página única do leitor — componente isolado e memoizado pra que o `onLoad` de
+ * UMA imagem NÃO re-renderize a lista inteira. Antes, `aspectRatios` ficava no
+ * estado do CbzReader: cada imagem decodificada disparava `setState` → o pai
+ * re-renderizava → `renderItem` virava nova função → o FlatList recriava todos
+ * os itens visíveis. Em chapters com páginas muito altas (tipo 800×10000),
+ * várias `onLoad` enfileiradas no fim do scroll viravam freeze. Agora cada
+ * Page tem o próprio estado; o pai só sabe "carregou" via ref + callback.
+ */
+interface ReaderPageProps {
+    id: string;
+    url: string;
+    initialRatio: number;
+    onToggleUI: () => void;
+    onLoaded: (id: string, ratio: number) => void;
+}
+const ReaderPage = React.memo(function ReaderPage({ id, url, initialRatio, onToggleUI, onLoaded }: ReaderPageProps) {
+    const [ratio, setRatio] = useState(initialRatio);
+    const height = SCREEN_WIDTH / ratio;
+    return (
+        <TouchableOpacity activeOpacity={1} onPress={onToggleUI}>
+            <Image
+                source={{ uri: url }}
+                style={{ width: SCREEN_WIDTH, height }}
+                contentFit="contain"
+                // cachePolicy="disk": SEM cache de memória. Reduz bitmap retention.
+                // O disco já garante leitura instantânea em re-mount.
+                cachePolicy="disk"
+                recyclingKey={id}
+                transition={0}
+                allowDownscaling
+                // priority baixa: imagens decodificam serializadas em vez de
+                // todas concorrendo pela CPU — menos pico de GC.
+                priority="low"
+                onLoad={(e) => {
+                    const { width, height } = e.source;
+                    if (width && height) {
+                        const r = width / height;
+                        setRatio(r);
+                        onLoaded(id, r);
+                    }
+                }}
+            />
+        </TouchableOpacity>
+    );
+});
+
 export default function CbzReader({ manhwaId, filename, chapterNumber, files, onClose, onChapterRead, onNavigate }: CbzReaderProps) {
     const [totalPages, setTotalPages] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -44,7 +91,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     const [reachedEnd, setReachedEnd] = useState(false);
     const [markedAsRead, setMarkedAsRead] = useState(false);
     const [showToast, setShowToast] = useState(false);
-    const [aspectRatios, setAspectRatios] = useState<Record<string, number>>({});
+    const [allPagesLoaded, setAllPagesLoaded] = useState(false);
     const [savedScrollOffset, setSavedScrollOffset] = useState(0);
     const [localPageUri, setLocalPageUri] = useState<((page: number) => string) | null>(null);
 
@@ -53,6 +100,9 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     const hasMarkedRef = useRef(false);
     const userHasInteracted = useRef(false);
     const scrollSaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+    // Caches mutáveis fora do render: alterar não re-renderiza.
+    const aspectRatiosRef = useRef<Record<string, number>>({});
+    const loadedIdsRef = useRef<Set<string>>(new Set());
 
     // Modo imersivo: oculta status bar + barra de navegação ao abrir o reader
     // (tela limpa) e restaura ao fechar. Como o reader agora é renderizado na
@@ -70,6 +120,9 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
             setStatusBarHidden(false, 'fade');
             NavigationBar.setVisibilityAsync('visible');
             sub.remove();
+            // Reader fechado → libera bitmaps grandes pra Home/Downloads não
+            // herdarem a pressão de memória do último capítulo lido.
+            Image.clearMemoryCache().catch(() => {});
         };
     }, []);
 
@@ -93,11 +146,18 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         setLoading(true);
         setReachedEnd(false);
         setMarkedAsRead(false);
+        setAllPagesLoaded(false);
         hasMarkedRef.current = false;
         userHasInteracted.current = false;
         setSavedScrollOffset(0);
         setLocalPageUri(null);
-        setAspectRatios({});
+        aspectRatiosRef.current = {};
+        loadedIdsRef.current = new Set();
+        // Libera os bitmaps decodificados do capítulo anterior: chapters de
+        // manhwa têm páginas gigantes e a memory cache do expo-image segura
+        // referências mesmo após o ReaderHost remontar. Sem isso, fps cai
+        // progressivamente conforme você troca de cap.
+        Image.clearMemoryCache().catch(() => {});
 
         // "Último lido" = abrir o capítulo (mesmo sem terminar) → manhwa vai pro
         // topo da home na hora, inclusive offline.
@@ -231,16 +291,27 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         }
     }, [manhwaId, chapNum, filename, onChapterRead]);
 
-    const handleEndReached = () => {
+    // Cada Page chama isto ao decodificar. Mantemos contagem num ref (não força
+    // re-render) e só damos UM setState quando bate o total — antes era uma
+    // re-render por imagem, que freezava chapters com páginas gigantes.
+    const handlePageLoaded = useCallback((id: string, ratio: number) => {
+        aspectRatiosRef.current[id] = ratio;
+        if (loadedIdsRef.current.has(id)) return;
+        loadedIdsRef.current.add(id);
+        if (totalPages > 0 && loadedIdsRef.current.size >= totalPages) {
+            setAllPagesLoaded(true);
+        }
+    }, [totalPages]);
+
+    const handleEndReached = useCallback(() => {
         // Só marca como lido quando TODAS as páginas já carregaram (altura final
         // do conteúdo). Senão, enquanto as imagens carregam, o conteúdo fica curto
         // e o "fim" dispara antes de você ler de verdade.
-        const allPagesLoaded = totalPages > 0 && Object.keys(aspectRatios).length >= totalPages;
         if (totalPages > 0 && !loading && !reachedEnd && allPagesLoaded) {
             setReachedEnd(true);
             markChapterAsRead();
         }
-    };
+    }, [totalPages, loading, reachedEnd, allPagesLoaded, markChapterAsRead]);
 
     const saveScrollPosition = useCallback((offset: number) => {
         if (!userHasInteracted.current) return;
@@ -270,11 +341,13 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         }, 500);
     }, [manhwaId, filename]);
 
-    const toggleUI = () => {
-        const nextVisible = !showUI;
-        setShowUI(nextVisible);
-        animateHeader(nextVisible);
-    };
+    const toggleUI = useCallback(() => {
+        setShowUI(prev => {
+            const next = !prev;
+            animateHeader(next);
+            return next;
+        });
+    }, []);
 
     const scrollToTop = () => {
         flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
@@ -296,6 +369,19 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         })),
         [totalPages, localPageUri, manhwaId, filename]
     );
+
+    // renderItem ESTÁVEL: depende só de toggleUI/handlePageLoaded (memoizados).
+    // Assim, quando o reader re-renderiza (toast, reachedEnd, header), o FlatList
+    // não reprocessa os itens.
+    const renderPage = useCallback(({ item }: { item: { id: string; url: string } }) => (
+        <ReaderPage
+            id={item.id}
+            url={item.url}
+            initialRatio={aspectRatiosRef.current[item.id] ?? 0.7}
+            onToggleUI={toggleUI}
+            onLoaded={handlePageLoaded}
+        />
+    ), [toggleUI, handlePageLoaded]);
 
     const renderFooter = () => {
         if (loading || totalPages === 0) return null;
@@ -451,31 +537,15 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                         // Evita a "tela preta" do Android: por padrão o FlatList
                         // clipa itens fora da tela e eles voltam em branco/preto.
                         removeClippedSubviews={false}
-                        windowSize={5}
-                        initialNumToRender={4}
-                        maxToRenderPerBatch={4}
-                        renderItem={({ item }) => {
-                            const ratio = aspectRatios[item.id] || 0.7;
-                            const height = SCREEN_WIDTH / ratio;
-                            return (
-                                <TouchableOpacity activeOpacity={1} onPress={toggleUI}>
-                                    <Image
-                                        source={{ uri: item.url }}
-                                        style={{ width: SCREEN_WIDTH, height }}
-                                        contentFit="contain"
-                                        cachePolicy="disk"
-                                        recyclingKey={item.id}
-                                        transition={200}
-                                        onLoad={(e) => {
-                                            const { width, height } = e.source;
-                                            if (width && height) {
-                                                setAspectRatios(prev => ({ ...prev, [item.id]: width / height }));
-                                            }
-                                        }}
-                                    />
-                                </TouchableOpacity>
-                            );
-                        }}
+                        // Janela apertada: páginas de manhwa podem ser MUITO altas
+                        // (800×10000 → 5x a viewport). Manter várias mounted ao
+                        // mesmo tempo enche memória, GC roda em loop e o fps
+                        // despenca. Com 3 só mantém ~3 viewport-heights de itens.
+                        windowSize={3}
+                        initialNumToRender={2}
+                        maxToRenderPerBatch={1}
+                        updateCellsBatchingPeriod={100}
+                        renderItem={renderPage}
                     />
                 )}
 
