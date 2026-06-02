@@ -44,6 +44,14 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
 - Marca como lido **só quando todas as páginas carregaram** (`aspectRatios.length >= totalPages`) e
   o usuário chega ao fim — evita marcar lido cedo enquanto as imagens ainda carregam.
 - `removeClippedSubviews={false}` no FlatList (senão Android mostra "tela preta" em imagens altas).
+- **Restaurar scroll = max(local, servidor).** Ao abrir um capítulo, lê o scroll local (AsyncStorage) E
+  o do servidor (`GET .../scroll`) e usa o MAIOR. Se o local está mais adiantado, faz `PUT` (enfileira
+  via `sync-queue` se falhar). Se o servidor está mais adiantado, atualiza o local. Offline → usa o local
+  direto; o push pro servidor sai depois via `drainQueue`. Vale também pra capítulos baixados — eles
+  CONSULTAM o servidor pra essa comparação (mas as páginas continuam 100% locais).
+- **Flush de scroll no unmount.** `saveScrollPosition` tem debounce de 500ms; ao fechar o leitor ou
+  trocar de capítulo, o cleanup do `useEffect` força o flush do último offset visto (local + servidor /
+  fila) — antes o `setTimeout` pendente era engolido pela desmontagem e perdia o final do scroll.
 
 ## Cache local / leitura (`src/lib/cache.ts`)
 - Índice em AsyncStorage por manhwa: `pending`/`cached` (entradas baixadas) + `read` (set de filenames lidos).
