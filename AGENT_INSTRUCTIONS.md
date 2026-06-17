@@ -72,15 +72,24 @@ mobile/
 
 #### 🖥️ Modo Tela Cheia (Imersivo) — apenas no leitor CBZ
 O modo imersivo (sem barra de status e sem barra de navegação) é ativado **somente ao abrir o `CbzReader`** e restaurado ao fechar. O restante do app exibe as barras normalmente.
-- Implementado em `src/components/CbzReader.tsx`:
-  - `<Modal statusBarTranslucent navigationBarTranslucent>` — faz o modal renderizar atrás da barra de status (área do notch/câmera) e da barra de navegação no Android.
-  - `<StatusBar hidden={true} />` dentro do `<Modal>` — oculta a barra de status superior apenas durante a leitura.
-  - `NavigationBar.setVisibilityAsync('hidden')` no `useEffect` de montagem — oculta a barra inferior ao abrir o reader.
-  - O `return` do mesmo `useEffect` chama `setVisibilityAsync('visible')` — restaura a barra ao fechar o reader.
+- Implementado em `src/components/CbzReader.tsx` + `src/components/ReaderHost.tsx` + `src/lib/reader-store.ts`:
+  - O leitor é renderizado **UMA vez na raiz** via `<ReaderHost/>` no `_layout.tsx`, **não** em `<Modal>` — no Android o `Modal` é janela separada e ignora os comandos de esconder barras. Telas abrem o leitor via `openReader(...)` do store; `navigateReader`/`closeReader` controlam.
+  - `setStatusBarHidden(true, 'fade')` + `<StatusBar hidden={true} />` — oculta a barra de status.
+  - `NavigationBar.setVisibilityAsync('hidden')` + `setBehaviorAsync('overlay-swipe')` no `useEffect` de montagem — oculta a barra inferior; o `return` restaura ao fechar.
+  - Botão voltar do Android tratado via `BackHandler` (não há mais `onRequestClose`).
   - O header e o botão "voltar ao topo" usam `useSafeAreaInsets()` para não ficarem embaixo do notch/gesture bar quando visíveis.
 - Usa o pacote `expo-navigation-bar` (já instalado).
 - **Para alterar:** edite o `useEffect` de imersivo e o `<StatusBar>` dentro de `src/components/CbzReader.tsx`.
-- **Atenção:** se criar novas telas com modal em tela cheia, aplique o mesmo padrão localizado (não globalmente no `_layout.tsx`).
+- **Atenção:** se criar novas telas em tela cheia, **NÃO** use `<Modal>` no Android pro modo imersivo — replique o padrão de "View na raiz" do `ReaderHost`.
+
+#### 📌 Persistência de progresso de leitura (scroll por capítulo)
+A posição de scroll dentro de um capítulo é salva tanto **local** (`AsyncStorage` via `saveLocalScroll`) quanto **no servidor** (`PUT /api/manhwas/{id}/read/{filename}/scroll`).
+- **Ao abrir um capítulo**, o `CbzReader` lê os DOIS valores (local + servidor) e usa o **MAIOR**:
+  - Se `local > servidor` → vai pra posição local **e empurra** ela pro servidor (enfileira via `sync-queue` se falhar).
+  - Se `servidor > local` → vai pra posição do servidor e atualiza o local com esse valor.
+  - **Offline** → usa só o local; o `drainQueue` envia depois (chamado no app start, foreground e sync).
+- **Ao sair / trocar de capítulo**, o cleanup do `useEffect` flusha o último offset pendente (debounce de 500ms é engolido senão).
+- Implementado em `src/components/CbzReader.tsx`; fila offline em `src/lib/sync-queue.ts`.
 
 - **❗ AVISO CRÍTICO PARA O MOBILE:** O Expo mudou. Verifique sempre o arquivo `/mobile/AGENTS.md` (e a documentação oficial da versão correta da SDK) antes de alterar rotas ou configurações.
 

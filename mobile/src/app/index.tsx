@@ -15,6 +15,7 @@ import {
     getLastReadMap,
 } from '../lib/cache';
 import { drainQueue } from '../lib/sync-queue';
+import { APP_VERSION } from '../lib/version';
 
 const FILTERS = [
     { id: 'all', label: 'Todos' },
@@ -251,9 +252,10 @@ export default function Home() {
         <View className="mb-4 mt-4 px-4">
             {/* App title */}
             <View className="flex-row items-center justify-between mb-6">
-                <View className="flex-row items-center gap-2">
+                <View className="flex-row items-end gap-2">
                     <BookOpen size={28} color="#ed4545" />
                     <Text className="text-2xl font-bold text-white">Manhwa Tracker</Text>
+                    <Text className="text-[11px] text-gray-500 mb-1">v{APP_VERSION}</Text>
                 </View>
                 {isOffline && (
                     <TouchableOpacity

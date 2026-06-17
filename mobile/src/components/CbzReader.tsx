@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import {
     View, Text, TouchableOpacity, ActivityIndicator,
     FlatList, Dimensions, StyleSheet, Animated, BackHandler,
+    Image as RNImage,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { X, ChevronUp, ChevronLeft, ChevronRight, CheckCircle, SkipForward } from 'lucide-react-native';
+import { X, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, SkipForward } from 'lucide-react-native';
 import { StatusBar, setStatusBarHidden } from 'expo-status-bar';
 import * as NavigationBar from 'expo-navigation-bar';
 import { API_BASE } from '../lib/api';
-import { getLocalChapter, markChapterReadLocal, saveLocalScroll, getLocalScroll } from '../lib/cache';
+import { getLocalChapter, markChapterReadLocal, saveLocalScroll, getLocalScroll, markManhwaRead } from '../lib/cache';
 import { enqueueChapterRead, enqueueScroll } from '../lib/sync-queue';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -37,6 +38,53 @@ function extractChapterNumber(filename: string): number {
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
+/**
+ * Página única do leitor — componente isolado e memoizado pra que o `onLoad` de
+ * UMA imagem NÃO re-renderize a lista inteira. Antes, `aspectRatios` ficava no
+ * estado do CbzReader: cada imagem decodificada disparava `setState` → o pai
+ * re-renderizava → `renderItem` virava nova função → o FlatList recriava todos
+ * os itens visíveis. Em chapters com páginas muito altas (tipo 800×10000),
+ * várias `onLoad` enfileiradas no fim do scroll viravam freeze. Agora cada
+ * Page tem o próprio estado; o pai só sabe "carregou" via ref + callback.
+ */
+interface ReaderPageProps {
+    id: string;
+    url: string;
+    initialRatio: number;
+    onToggleUI: () => void;
+    onLoaded: (id: string, ratio: number) => void;
+}
+const ReaderPage = React.memo(function ReaderPage({ id, url, initialRatio, onToggleUI, onLoaded }: ReaderPageProps) {
+    const [ratio, setRatio] = useState(initialRatio);
+    const height = SCREEN_WIDTH / ratio;
+    return (
+        <TouchableOpacity activeOpacity={1} onPress={onToggleUI}>
+            <Image
+                source={{ uri: url }}
+                style={{ width: SCREEN_WIDTH, height }}
+                contentFit="contain"
+                // cachePolicy="disk": SEM cache de memória. Reduz bitmap retention.
+                // O disco já garante leitura instantânea em re-mount.
+                cachePolicy="disk"
+                recyclingKey={id}
+                transition={0}
+                allowDownscaling
+                // priority baixa: imagens decodificam serializadas em vez de
+                // todas concorrendo pela CPU — menos pico de GC.
+                priority="low"
+                onLoad={(e) => {
+                    const { width, height } = e.source;
+                    if (width && height) {
+                        const r = width / height;
+                        setRatio(r);
+                        onLoaded(id, r);
+                    }
+                }}
+            />
+        </TouchableOpacity>
+    );
+});
+
 export default function CbzReader({ manhwaId, filename, chapterNumber, files, onClose, onChapterRead, onNavigate }: CbzReaderProps) {
     const [totalPages, setTotalPages] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -44,15 +92,38 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     const [reachedEnd, setReachedEnd] = useState(false);
     const [markedAsRead, setMarkedAsRead] = useState(false);
     const [showToast, setShowToast] = useState(false);
-    const [aspectRatios, setAspectRatios] = useState<Record<string, number>>({});
+    const [allPagesLoaded, setAllPagesLoaded] = useState(false);
     const [savedScrollOffset, setSavedScrollOffset] = useState(0);
     const [localPageUri, setLocalPageUri] = useState<((page: number) => string) | null>(null);
+    // `restoring`: roda o scroll progressivo até atingir `savedScrollOffset`.
+    // Durante essa fase a UI fica coberta pelo spinner (pra esconder as
+    // páginas "passando rápido") e a `FlatList` renderiza só uns poucos itens
+    // por vez (memória baixa). Ao terminar, libera a UI no offset correto.
+    const [restoring, setRestoring] = useState(false);
 
     const insets = useSafeAreaInsets();
     const flatListRef = useRef<FlatList>(null);
     const hasMarkedRef = useRef(false);
     const userHasInteracted = useRef(false);
     const scrollSaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const pendingScrollOffset = useRef<number | null>(null);
+    // Altura atual do conteúdo renderizado pela FlatList. Atualizada pelo
+    // onContentSizeChange. Usada pelo restore progressivo pra saber quando
+    // já há conteúdo suficiente pra atingir o offset salvo.
+    const contentHeightRef = useRef(0);
+    // Altura da viewport da FlatList (capturada pelo onLayout). Usada pelo
+    // botão "ir pro fim" pra calcular um offset que pare ANTES do gatilho
+    // de marca-como-lido (`contentSize - 120` no onScroll).
+    const viewportHeightRef = useRef(0);
+    // Pré-cálculo em background: mede TODAS as páginas via `RNImage.getSize`
+    // (sem bloquear a UI). Quando termina, alimenta o `totalContentHeightRef`
+    // → o botão "ir pro fim" passa a usar o total exato em vez do estimado
+    // pela FlatList. Não interfere no mount da FlatList nem no restore
+    // (esses seguem o caminho da v1.1.12 — progressivo).
+    const totalContentHeightRef = useRef(0);
+    // Caches mutáveis fora do render: alterar não re-renderiza.
+    const aspectRatiosRef = useRef<Record<string, number>>({});
+    const loadedIdsRef = useRef<Set<string>>(new Set());
 
     // Modo imersivo: oculta status bar + barra de navegação ao abrir o reader
     // (tela limpa) e restaura ao fechar. Como o reader agora é renderizado na
@@ -70,12 +141,19 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
             setStatusBarHidden(false, 'fade');
             NavigationBar.setVisibilityAsync('visible');
             sub.remove();
+            // Reader fechado → libera bitmaps grandes pra Home/Downloads não
+            // herdarem a pressão de memória do último capítulo lido.
+            Image.clearMemoryCache().catch(() => {});
         };
     }, []);
 
     // Animated value for header show/hide
     const headerOpacity = useRef(new Animated.Value(1)).current;
     const headerTranslateY = useRef(new Animated.Value(0)).current;
+    // FABs (subir/descer) compartilham `headerOpacity` mas têm translate
+    // próprio: o header desliza pra cima ao sumir, os FABs (no rodapé)
+    // deslizam pra baixo.
+    const fabTranslateY = useRef(new Animated.Value(0)).current;
     const toastOpacity = useRef(new Animated.Value(0)).current;
     const toastTranslateY = useRef(new Animated.Value(-16)).current;
 
@@ -91,12 +169,26 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     // Load chapter info + saved scroll position
     useEffect(() => {
         setLoading(true);
+        setRestoring(false);
         setReachedEnd(false);
         setMarkedAsRead(false);
+        setAllPagesLoaded(false);
         hasMarkedRef.current = false;
         userHasInteracted.current = false;
         setSavedScrollOffset(0);
         setLocalPageUri(null);
+        aspectRatiosRef.current = {};
+        loadedIdsRef.current = new Set();
+        totalContentHeightRef.current = 0;
+        // Libera os bitmaps decodificados do capítulo anterior: chapters de
+        // manhwa têm páginas gigantes e a memory cache do expo-image segura
+        // referências mesmo após o ReaderHost remontar. Sem isso, fps cai
+        // progressivamente conforme você troca de cap.
+        Image.clearMemoryCache().catch(() => {});
+
+        // "Último lido" = abrir o capítulo (mesmo sem terminar) → manhwa vai pro
+        // topo da home na hora, inclusive offline.
+        markManhwaRead(manhwaId).catch(() => {});
 
         const fetchInfo = async () => {
             try {
@@ -105,38 +197,55 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                 const isLocal = local.available && !!local.totalPages && !!local.getPageUri;
 
                 if (isLocal) {
-                    // Capítulo baixado: carrega 100% local, NUNCA toca no backend
-                    // (nem pra páginas nem pra scroll) — funciona offline na hora.
                     setTotalPages(local.totalPages!);
                     setLocalPageUri(() => local.getPageUri!);
-
-                    const localScroll = await getLocalScroll(manhwaId, filename);
-                    if (localScroll !== null && localScroll > 0) {
-                        setSavedScrollOffset(localScroll);
-                    }
-                    return;
+                } else {
+                    // Não-baixado: precisa do servidor pras páginas
+                    const res = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}`);
+                    const data = await res.json();
+                    setTotalPages(data.total_pages);
                 }
 
-                // Não-baixado: precisa do servidor pras páginas
-                const res = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}`);
-                const data = await res.json();
-                setTotalPages(data.total_pages);
-
-                // Scroll: local primeiro (instant, offline); senão tenta servidor
-                const localScroll = await getLocalScroll(manhwaId, filename);
-                if (localScroll !== null && localScroll > 0) {
-                    setSavedScrollOffset(localScroll);
-                } else {
-                    try {
-                        const scrollRes = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/scroll`);
+                // Scroll: merge local + server. Vence quem está MAIS adiantado.
+                // - Server > Local: vai pro server, atualiza local.
+                // - Local > Server: vai pro local, empurra pro server (enfileira se falhar).
+                // - Offline: usa local; a fila já cuida do push ao reconectar.
+                const localScroll = (await getLocalScroll(manhwaId, filename)) ?? 0;
+                let serverScroll: number | null = null;
+                try {
+                    const scrollRes = await fetch(
+                        `${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/scroll`
+                    );
+                    if (scrollRes.ok) {
                         const scrollData = await scrollRes.json();
-                        if (scrollData.scroll_position > 0) {
-                            setSavedScrollOffset(scrollData.scroll_position);
-                            saveLocalScroll(manhwaId, filename, scrollData.scroll_position).catch(() => {});
-                        }
-                    } catch {
-                        // Offline ou erro — começa do topo
+                        serverScroll = scrollData.scroll_position ?? 0;
                     }
+                } catch {
+                    serverScroll = null;
+                }
+
+                if (serverScroll === null) {
+                    if (localScroll > 0) setSavedScrollOffset(localScroll);
+                } else if (serverScroll > localScroll) {
+                    setSavedScrollOffset(serverScroll);
+                    saveLocalScroll(manhwaId, filename, serverScroll).catch(() => {});
+                } else if (localScroll > serverScroll) {
+                    setSavedScrollOffset(localScroll);
+                    try {
+                        const res = await fetch(
+                            `${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/scroll`,
+                            {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ scroll_position: localScroll }),
+                            }
+                        );
+                        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    } catch {
+                        enqueueScroll(manhwaId, filename, localScroll).catch(() => {});
+                    }
+                } else if (localScroll > 0) {
+                    setSavedScrollOffset(localScroll);
                 }
             } catch (error) {
                 console.error('Erro ao carregar CBZ:', error);
@@ -147,19 +256,137 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         fetchInfo();
     }, [manhwaId, filename]);
 
-    // Restore scroll after loading
+    // Pré-cálculo em BACKGROUND: mede TODAS as páginas via `RNImage.getSize`
+    // (concorrência 6) sem bloquear a UI. Quando termina, popula
+    // `totalContentHeightRef` (usado pelo botão "ir pro fim") e
+    // `aspectRatiosRef` (cada ReaderPage já monta na altura final). Falhas
+    // são silenciosas: o leitor continua funcionando com estimativas.
     useEffect(() => {
-        if (!loading && totalPages > 0 && savedScrollOffset > 0) {
-            setTimeout(() => {
+        if (loading || totalPages === 0 || pages.length === 0) return;
+
+        let cancelled = false;
+
+        (async () => {
+            const FALLBACK_RATIO = 0.7;
+            const heights: number[] = new Array(pages.length).fill(SCREEN_WIDTH / FALLBACK_RATIO);
+
+            const getSize = (uri: string) => new Promise<{ w: number; h: number }>((resolve, reject) => {
+                let done = false;
+                const t = setTimeout(() => {
+                    if (done) return;
+                    done = true;
+                    reject(new Error('getSize timeout'));
+                }, 2000);
+                RNImage.getSize(uri,
+                    (w, h) => { if (!done) { done = true; clearTimeout(t); resolve({ w, h }); } },
+                    (err) => { if (!done) { done = true; clearTimeout(t); reject(err); } }
+                );
+            });
+
+            const CONCURRENCY = 6;
+            let next = 0;
+
+            const worker = async () => {
+                while (!cancelled) {
+                    const i = next++;
+                    if (i >= pages.length) return;
+                    try {
+                        const { w, h } = await getSize(pages[i].url);
+                        if (cancelled) return;
+                        if (w > 0 && h > 0) {
+                            heights[i] = (SCREEN_WIDTH * h) / w;
+                            aspectRatiosRef.current[i.toString()] = w / h;
+                        }
+                    } catch {
+                        // mantém fallback
+                    }
+                }
+            };
+
+            await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
+            if (cancelled) return;
+
+            totalContentHeightRef.current = heights.reduce((s, v) => s + v, 0);
+        })();
+
+        return () => { cancelled = true; };
+    }, [loading, totalPages, pages]);
+
+    // Restore scroll progressivo guiado por `contentHeightRef`. A FlatList só
+    // renderiza itens dentro da janela atual de scroll; pra cobrir um offset
+    // alto sem inflar `initialNumToRender` (= memória), empurramos o scroll
+    // pro fim do conteúdo renderizado a cada tick — isso força a FlatList a
+    // mountar a próxima leva, o `onContentSizeChange` atualiza a altura, e o
+    // ciclo se repete até `contentHeight >= savedScrollOffset + viewport`.
+    // SÓ ENTÃO fazemos o salto final pro offset exato (senão o scroll clampa
+    // antes do alvo e a posição fica errada — bug que vinha quebrando o
+    // "voltar pro ponto certo").
+    useEffect(() => {
+        if (loading || totalPages === 0) return;
+        if (savedScrollOffset <= 0) return;
+
+        let cancelled = false;
+        setRestoring(true);
+        contentHeightRef.current = 0;
+
+        (async () => {
+            const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+            await sleep(80);
+
+            const TARGET_WITH_MARGIN = savedScrollOffset + SCREEN_WIDTH * 0.6;
+            let stagnant = 0;
+            let attempts = 0;
+            const MAX_ATTEMPTS = 80;
+
+            while (
+                !cancelled &&
+                !userHasInteracted.current &&
+                contentHeightRef.current < TARGET_WITH_MARGIN &&
+                attempts < MAX_ATTEMPTS
+            ) {
+                const prevHeight = contentHeightRef.current;
+                const pushTo = Math.min(
+                    Math.max(prevHeight - SCREEN_WIDTH * 0.5, 0),
+                    savedScrollOffset
+                );
+                flatListRef.current?.scrollToOffset({ offset: pushTo, animated: false });
+
+                await sleep(100);
+                attempts++;
+
+                if (contentHeightRef.current <= prevHeight + 4) {
+                    stagnant++;
+                    if (stagnant > 6) break;
+                } else {
+                    stagnant = 0;
+                }
+            }
+
+            if (!cancelled && !userHasInteracted.current) {
+                await sleep(40);
                 flatListRef.current?.scrollToOffset({ offset: savedScrollOffset, animated: false });
-            }, 100);
-        }
-    }, [loading, totalPages]);
+                await sleep(120);
+                if (!cancelled && !userHasInteracted.current) {
+                    flatListRef.current?.scrollToOffset({ offset: savedScrollOffset, animated: false });
+                }
+            }
+
+            if (!cancelled) setRestoring(false);
+        })();
+
+        return () => {
+            cancelled = true;
+            setRestoring(false);
+        };
+    }, [loading, totalPages, savedScrollOffset]);
 
     // Auto-hide header after 3s
     useEffect(() => {
         if (!showUI) return;
-        const timer = setTimeout(() => animateHeader(false), 3000);
+        const timer = setTimeout(() => {
+            setShowUI(false);
+            animateHeader(false);
+        }, 3000);
         return () => clearTimeout(timer);
     }, [showUI]);
 
@@ -172,6 +399,11 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
             }),
             Animated.timing(headerTranslateY, {
                 toValue: visible ? 0 : -60,
+                duration: 250,
+                useNativeDriver: true,
+            }),
+            Animated.timing(fabTranslateY, {
+                toValue: visible ? 0 : 24,
                 duration: 250,
                 useNativeDriver: true,
             }),
@@ -226,27 +458,34 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         }
     }, [manhwaId, chapNum, filename, onChapterRead]);
 
-    const handleEndReached = () => {
+    // Cada Page chama isto ao decodificar. Mantemos contagem num ref (não força
+    // re-render) e só damos UM setState quando bate o total — antes era uma
+    // re-render por imagem, que freezava chapters com páginas gigantes.
+    const handlePageLoaded = useCallback((id: string, ratio: number) => {
+        aspectRatiosRef.current[id] = ratio;
+        if (loadedIdsRef.current.has(id)) return;
+        loadedIdsRef.current.add(id);
+        if (totalPages > 0 && loadedIdsRef.current.size >= totalPages) {
+            setAllPagesLoaded(true);
+        }
+    }, [totalPages]);
+
+    const handleEndReached = useCallback(() => {
         // Só marca como lido quando TODAS as páginas já carregaram (altura final
         // do conteúdo). Senão, enquanto as imagens carregam, o conteúdo fica curto
         // e o "fim" dispara antes de você ler de verdade.
-        const allPagesLoaded = totalPages > 0 && Object.keys(aspectRatios).length >= totalPages;
         if (totalPages > 0 && !loading && !reachedEnd && allPagesLoaded) {
             setReachedEnd(true);
             markChapterAsRead();
         }
-    };
+    }, [totalPages, loading, reachedEnd, allPagesLoaded, markChapterAsRead]);
 
-    const saveScrollPosition = useCallback((offset: number) => {
-        if (!userHasInteracted.current) return;
-        if (scrollSaveTimeout.current) clearTimeout(scrollSaveTimeout.current);
-        scrollSaveTimeout.current = setTimeout(async () => {
-            const position = Math.floor(offset);
-
-            // 1. Sempre persiste local (instantâneo, funciona offline)
-            saveLocalScroll(manhwaId, filename, position).catch(() => {});
-
-            // 2. Tenta servidor; se falhar, enfileira pra eventual sync
+    const flushScrollPosition = useCallback((offset: number) => {
+        const position = Math.floor(offset);
+        // 1. Sempre persiste local (instantâneo, funciona offline)
+        saveLocalScroll(manhwaId, filename, position).catch(() => {});
+        // 2. Tenta servidor; se falhar, enfileira pra eventual sync
+        (async () => {
             try {
                 const res = await fetch(
                     `${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/scroll`,
@@ -257,22 +496,63 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                     }
                 );
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            } catch (err) {
+            } catch {
                 enqueueScroll(manhwaId, filename, position).catch(e =>
                     console.warn('[sync] enqueueScroll:', e)
                 );
             }
-        }, 500);
+        })();
     }, [manhwaId, filename]);
 
-    const toggleUI = () => {
-        const nextVisible = !showUI;
-        setShowUI(nextVisible);
-        animateHeader(nextVisible);
-    };
+    const saveScrollPosition = useCallback((offset: number) => {
+        if (!userHasInteracted.current) return;
+        pendingScrollOffset.current = offset;
+        if (scrollSaveTimeout.current) clearTimeout(scrollSaveTimeout.current);
+        scrollSaveTimeout.current = setTimeout(() => {
+            pendingScrollOffset.current = null;
+            flushScrollPosition(offset);
+        }, 500);
+    }, [flushScrollPosition]);
+
+    // Garante que o ÚLTIMO offset visto seja persistido (local + push pro servidor
+    // / fila offline) ao fechar o leitor ou trocar de capítulo — antes o debounce
+    // de 500ms podia ser engolido pela desmontagem, perdendo o final do scroll.
+    useEffect(() => {
+        return () => {
+            if (scrollSaveTimeout.current) {
+                clearTimeout(scrollSaveTimeout.current);
+                scrollSaveTimeout.current = null;
+            }
+            if (pendingScrollOffset.current !== null) {
+                const offset = pendingScrollOffset.current;
+                pendingScrollOffset.current = null;
+                flushScrollPosition(offset);
+            }
+        };
+    }, [manhwaId, filename, flushScrollPosition]);
+
+    const toggleUI = useCallback(() => {
+        setShowUI(prev => {
+            const next = !prev;
+            animateHeader(next);
+            return next;
+        });
+    }, []);
 
     const scrollToTop = () => {
         flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+    };
+
+    // Pula pra perto do fim SEM marcar como lido. O onScroll dispara
+    // `handleEndReached` quando `contentOffset + viewport >= contentSize - 120`,
+    // então paramos com 220 de folga (200 de margem + ~20 de slack pro scroll
+    // animado overshoot). Usa o `totalContentHeightRef` pré-calculado (exato);
+    // se o pré-cálculo falhou, cai no `contentHeightRef` (FlatList).
+    const scrollToBottomSafe = () => {
+        userHasInteracted.current = true;
+        const total = totalContentHeightRef.current || contentHeightRef.current;
+        const target = Math.max(total - viewportHeightRef.current - 220, 0);
+        flatListRef.current?.scrollToOffset({ offset: target, animated: true });
     };
 
     const goToChapter = (file: ChapterFile) => {
@@ -291,6 +571,21 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         })),
         [totalPages, localPageUri, manhwaId, filename]
     );
+
+
+    // renderItem ESTÁVEL: depende só de toggleUI/handlePageLoaded (memoizados).
+    // Assim, quando o reader re-renderiza (toast, reachedEnd, header), o FlatList
+    // não reprocessa os itens.
+    const renderPage = useCallback(({ item }: { item: { id: string; url: string } }) => (
+        <ReaderPage
+            id={item.id}
+            url={item.url}
+            initialRatio={aspectRatiosRef.current[item.id] ?? 0.7}
+            onToggleUI={toggleUI}
+            onLoaded={handlePageLoaded}
+        />
+    ), [toggleUI, handlePageLoaded]);
+
 
     const renderFooter = () => {
         if (loading || totalPages === 0) return null;
@@ -407,6 +702,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                         <Text style={{ color: '#6b7280' }}>Nenhuma página encontrada.</Text>
                     </View>
                 ) : (
+                    <>
                     <FlatList
                         ref={flatListRef}
                         data={pages}
@@ -431,57 +727,70 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                             }
                         }}
                         scrollEventThrottle={250}
-                        // Reaplica a posição salva enquanto as imagens carregam e o
-                        // conteúdo "assenta" (alturas medidas async). Para quando o
-                        // usuário interage.
-                        onContentSizeChange={(_w, h) => {
-                            if (
-                                savedScrollOffset > 0 &&
-                                !userHasInteracted.current &&
-                                h >= savedScrollOffset + 10
-                            ) {
-                                flatListRef.current?.scrollToOffset({ offset: savedScrollOffset, animated: false });
-                            }
-                        }}
+                        // Mantém `contentHeightRef` atualizado pra o restore
+                        // progressivo saber quando há conteúdo suficiente pra
+                        // dar o salto final no offset salvo.
+                        onContentSizeChange={(_w, h) => { contentHeightRef.current = h; }}
+                        onLayout={(e) => { viewportHeightRef.current = e.nativeEvent.layout.height; }}
                         // Evita a "tela preta" do Android: por padrão o FlatList
                         // clipa itens fora da tela e eles voltam em branco/preto.
                         removeClippedSubviews={false}
-                        windowSize={5}
-                        initialNumToRender={4}
-                        maxToRenderPerBatch={4}
-                        renderItem={({ item }) => {
-                            const ratio = aspectRatios[item.id] || 0.7;
-                            const height = SCREEN_WIDTH / ratio;
-                            return (
-                                <TouchableOpacity activeOpacity={1} onPress={toggleUI}>
-                                    <Image
-                                        source={{ uri: item.url }}
-                                        style={{ width: SCREEN_WIDTH, height }}
-                                        contentFit="contain"
-                                        cachePolicy="disk"
-                                        recyclingKey={item.id}
-                                        transition={200}
-                                        onLoad={(e) => {
-                                            const { width, height } = e.source;
-                                            if (width && height) {
-                                                setAspectRatios(prev => ({ ...prev, [item.id]: width / height }));
-                                            }
-                                        }}
-                                    />
-                                </TouchableOpacity>
-                            );
-                        }}
+                        // Janela apertada: páginas de manhwa podem ser MUITO altas
+                        // (800×10000 → 5x a viewport). Manter várias mounted ao
+                        // mesmo tempo enche memória, GC roda em loop e o fps
+                        // despenca. Com 3 só mantém ~3 viewport-heights de itens.
+                        windowSize={3}
+                        initialNumToRender={2}
+                        maxToRenderPerBatch={1}
+                        updateCellsBatchingPeriod={100}
+                        renderItem={renderPage}
                     />
+                    {/* Overlay durante restore progressivo: esconde o "flicker"
+                        das páginas passando rápido até o offset alvo. */}
+                    {restoring && (
+                        <View style={styles.restoringOverlay} pointerEvents="none">
+                            <ActivityIndicator size="large" color="#ffffff" />
+                        </View>
+                    )}
+                    </>
                 )}
 
-                {/* Scroll-to-top FAB */}
-                {showUI && !reachedEnd && (
-                    <TouchableOpacity
-                        onPress={scrollToTop}
-                        style={[styles.scrollTopBtn, { bottom: (insets.bottom || 0) + 24 }]}
+                {/* Scroll-to-top FAB — fica em cima na pilha (seta ↑) */}
+                {!reachedEnd && (
+                    <Animated.View
+                        style={[
+                            styles.scrollTopBtn,
+                            {
+                                bottom: (insets.bottom || 0) + 24 + 56,
+                                opacity: headerOpacity,
+                                transform: [{ translateY: fabTranslateY }],
+                            },
+                        ]}
+                        pointerEvents={showUI ? 'auto' : 'none'}
                     >
-                        <ChevronUp size={22} color="white" />
-                    </TouchableOpacity>
+                        <TouchableOpacity onPress={scrollToTop} style={styles.fabInner}>
+                            <ChevronUp size={22} color="white" />
+                        </TouchableOpacity>
+                    </Animated.View>
+                )}
+
+                {/* Scroll-to-bottom FAB — pula pra perto do fim sem marcar como lido (seta ↓ embaixo) */}
+                {!reachedEnd && (
+                    <Animated.View
+                        style={[
+                            styles.scrollBottomBtn,
+                            {
+                                bottom: (insets.bottom || 0) + 24,
+                                opacity: headerOpacity,
+                                transform: [{ translateY: fabTranslateY }],
+                            },
+                        ]}
+                        pointerEvents={showUI ? 'auto' : 'none'}
+                    >
+                        <TouchableOpacity onPress={scrollToBottomSafe} style={styles.fabInner}>
+                            <ChevronDown size={22} color="white" />
+                        </TouchableOpacity>
+                    </Animated.View>
                 )}
             </View>
         </View>
@@ -609,8 +918,23 @@ const styles = StyleSheet.create({
     scrollTopBtn: {
         position: 'absolute',
         right: 20,
-        backgroundColor: 'rgba(255,255,255,0.15)',
+    },
+    scrollBottomBtn: {
+        position: 'absolute',
+        right: 20,
+    },
+    fabInner: {
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.3)',
         padding: 12,
         borderRadius: 28,
+    },
+    restoringOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: '#000',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 5,
     },
 });

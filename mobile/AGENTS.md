@@ -4,6 +4,23 @@ This project uses **Expo SDK 54**. Read the exact versioned docs at https://docs
 
 When bumping the SDK, update both `mobile/package.json` (`"expo": "~XX.0.0"`) and this file at the same time.
 
+## ⚠️ Versão do app + OTA (LER antes de bumpar versão)
+A versão exibida na home vem de **`mobile/src/lib/version.ts` (`APP_VERSION`)** — uma constante no
+**bundle JS**. Bumpe ELA a cada mudança; o `eas update` (OTA) a atualiza. NÃO usar
+`Constants.expoConfig.version` (é gravada no build nativo e não muda via OTA).
+
+🚨 **`app.json` `expo.version` FAZ PARTE do fingerprint** (`runtimeVersion: fingerprint`). Mudar ele
+muda o `runtimeVersion` → o `eas update` passa a publicar pra um runtime que o APK instalado NÃO tem
+→ o update **não chega**. Regras:
+- Em update **só-JS** (`eas update`): **NÃO** toque no `expo.version` do `app.json`. Bumpe só o `version.ts`.
+- `app.json` `expo.version` só muda junto com um **`eas build`**, e deve ficar **igual à build instalada**.
+- Outras mudanças que também alteram o fingerprint e exigem rebuild: plugins, permissões, splash
+  (`imageWidth` etc.), dependências nativas, qualquer coisa em `android`/`ios` do `app.json`.
+
+Pra conferir se um update vai chegar: compare `eas update:list --branch preview` (runtimeVersion) com
+o runtimeVersion da build em `eas build:list`. Se diferirem, ou rebuilda, ou reverte a mudança nativa
+pra casar o fingerprint da build instalada.
+
 ---
 
 # Arquitetura do app (mobile)
@@ -27,6 +44,14 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
 - Marca como lido **só quando todas as páginas carregaram** (`aspectRatios.length >= totalPages`) e
   o usuário chega ao fim — evita marcar lido cedo enquanto as imagens ainda carregam.
 - `removeClippedSubviews={false}` no FlatList (senão Android mostra "tela preta" em imagens altas).
+- **Restaurar scroll = max(local, servidor).** Ao abrir um capítulo, lê o scroll local (AsyncStorage) E
+  o do servidor (`GET .../scroll`) e usa o MAIOR. Se o local está mais adiantado, faz `PUT` (enfileira
+  via `sync-queue` se falhar). Se o servidor está mais adiantado, atualiza o local. Offline → usa o local
+  direto; o push pro servidor sai depois via `drainQueue`. Vale também pra capítulos baixados — eles
+  CONSULTAM o servidor pra essa comparação (mas as páginas continuam 100% locais).
+- **Flush de scroll no unmount.** `saveScrollPosition` tem debounce de 500ms; ao fechar o leitor ou
+  trocar de capítulo, o cleanup do `useEffect` força o flush do último offset visto (local + servidor /
+  fila) — antes o `setTimeout` pendente era engolido pela desmontagem e perdia o final do scroll.
 
 ## Cache local / leitura (`src/lib/cache.ts`)
 - Índice em AsyncStorage por manhwa: `pending`/`cached` (entradas baixadas) + `read` (set de filenames lidos).
@@ -78,3 +103,24 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
 ## Performance
 - `ManhwaCard` e `Checkbox` são `React.memo`; callbacks passados (ex.: `fetchManhwas`) usam `useCallback`
   pra não re-renderizar a grade inteira a cada toque.
+
+## Entregar via `eas update` (autorizado pro Claude)
+O usuário liberou rodar `eas update` automaticamente para mudanças **só-JS/TS**. Procedimento por entrega:
+
+1. Bumpar `APP_VERSION` em `mobile/src/lib/version.ts` (ex.: `1.1.10` → `1.1.11`).
+   - Patch (`x.y.Z`) pra fix/ajuste; minor (`x.Y.0`) pra feature.
+   - NÃO mexer no `expo.version` do `app.json` (fingerprint — quebra o update).
+2. Documentar a mudança no topo do `mobile/CHANGELOG.md`, na nova versão.
+3. Rodar do diretório `mobile/`:
+
+   ```bash
+   eas update --branch preview --message "vX.Y.Z: <resumo curto>"
+   ```
+
+4. Reportar a URL/ID do update no fim.
+
+Quando NÃO rodar automaticamente (pedir antes):
+- Mudou dependência nativa, plugin, `app.json` (qualquer campo), permissões, splash, ícones, ou
+  qualquer arquivo em `android/` ou `ios/` → exige `eas build`, não `eas update`. Sempre confirmar.
+- Branch diferente de `preview` (ex.: `production`) → confirmar.
+- Rollback / republish / mudanças em segredos do EAS → confirmar.
