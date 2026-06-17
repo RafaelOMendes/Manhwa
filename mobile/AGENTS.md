@@ -103,3 +103,24 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
 ## Performance
 - `ManhwaCard` e `Checkbox` são `React.memo`; callbacks passados (ex.: `fetchManhwas`) usam `useCallback`
   pra não re-renderizar a grade inteira a cada toque.
+
+## Entregar via `eas update` (autorizado pro Claude)
+O usuário liberou rodar `eas update` automaticamente para mudanças **só-JS/TS**. Procedimento por entrega:
+
+1. Bumpar `APP_VERSION` em `mobile/src/lib/version.ts` (ex.: `1.1.10` → `1.1.11`).
+   - Patch (`x.y.Z`) pra fix/ajuste; minor (`x.Y.0`) pra feature.
+   - NÃO mexer no `expo.version` do `app.json` (fingerprint — quebra o update).
+2. Documentar a mudança no topo do `mobile/CHANGELOG.md`, na nova versão.
+3. Rodar do diretório `mobile/`:
+
+   ```bash
+   eas update --branch preview --message "vX.Y.Z: <resumo curto>"
+   ```
+
+4. Reportar a URL/ID do update no fim.
+
+Quando NÃO rodar automaticamente (pedir antes):
+- Mudou dependência nativa, plugin, `app.json` (qualquer campo), permissões, splash, ícones, ou
+  qualquer arquivo em `android/` ou `ios/` → exige `eas build`, não `eas update`. Sempre confirmar.
+- Branch diferente de `preview` (ex.: `production`) → confirmar.
+- Rollback / republish / mudanças em segredos do EAS → confirmar.
