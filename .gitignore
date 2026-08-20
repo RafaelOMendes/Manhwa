@@ -1,3 +1,9 @@
 frontend/public/covers/*
 .vscode
 rclone_upload.log
+
+# Automação Trello + Claude Code (ver automation/SETUP.md)
+automation/.env
+automation/state.json
+automation/venv/
+automation/__pycache__/
