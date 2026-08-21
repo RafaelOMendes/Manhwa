@@ -103,7 +103,10 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
     branch = card_state.get("branch") or git_ops.branch_name_for_card(card_id, card["name"])
 
     try:
-        git_ops.start_card_branch(REPO_DIR, BASE_BRANCH, branch)
+        # fresh=True só na rodada inicial: garante uma branch nova mesmo que tenha
+        # sobrado uma com o mesmo nome de uma execução anterior interrompida. Numa
+        # rodada de correção (is_fix_round) reaproveita a mesma branch de propósito.
+        git_ops.start_card_branch(REPO_DIR, BASE_BRANCH, branch, fresh=not is_fix_round)
     except git_ops.GitError as exc:
         if not card_state.get("blocked_notified"):
             send_telegram_message(f"⚠️ Card '{card['name']}' travado: {exc}")
@@ -152,6 +155,17 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
     # rede de segurança: garante que nada ficou sem commit
     git_ops.commit_all_if_dirty(REPO_DIR, f"WIP automático: {card['name']}")
 
+    areas = git_ops.changed_areas(REPO_DIR, BASE_BRANCH, branch)
+    areas_text = ", ".join(areas) if areas else "nenhuma área identificada (backend/frontend/mobile)"
+
+    # Volta pro BASE_BRANCH assim que a branch do card está com tudo commitado, pra não
+    # deixar o repositório "preso" numa branch de card entre execuções. Roda mesmo em
+    # caso de falha (abaixo) - start_card_branch já faz checkout de volta pro
+    # BASE_BRANCH sozinho na próxima tentativa de qualquer forma.
+    back = git_ops.checkout(REPO_DIR, BASE_BRANCH)
+    if not back.ok:
+        log(f"AVISO: não consegui voltar pra {BASE_BRANCH} depois do card '{card['name']}': {back.output[:200]}")
+
     if not result.ok:
         if not card_state.get("blocked_notified"):
             send_telegram_message(f"⚠️ Claude Code falhou no card '{card['name']}': {result.result_text[:300]}")
@@ -163,7 +177,10 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
         log(f"FALHA ({card['name']}): {result.result_text[:200]}")
         return  # tenta de novo no próximo poll
 
-    client.comment_card(card_id, f"✅ Claude Code terminou (branch `{branch}`):\n\n{result.result_text}")
+    client.comment_card(
+        card_id,
+        f"✅ Claude Code terminou (branch `{branch}`) - áreas alteradas: {areas_text}\n\n{result.result_text}",
+    )
     client.move_card(card_id, list_ids["TEST"])
 
     state_mod.set_card(
@@ -177,7 +194,9 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
         blocked_notified=False,
     )
 
-    send_telegram_message(f"🧪 Pronto pra testar: '{card['name']}'\nBranch: {branch}\nCard: {card_url(card)}")
+    send_telegram_message(
+        f"🧪 Pronto pra testar: '{card['name']}'\nÁreas alteradas: {areas_text}\nBranch: {branch}\nCard: {card_url(card)}"
+    )
     log(f"Card '{card['name']}' movido para Teste.")
 
 

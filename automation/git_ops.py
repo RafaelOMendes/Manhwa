@@ -67,12 +67,19 @@ def branch_name_for_card(card_id: str, card_name: str) -> str:
     return f"card-{card_id[-6:]}-{slugify(card_name)}"
 
 
-def start_card_branch(repo_dir: Path, base_branch: str, branch: str) -> None:
+def start_card_branch(repo_dir: Path, base_branch: str, branch: str, fresh: bool = False) -> None:
     """
-    Garante que `base_branch` está limpo e faz checkout numa branch nova (ou existente,
-    se já tiver sido criada numa rodada anterior) pra trabalhar no card.
+    Garante que `base_branch` está limpo e faz checkout numa branch pra trabalhar no
+    card.
     Lança GitError se a árvore de trabalho não estiver limpa - não queremos misturar
     mudanças não commitadas de fora da automação com o que o Claude Code vai gerar.
+
+    `fresh=True` (rodada inicial de um card, não uma correção) sempre cria a branch do
+    zero em cima de `base_branch` - se sobrou uma branch com esse nome de uma rodada
+    anterior interrompida (crash, processo derrubado no meio), ela é descartada em vez
+    de reaproveitada, pra não herdar estado parcial/velho. `fresh=False` (rodada de
+    correção, retomando a mesma sessão do Claude Code) reaproveita a branch existente
+    de propósito, pra acumular os commits de correção no mesmo lugar.
     """
     if not is_clean(repo_dir):
         raise GitError(
@@ -85,12 +92,39 @@ def start_card_branch(repo_dir: Path, base_branch: str, branch: str) -> None:
     if not checkout_base.ok:
         raise GitError(f"Não consegui fazer checkout de '{base_branch}': {checkout_base.output}")
 
+    if fresh and branch_exists(repo_dir, branch):
+        _run(repo_dir, "branch", "-D", branch)
+
     if branch_exists(repo_dir, branch):
         res = _run(repo_dir, "checkout", branch)
     else:
         res = _run(repo_dir, "checkout", "-b", branch)
     if not res.ok:
         raise GitError(f"Não consegui criar/trocar para a branch '{branch}': {res.output}")
+
+
+def checkout(repo_dir: Path, branch: str) -> GitResult:
+    return _run(repo_dir, "checkout", branch)
+
+
+# Ordem intencional (Back, Front, Mobile) - é a ordem em que aparecem nos avisos.
+AREA_LABELS = {
+    "backend": "Back",
+    "frontend": "Front",
+    "mobile": "Mobile",
+}
+
+
+def changed_areas(repo_dir: Path, base_branch: str, branch: str) -> list[str]:
+    """Quais áreas do projeto (Back/Front/Mobile) os commits da branch do card tocaram
+    em relação a `base_branch`, pra avisar no Trello/Telegram quando a task terminar.
+    Usa `git diff` por nome de arquivo - funciona não importa em qual branch o
+    repositório está checked out no momento."""
+    res = _run(repo_dir, "diff", "--name-only", f"{base_branch}...{branch}")
+    if not res.ok:
+        return []
+    touched_dirs = {line.split("/", 1)[0] for line in res.output.splitlines() if line.strip()}
+    return [label for prefix, label in AREA_LABELS.items() if prefix in touched_dirs]
 
 
 def commit_all_if_dirty(repo_dir: Path, message: str) -> bool:
