@@ -1,482 +1,537 @@
 {
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\.claude\\settings.json": {
-    "mtime": 1781697690.157142,
+  ".claude/settings.json": {
+    "mtime": 1787270115.5687497,
     "ast_hash": "7bf81dca0376bde3a32244b82bc7cbc0",
     "semantic_hash": "7bf81dca0376bde3a32244b82bc7cbc0"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\.claude\\settings.local.json": {
-    "mtime": 1780410666.0270886,
-    "ast_hash": "074e6b68c05c446b709462dca182c6b5",
-    "semantic_hash": "074e6b68c05c446b709462dca182c6b5"
+  ".claude/settings.local.json": {
+    "mtime": 1787270115.5697534,
+    "ast_hash": "9831a4dcaf76835df58cb997664897aa",
+    "semantic_hash": ""
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\backend\\add_col.py": {
+  "backend/add_col.py": {
     "mtime": 1776908539.0830967,
     "ast_hash": "bc3b37c5e3dc3bb3c82785fd56e0b47e",
     "semantic_hash": "bc3b37c5e3dc3bb3c82785fd56e0b47e"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\backend\\database.py": {
+  "backend/database.py": {
     "mtime": 1770657011.3614616,
     "ast_hash": "37b7cbf5ea540b8a47c96db1f7777b1f",
     "semantic_hash": "37b7cbf5ea540b8a47c96db1f7777b1f"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\backend\\init_db.py": {
+  "backend/init_db.py": {
     "mtime": 1770657011.3614616,
     "ast_hash": "7ef9f5edc693e896e11c7238d0f973ce",
     "semantic_hash": "7ef9f5edc693e896e11c7238d0f973ce"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\backend\\main.py": {
-    "mtime": 1779371813.0922127,
-    "ast_hash": "a15bbec52f0441e49a3e07966ce5fa47",
-    "semantic_hash": "a15bbec52f0441e49a3e07966ce5fa47"
+  "backend/main.py": {
+    "mtime": 1787313483.5976472,
+    "ast_hash": "ec5830ce4913bd19475209101e8de79b",
+    "semantic_hash": ""
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\backend\\models.py": {
+  "backend/models.py": {
     "mtime": 1776948428.397698,
     "ast_hash": "cdeb052ee6524fa62d15cd87bd7dfb9b",
     "semantic_hash": "cdeb052ee6524fa62d15cd87bd7dfb9b"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\backend\\telegram_scraper.py": {
+  "backend/telegram_scraper.py": {
     "mtime": 1779278804.687635,
     "ast_hash": "465720174ff734ac0544182f7ca90bdb",
     "semantic_hash": "465720174ff734ac0544182f7ca90bdb"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\frontend\\.eslintrc.json": {
+  "frontend/.eslintrc.json": {
     "mtime": 1770657011.3644612,
     "ast_hash": "934a81616adbd809dfc38314baaa3409",
     "semantic_hash": "934a81616adbd809dfc38314baaa3409"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\frontend\\app\\layout.tsx": {
+  "frontend/app/layout.tsx": {
     "mtime": 1770657011.3664618,
     "ast_hash": "cfb292fbd2234285df820f223d791904",
     "semantic_hash": "cfb292fbd2234285df820f223d791904"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\frontend\\app\\page.tsx": {
+  "frontend/app/page.tsx": {
     "mtime": 1779371945.761452,
     "ast_hash": "ce26e3a7d404698abd860aef1f00178a",
     "semantic_hash": "ce26e3a7d404698abd860aef1f00178a"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\frontend\\components\\AddManhwaModal.tsx": {
+  "frontend/components/AddManhwaModal.tsx": {
     "mtime": 1779372019.0844767,
     "ast_hash": "cf24ed031662e3f64c421f9a4b2691b8",
     "semantic_hash": "cf24ed031662e3f64c421f9a4b2691b8"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\frontend\\components\\CbzReader.tsx": {
+  "frontend/components/CbzReader.tsx": {
     "mtime": 1779372006.4374287,
     "ast_hash": "326ccb634f9345cd9b0b9f17c4a294c1",
     "semantic_hash": "326ccb634f9345cd9b0b9f17c4a294c1"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\frontend\\components\\ManhwaCard.tsx": {
+  "frontend/components/ManhwaCard.tsx": {
     "mtime": 1779371975.1406503,
     "ast_hash": "60e7c02c386a834d28273b4f573f4d96",
     "semantic_hash": "60e7c02c386a834d28273b4f573f4d96"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\frontend\\lib\\api.ts": {
+  "frontend/lib/api.ts": {
     "mtime": 1779371932.3991945,
     "ast_hash": "21a7141c1f8edfdbcbdf4ddbf8a1f885",
     "semantic_hash": "21a7141c1f8edfdbcbdf4ddbf8a1f885"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\frontend\\next-env.d.ts": {
+  "frontend/next-env.d.ts": {
     "mtime": 1770657011.3684633,
     "ast_hash": "da547da2ebeb322abd0257ae82d0f1bf",
     "semantic_hash": "da547da2ebeb322abd0257ae82d0f1bf"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\frontend\\next.config.js": {
+  "frontend/next.config.js": {
     "mtime": 1770657011.3694623,
     "ast_hash": "f02c9ddce17a2b615e67486de0476f44",
     "semantic_hash": "f02c9ddce17a2b615e67486de0476f44"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\frontend\\package.json": {
+  "frontend/package.json": {
     "mtime": 1770657011.3714633,
     "ast_hash": "968fd471d082279fa59535b64e12bdb2",
     "semantic_hash": "968fd471d082279fa59535b64e12bdb2"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\frontend\\postcss.config.js": {
+  "frontend/postcss.config.js": {
     "mtime": 1770657011.3714633,
     "ast_hash": "762a94d1749c8e97eebf3f94102e8eb2",
     "semantic_hash": "762a94d1749c8e97eebf3f94102e8eb2"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\frontend\\tailwind.config.ts": {
+  "frontend/tailwind.config.ts": {
     "mtime": 1770657011.3724623,
     "ast_hash": "90ca1991cb7a2f5ea5a86f028711d0a4",
     "semantic_hash": "90ca1991cb7a2f5ea5a86f028711d0a4"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\frontend\\tsconfig.json": {
+  "frontend/tsconfig.json": {
     "mtime": 1770657011.3724623,
     "ast_hash": "7dae10cb3f3386ac45aa80364982b30e",
     "semantic_hash": "7dae10cb3f3386ac45aa80364982b30e"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\frontend\\types\\manhwa.ts": {
+  "frontend/types/manhwa.ts": {
     "mtime": 1776948428.404874,
     "ast_hash": "7601dff1395f33d6c69a04bcaaa415a5",
     "semantic_hash": "7601dff1395f33d6c69a04bcaaa415a5"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\.claude\\settings.json": {
+  "mobile/.claude/settings.json": {
     "mtime": 1779278804.6906366,
     "ast_hash": "0e5fa9ee1de7421260d9f6695b5b6683",
     "semantic_hash": "0e5fa9ee1de7421260d9f6695b5b6683"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\.expo\\devices.json": {
+  "mobile/.expo/devices.json": {
     "mtime": 1779281165.6091871,
     "ast_hash": "e5f6eb13c875f326cfd5915d3364614f",
     "semantic_hash": "e5f6eb13c875f326cfd5915d3364614f"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\.expo\\types\\router.d.ts": {
+  "mobile/.expo/types/router.d.ts": {
     "mtime": 1779721181.387377,
     "ast_hash": "d170be8edbc008fe60d19b325b12cfa5",
     "semantic_hash": "d170be8edbc008fe60d19b325b12cfa5"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\app.json": {
-    "mtime": 1779477763.3650508,
+  "mobile/app.json": {
+    "mtime": 1787270115.6307518,
     "ast_hash": "a4ff24bbafb71dedf56c1cef9ae7bd63",
     "semantic_hash": "a4ff24bbafb71dedf56c1cef9ae7bd63"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\babel.config.js": {
+  "mobile/babel.config.js": {
     "mtime": 1779278804.7566707,
     "ast_hash": "4b1134a886efa0c3b09e44578a1d1b84",
     "semantic_hash": "4b1134a886efa0c3b09e44578a1d1b84"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\eas.json": {
+  "mobile/eas.json": {
     "mtime": 1779371142.7639606,
     "ast_hash": "5f487f70184c8d96289a16dcd51d8c61",
     "semantic_hash": "5f487f70184c8d96289a16dcd51d8c61"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\expo-env.d.ts": {
+  "mobile/expo-env.d.ts": {
     "mtime": 1779721180.545045,
     "ast_hash": "0dd9dccdb4b08595bc83df70d6a154d3",
     "semantic_hash": "0dd9dccdb4b08595bc83df70d6a154d3"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\package.json": {
+  "mobile/package.json": {
     "mtime": 1779371142.7689614,
     "ast_hash": "05365110273e1221bfb35a787414a373",
     "semantic_hash": "05365110273e1221bfb35a787414a373"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\plugins\\withNotifeeForegroundServiceType.js": {
+  "mobile/plugins/withNotifeeForegroundServiceType.js": {
     "mtime": 1779371142.7709613,
     "ast_hash": "4a8d339a5348dfe81ade1ecbb15d2c30",
     "semantic_hash": "4a8d339a5348dfe81ade1ecbb15d2c30"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\scripts\\reset-project.js": {
+  "mobile/scripts/reset-project.js": {
     "mtime": 1779278804.7691908,
     "ast_hash": "75ebe5715a16630aa66a8f094ceef943",
     "semantic_hash": "75ebe5715a16630aa66a8f094ceef943"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\src\\app\\_layout.tsx": {
+  "mobile/src/app/_layout.tsx": {
     "mtime": 1779371142.771962,
     "ast_hash": "44fdedb73d3aa1295377b23746d0e9cf",
     "semantic_hash": "44fdedb73d3aa1295377b23746d0e9cf"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\src\\app\\downloads.tsx": {
+  "mobile/src/app/downloads.tsx": {
     "mtime": 1779371142.7729607,
     "ast_hash": "43e79d98675f7c8df85c6be62ce90d3c",
     "semantic_hash": "43e79d98675f7c8df85c6be62ce90d3c"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\src\\app\\index.tsx": {
-    "mtime": 1779477197.5128615,
+  "mobile/src/app/index.tsx": {
+    "mtime": 1787279313.2191625,
     "ast_hash": "b03a6cbe22f58a1f2c22c0e2965bf515",
     "semantic_hash": "b03a6cbe22f58a1f2c22c0e2965bf515"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\src\\components\\AddManhwaModal.tsx": {
+  "mobile/src/components/AddManhwaModal.tsx": {
     "mtime": 1779278804.7761898,
     "ast_hash": "b84f188a0aa80082acdf7831769e4604",
     "semantic_hash": "b84f188a0aa80082acdf7831769e4604"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\src\\components\\CbzReader.tsx": {
-    "mtime": 1780422495.691105,
+  "mobile/src/components/CbzReader.tsx": {
+    "mtime": 1787270115.6327512,
     "ast_hash": "6e97cbc331499b2703f4617bbbe95673",
     "semantic_hash": "6e97cbc331499b2703f4617bbbe95673"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\src\\components\\ManhwaCard.tsx": {
+  "mobile/src/components/ManhwaCard.tsx": {
     "mtime": 1779371142.776959,
     "ast_hash": "393e7ad53abd9d02fb396d7023155498",
     "semantic_hash": "393e7ad53abd9d02fb396d7023155498"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\src\\components\\ReaderHost.tsx": {
-    "mtime": 1779479381.8104737,
+  "mobile/src/components/ReaderHost.tsx": {
+    "mtime": 1787270115.6347506,
     "ast_hash": "45f67887271b83c50c3a4f712e85f299",
     "semantic_hash": "45f67887271b83c50c3a4f712e85f299"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\src\\constants\\theme.ts": {
+  "mobile/src/constants/theme.ts": {
     "mtime": 1779278804.7811902,
     "ast_hash": "87a5c49afedce8bddd1636c15defed8c",
     "semantic_hash": "87a5c49afedce8bddd1636c15defed8c"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\src\\hooks\\use-color-scheme.ts": {
+  "mobile/src/hooks/use-color-scheme.ts": {
     "mtime": 1779278804.7851913,
     "ast_hash": "5e75b3d5ace0289cfc1bab951ca625bb",
     "semantic_hash": "5e75b3d5ace0289cfc1bab951ca625bb"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\src\\hooks\\use-color-scheme.web.ts": {
+  "mobile/src/hooks/use-color-scheme.web.ts": {
     "mtime": 1779278804.7861898,
     "ast_hash": "bcd7b96a68e8a00dd1de95aac4953eb6",
     "semantic_hash": "bcd7b96a68e8a00dd1de95aac4953eb6"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\src\\hooks\\use-theme.ts": {
+  "mobile/src/hooks/use-theme.ts": {
     "mtime": 1779278804.787191,
     "ast_hash": "4f25eef0f0f09cf62b3062f08e658aea",
     "semantic_hash": "4f25eef0f0f09cf62b3062f08e658aea"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\src\\lib\\api.ts": {
+  "mobile/src/lib/api.ts": {
     "mtime": 1779278804.7891905,
     "ast_hash": "03b51a14ec30da5044703ae20b9a2115",
     "semantic_hash": "03b51a14ec30da5044703ae20b9a2115"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\src\\lib\\background-download.ts": {
+  "mobile/src/lib/background-download.ts": {
     "mtime": 1779371142.7779603,
     "ast_hash": "f08dcb29bf681c84b7d43416710dff1c",
     "semantic_hash": "f08dcb29bf681c84b7d43416710dff1c"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\src\\lib\\cache.ts": {
-    "mtime": 1779479835.0136976,
+  "mobile/src/lib/cache.ts": {
+    "mtime": 1787270115.635751,
     "ast_hash": "fbe82bc8daf09f3a06826f986b651c8b",
     "semantic_hash": "fbe82bc8daf09f3a06826f986b651c8b"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\src\\lib\\download-manager.ts": {
+  "mobile/src/lib/download-manager.ts": {
     "mtime": 1779371142.7799597,
     "ast_hash": "1dd453d78544a93ef65cbc64b5d6f889",
     "semantic_hash": "1dd453d78544a93ef65cbc64b5d6f889"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\src\\lib\\reader-store.ts": {
+  "mobile/src/lib/reader-store.ts": {
     "mtime": 1779371142.780959,
     "ast_hash": "9fc207a3e91eda0a0c4101b6a8622dd7",
     "semantic_hash": "9fc207a3e91eda0a0c4101b6a8622dd7"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\src\\lib\\sync-queue.ts": {
+  "mobile/src/lib/sync-queue.ts": {
     "mtime": 1779307433.13481,
     "ast_hash": "451ca3a53df68a0fd3e1cbfe8b210980",
     "semantic_hash": "451ca3a53df68a0fd3e1cbfe8b210980"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\src\\lib\\version.ts": {
-    "mtime": 1780422509.9659626,
-    "ast_hash": "cee772525d0ad31c54a232fd63aef936",
-    "semantic_hash": "cee772525d0ad31c54a232fd63aef936"
+  "mobile/src/lib/version.ts": {
+    "mtime": 1787270115.6367512,
+    "ast_hash": "bca050ceb90073c976d5d40e9d6bc1e7",
+    "semantic_hash": ""
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\src\\nativewind-env.d.ts": {
+  "mobile/src/nativewind-env.d.ts": {
     "mtime": 1779278804.794191,
     "ast_hash": "0074169ae7f73e00780027d9fb78fc29",
     "semantic_hash": "0074169ae7f73e00780027d9fb78fc29"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\src\\types\\manhwa.ts": {
+  "mobile/src/types/manhwa.ts": {
     "mtime": 1779278804.7961917,
     "ast_hash": "7601dff1395f33d6c69a04bcaaa415a5",
     "semantic_hash": "7601dff1395f33d6c69a04bcaaa415a5"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\tailwind.config.js": {
+  "mobile/tailwind.config.js": {
     "mtime": 1779278804.7971902,
     "ast_hash": "f1d02179d73d71d038d9ab2b778b5751",
     "semantic_hash": "f1d02179d73d71d038d9ab2b778b5751"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\tsconfig.json": {
+  "mobile/tsconfig.json": {
     "mtime": 1779278804.7981904,
     "ast_hash": "8e8ddee61afa88f2eb6a0454e4de725a",
     "semantic_hash": "8e8ddee61afa88f2eb6a0454e4de725a"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\.claude\\CLAUDE.md": {
-    "mtime": 1781697690.1471407,
+  ".claude/CLAUDE.md": {
+    "mtime": 1787270115.5687497,
     "ast_hash": "817fe671013b35ae0bc9301dfe449a87",
     "semantic_hash": "817fe671013b35ae0bc9301dfe449a87"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\.claude\\skills\\graphify\\SKILL.md": {
-    "mtime": 1781697690.1451423,
-    "ast_hash": "26828fbc6cf325d3fb0ba6a3a28e03a1",
-    "semantic_hash": "26828fbc6cf325d3fb0ba6a3a28e03a1"
+  ".claude/skills/graphify/SKILL.md": {
+    "mtime": 1787270115.5727518,
+    "ast_hash": "bd282e1dcafe96f04cb22f1b466566c4",
+    "semantic_hash": ""
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\.claude\\skills\\graphify\\references\\add-watch.md": {
-    "mtime": 1781697611.9574027,
-    "ast_hash": "0df0589623217ca38a12bdcabfb42f4c",
-    "semantic_hash": "0df0589623217ca38a12bdcabfb42f4c"
+  ".claude/skills/graphify/references/add-watch.md": {
+    "mtime": 1787270115.5737512,
+    "ast_hash": "e10311cd2f69de7d62674eff2b87420f",
+    "semantic_hash": ""
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\.claude\\skills\\graphify\\references\\exports.md": {
-    "mtime": 1781697611.958406,
-    "ast_hash": "c04ddf8f1f5ef5e262ebec491a523c74",
-    "semantic_hash": "c04ddf8f1f5ef5e262ebec491a523c74"
+  ".claude/skills/graphify/references/exports.md": {
+    "mtime": 1787270115.5737512,
+    "ast_hash": "f8ab6da780543bb731f858496592ce88",
+    "semantic_hash": ""
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\.claude\\skills\\graphify\\references\\extraction-spec.md": {
-    "mtime": 1781697611.958406,
-    "ast_hash": "24808b03abfeaf5f6435bb69c0125b2c",
-    "semantic_hash": "24808b03abfeaf5f6435bb69c0125b2c"
+  ".claude/skills/graphify/references/extraction-spec.md": {
+    "mtime": 1787270115.5747495,
+    "ast_hash": "a50d4409dbac381356a25ca0905d833c",
+    "semantic_hash": ""
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\.claude\\skills\\graphify\\references\\github-and-merge.md": {
-    "mtime": 1781697611.9594052,
-    "ast_hash": "cde13df085e4c492aeb7ba298a996d0d",
-    "semantic_hash": "cde13df085e4c492aeb7ba298a996d0d"
+  ".claude/skills/graphify/references/github-and-merge.md": {
+    "mtime": 1787270115.5757518,
+    "ast_hash": "aa0e7ef186392cad062e60483ca7dbbf",
+    "semantic_hash": ""
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\.claude\\skills\\graphify\\references\\hooks.md": {
-    "mtime": 1781697611.9594052,
-    "ast_hash": "3f545db6ce646650bb9de588f5512a27",
-    "semantic_hash": "3f545db6ce646650bb9de588f5512a27"
+  ".claude/skills/graphify/references/hooks.md": {
+    "mtime": 1787270115.5757518,
+    "ast_hash": "0045c2f12c69bff3a641a8908a1ac057",
+    "semantic_hash": ""
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\.claude\\skills\\graphify\\references\\query.md": {
-    "mtime": 1781697611.9604025,
-    "ast_hash": "c2a8e798674a81b02aa9975f43023819",
-    "semantic_hash": "c2a8e798674a81b02aa9975f43023819"
+  ".claude/skills/graphify/references/query.md": {
+    "mtime": 1787270115.5767496,
+    "ast_hash": "82efbb856d6a3e15e7d78743b34a63c1",
+    "semantic_hash": ""
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\.claude\\skills\\graphify\\references\\transcribe.md": {
-    "mtime": 1781697611.9604025,
-    "ast_hash": "70f6aa30d6211f3a2c7e9fc45479f50c",
-    "semantic_hash": "70f6aa30d6211f3a2c7e9fc45479f50c"
+  ".claude/skills/graphify/references/transcribe.md": {
+    "mtime": 1787270115.5777502,
+    "ast_hash": "cf217decf113af55483edfa042f22db5",
+    "semantic_hash": ""
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\.claude\\skills\\graphify\\references\\update.md": {
-    "mtime": 1781697611.9604025,
-    "ast_hash": "0dad167a95bdb389f02fecffb60b1bc8",
-    "semantic_hash": "0dad167a95bdb389f02fecffb60b1bc8"
+  ".claude/skills/graphify/references/update.md": {
+    "mtime": 1787270115.5777502,
+    "ast_hash": "d9a58cbd4846113826f18de077d77f2b",
+    "semantic_hash": ""
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\AGENT_INSTRUCTIONS.md": {
-    "mtime": 1780409885.158466,
-    "ast_hash": "f2d9cf4feb8371ebff504541f8ae9da1",
-    "semantic_hash": "f2d9cf4feb8371ebff504541f8ae9da1"
+  "AGENT_INSTRUCTIONS.md": {
+    "mtime": 1787313534.8267934,
+    "ast_hash": "798f0f4f4566ced366c97e99a7914719",
+    "semantic_hash": ""
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\CLAUDE.md": {
-    "mtime": 1781697690.1561408,
+  "CLAUDE.md": {
+    "mtime": 1787270115.5797505,
     "ast_hash": "8a6643a420fdad6bfb583523bc6cef16",
     "semantic_hash": "8a6643a420fdad6bfb583523bc6cef16"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\README.md": {
-    "mtime": 1779278804.6816342,
-    "ast_hash": "0a6898e87183a517c34da34e01b5ceb1",
-    "semantic_hash": "0a6898e87183a517c34da34e01b5ceb1"
+  "README.md": {
+    "mtime": 1787313545.7239296,
+    "ast_hash": "91814ae1b84034b9a859cd9b35674f2a",
+    "semantic_hash": ""
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\backend\\README.md": {
+  "backend/README.md": {
     "mtime": 1779105847.484825,
     "ast_hash": "fb697931b93d96cf8cc9eedf490b60af",
     "semantic_hash": "fb697931b93d96cf8cc9eedf490b60af"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\backend\\requirements.txt": {
+  "backend/requirements.txt": {
     "mtime": 1770657011.3634615,
     "ast_hash": "5a9309c07733e6e50e60ec877982781e",
     "semantic_hash": "5a9309c07733e6e50e60ec877982781e"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\.expo\\README.md": {
+  "mobile/.expo/README.md": {
     "mtime": 1779281165.5606713,
     "ast_hash": "2d3a37a405a8f9ffb72ff12bdd3b0adf",
     "semantic_hash": "2d3a37a405a8f9ffb72ff12bdd3b0adf"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\AGENTS.md": {
-    "mtime": 1780419989.5644653,
+  "mobile/AGENTS.md": {
+    "mtime": 1787270115.6297505,
     "ast_hash": "3bb3ce3a7f710436d07d71c7e1918e43",
     "semantic_hash": "3bb3ce3a7f710436d07d71c7e1918e43"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\CHANGELOG.md": {
-    "mtime": 1780422521.4997516,
-    "ast_hash": "3e354a5a7007b7ee486b55792349a376",
-    "semantic_hash": "3e354a5a7007b7ee486b55792349a376"
+  "mobile/CHANGELOG.md": {
+    "mtime": 1787270115.6297505,
+    "ast_hash": "1b1094ee6800d25f6bb8d27bad5080e9",
+    "semantic_hash": ""
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\CLAUDE.md": {
+  "mobile/CLAUDE.md": {
     "mtime": 1779278804.700635,
     "ast_hash": "771faa62feb60b7de901a397aebb29b0",
     "semantic_hash": "771faa62feb60b7de901a397aebb29b0"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\README.md": {
+  "mobile/README.md": {
     "mtime": 1779278804.7016337,
     "ast_hash": "d1f58d9e70143584d1e1af79b79b17f3",
     "semantic_hash": "d1f58d9e70143584d1e1af79b79b17f3"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\.expo\\web\\cache\\production\\images\\favicon\\favicon-a4e030697a7571b3e95d31860e4da55d2f98e5e861e2b55e414f45a8556828ba-contain-transparent\\favicon-48.png": {
+  "mobile/.expo/web/cache/production/images/favicon/favicon-a4e030697a7571b3e95d31860e4da55d2f98e5e861e2b55e414f45a8556828ba-contain-transparent/favicon-48.png": {
     "mtime": 1779299493.9028203,
     "ast_hash": "20a9fe6c2469bd28db1c1baab735ceb4",
     "semantic_hash": "20a9fe6c2469bd28db1c1baab735ceb4"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\.expo\\web\\cache\\production\\images\\favicon\\favicon-ae7b03bc3698fca5cfb8f447d94d1298d5c6dd00c3546370dac31a26191418d0-contain-transparent\\favicon-48.png": {
+  "mobile/.expo/web/cache/production/images/favicon/favicon-ae7b03bc3698fca5cfb8f447d94d1298d5c6dd00c3546370dac31a26191418d0-contain-transparent/favicon-48.png": {
     "mtime": 1779368071.0948145,
     "ast_hash": "db00392c6b25d8aa7c0ec63c5c0fd123",
     "semantic_hash": "db00392c6b25d8aa7c0ec63c5c0fd123"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\assets\\images\\android-icon-background.png": {
+  "mobile/assets/images/android-icon-background.png": {
     "mtime": 1779371142.747965,
     "ast_hash": "36f986f692f2e09469b16f85afba9ea7",
     "semantic_hash": "36f986f692f2e09469b16f85afba9ea7"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\assets\\images\\android-icon-foreground.png": {
+  "mobile/assets/images/android-icon-foreground.png": {
     "mtime": 1779371142.7499607,
     "ast_hash": "4f0315ee20842a7bffe31e813078ccbe",
     "semantic_hash": "4f0315ee20842a7bffe31e813078ccbe"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\assets\\images\\android-icon-monochrome.png": {
+  "mobile/assets/images/android-icon-monochrome.png": {
     "mtime": 1779371142.751963,
     "ast_hash": "d1d04205e9370cb8feec7eb2595329b7",
     "semantic_hash": "d1d04205e9370cb8feec7eb2595329b7"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\assets\\images\\expo-badge-white.png": {
+  "mobile/assets/images/expo-badge-white.png": {
     "mtime": 1779278804.721637,
     "ast_hash": "02efb8472f161bcf8afc8c8489a28fca",
     "semantic_hash": "02efb8472f161bcf8afc8c8489a28fca"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\assets\\images\\expo-badge.png": {
+  "mobile/assets/images/expo-badge.png": {
     "mtime": 1779278804.7226365,
     "ast_hash": "6b0da8ec880685d1bd053c0f5ea9d09d",
     "semantic_hash": "6b0da8ec880685d1bd053c0f5ea9d09d"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\assets\\images\\expo-logo.png": {
+  "mobile/assets/images/expo-logo.png": {
     "mtime": 1779278804.7236362,
     "ast_hash": "5ee5db91d59518c45ebcc99a2f5afc57",
     "semantic_hash": "5ee5db91d59518c45ebcc99a2f5afc57"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\assets\\images\\favicon.png": {
+  "mobile/assets/images/favicon.png": {
     "mtime": 1779371142.752961,
     "ast_hash": "06c490011c2e1a10189506f64918b3ca",
     "semantic_hash": "06c490011c2e1a10189506f64918b3ca"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\assets\\images\\icon.png": {
+  "mobile/assets/images/icon.png": {
     "mtime": 1779371142.7619603,
     "ast_hash": "ae39fde79f5cee4273496ef8a300c9c5",
     "semantic_hash": "ae39fde79f5cee4273496ef8a300c9c5"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\assets\\images\\logo-glow.png": {
+  "mobile/assets/images/logo-glow.png": {
     "mtime": 1779278804.7336366,
     "ast_hash": "dbca075a49dc45e550c5d2e3e9601039",
     "semantic_hash": "dbca075a49dc45e550c5d2e3e9601039"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\assets\\images\\react-logo.png": {
+  "mobile/assets/images/react-logo.png": {
     "mtime": 1779278804.7346401,
     "ast_hash": "695d5a1c6f29a689130f3aaa573aec6e",
     "semantic_hash": "695d5a1c6f29a689130f3aaa573aec6e"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\assets\\images\\react-logo@2x.png": {
+  "mobile/assets/images/react-logo@2x.png": {
     "mtime": 1779278804.737635,
     "ast_hash": "b507e7f2c91ebc8fe24dee79ccb3b600",
     "semantic_hash": "b507e7f2c91ebc8fe24dee79ccb3b600"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\assets\\images\\react-logo@3x.png": {
+  "mobile/assets/images/react-logo@3x.png": {
     "mtime": 1779278804.7396355,
     "ast_hash": "8a4d0e5b845044e56e3b2df627d01cfd",
     "semantic_hash": "8a4d0e5b845044e56e3b2df627d01cfd"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\assets\\images\\splash-icon.png": {
+  "mobile/assets/images/splash-icon.png": {
     "mtime": 1779371142.76296,
     "ast_hash": "ccc8bd46570214e780ce0f0fbdec8207",
     "semantic_hash": "ccc8bd46570214e780ce0f0fbdec8207"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\assets\\images\\tabIcons\\explore.png": {
+  "mobile/assets/images/tabIcons/explore.png": {
     "mtime": 1779278804.7471566,
     "ast_hash": "8409922f7d5c981001e3c9b25e4bfae5",
     "semantic_hash": "8409922f7d5c981001e3c9b25e4bfae5"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\assets\\images\\tabIcons\\explore@2x.png": {
+  "mobile/assets/images/tabIcons/explore@2x.png": {
     "mtime": 1779278804.7491536,
     "ast_hash": "dd40200ba8e8d98061578292d6b73791",
     "semantic_hash": "dd40200ba8e8d98061578292d6b73791"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\assets\\images\\tabIcons\\explore@3x.png": {
+  "mobile/assets/images/tabIcons/explore@3x.png": {
     "mtime": 1779278804.7501543,
     "ast_hash": "c4278d79298bb11a8b0e68ed3e40da9e",
     "semantic_hash": "c4278d79298bb11a8b0e68ed3e40da9e"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\assets\\images\\tabIcons\\home.png": {
+  "mobile/assets/images/tabIcons/home.png": {
     "mtime": 1779278804.7511537,
     "ast_hash": "eeb5de2ac12ace75b31dfda235208956",
     "semantic_hash": "eeb5de2ac12ace75b31dfda235208956"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\assets\\images\\tabIcons\\home@2x.png": {
+  "mobile/assets/images/tabIcons/home@2x.png": {
     "mtime": 1779278804.7531536,
     "ast_hash": "456346cfb0b82cc0f39e921e05d082d9",
     "semantic_hash": "456346cfb0b82cc0f39e921e05d082d9"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\assets\\images\\tabIcons\\home@3x.png": {
+  "mobile/assets/images/tabIcons/home@3x.png": {
     "mtime": 1779278804.7541535,
     "ast_hash": "5d86e963002b3664ab81c128c838559d",
     "semantic_hash": "5d86e963002b3664ab81c128c838559d"
   },
-  "C:\\Users\\Rafa\\Desktop\\Programacao\\Manhwa\\mobile\\assets\\images\\tutorial-web.png": {
+  "mobile/assets/images/tutorial-web.png": {
     "mtime": 1779278804.7556894,
     "ast_hash": "c62d22797f3002396754d8cc55b0ae1a",
     "semantic_hash": "c62d22797f3002396754d8cc55b0ae1a"
+  },
+  "automation/claude_prompt.py": {
+    "mtime": 1787275193.2007408,
+    "ast_hash": "31d27831a04d4a3e4983c0dd7b97ecba",
+    "semantic_hash": ""
+  },
+  "automation/claude_runner.py": {
+    "mtime": 1787279587.198548,
+    "ast_hash": "d98ad80bcab5573876d4797c8586f848",
+    "semantic_hash": ""
+  },
+  "automation/git_ops.py": {
+    "mtime": 1787282096.7274077,
+    "ast_hash": "900c9e40d47122bb70a95edb9b22b8df",
+    "semantic_hash": ""
+  },
+  "automation/mobile_build.py": {
+    "mtime": 1787277736.0488362,
+    "ast_hash": "a76537d3ad7857c877d5ad1af6af91f0",
+    "semantic_hash": ""
+  },
+  "automation/proc_utils.py": {
+    "mtime": 1787277739.0625594,
+    "ast_hash": "46bce79e17034b4a33cc3a019d421a87",
+    "semantic_hash": ""
+  },
+  "automation/state.py": {
+    "mtime": 1787270115.5857506,
+    "ast_hash": "7570ee250478e28ba76ecd08e03f4dac",
+    "semantic_hash": ""
+  },
+  "automation/telegram_notify.py": {
+    "mtime": 1787274547.2997377,
+    "ast_hash": "02a1f015f61c47c706bd81d33ffcd031",
+    "semantic_hash": ""
+  },
+  "automation/trello_client.py": {
+    "mtime": 1787270115.5867498,
+    "ast_hash": "e6aa6d417447733b58f0669b9f3c3154",
+    "semantic_hash": ""
+  },
+  "automation/watcher.py": {
+    "mtime": 1787282088.771818,
+    "ast_hash": "f2748b129c035016bf8ba9a3a05935ef",
+    "semantic_hash": ""
+  },
+  "automation/SETUP.md": {
+    "mtime": 1787282125.985116,
+    "ast_hash": "e69f18e744dafc867822af75c4e34818",
+    "semantic_hash": ""
+  },
+  "automation/requirements.txt": {
+    "mtime": 1787275194.9327388,
+    "ast_hash": "606990d8942745e94238bd63364de43f",
+    "semantic_hash": ""
   }
 }
