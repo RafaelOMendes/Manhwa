@@ -16,6 +16,14 @@ O projeto Manhwa Tracker é composto por três partes principais:
   - `telegram_scraper.py`: Integração com Telegram (Telethon) — scraping de tópicos e download paralelo de `.cbz`.
   - `init_db.py`: Script para criar/resetar as tabelas (`python init_db.py [--reset]`).
   - `add_col.py`: Migração ad-hoc (adiciona coluna `andamento`). Use só se atualizar um banco antigo.
+- **Transações no `get_db()` (`database.py`):** a dependency já faz `commit()` automático se o endpoint
+  retornar sem exceção, e `rollback()` se uma exceção propagar. **Não dê `await db.commit()` manual
+  dentro de um endpoint** — deixe o `get_db()` cuidar disso, senão fica fácil deixar o banco com commits
+  parciais (ex.: um loop que atualiza vários registros e falha no meio). Se um endpoint precisa de
+  atomicidade "tudo ou nada" sobre múltiplas operações (ex.: `/api/manhwas/download-all`, que processa
+  vários manhwas e só deve persistir se TODOS derem certo), capture as falhas, chame
+  `await db.rollback()` explicitamente antes de retornar, e retorne normalmente (sem raise) com
+  `success: False` no payload — o `get_db()` faz um commit vazio depois, o que é um no-op seguro.
 - **Variáveis de ambiente (`backend/.env`):**
   - `DATABASE_URL` — string `postgresql+asyncpg://...` (default: `postgres:postgres@localhost:5432/manhwa_tracker`).
   - `DOWNLOAD_DIR` — pasta onde os `.cbz` baixados ficam (default: `D:\Manhwas`). Altere aqui para mover a biblioteca.

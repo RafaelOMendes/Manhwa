@@ -505,18 +505,45 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
         # Disparar todos os downloads em paralelo (limitado pelo semáforo)
         tasks = [download_one_manhwa(m) for m in manhwas_to_download]
         results_list = await asyncio.gather(*tasks)
-        
-        # Salvar no banco as alterações de total_chapters
-        print("\n💾 Salvando alterações no banco de dados...")
-        await db.commit()
-        print("   ✅ Banco atualizado.")
 
         # Agregar totais
         total_downloaded = sum(r.get("downloaded", 0) for r in results_list)
         total_skipped = sum(r.get("skipped", 0) for r in results_list)
         total_errors = sum(r.get("errors", 0) for r in results_list)
-        total_elapsed = time.time() - sync_start
 
+        failed_manhwas = [r.get("manhwa_title", "?") for r in results_list if not r.get("success")]
+
+        if failed_manhwas:
+            # Atomicidade: se QUALQUER manhwa falhou, desfaz TODAS as alterações
+            # desta sincronização (total_chapters/medium_reaction de quem teve sucesso
+            # inclusos) para não deixar o banco em estado intermediário que só se
+            # resolve numa segunda tentativa.
+            print(f"\n🔄 ROLLBACK: {len(failed_manhwas)} manhwa(s) falharam — revertendo TODAS as alterações desta sincronização.")
+            print(f"   Manhwas com falha: {', '.join(failed_manhwas)}")
+            await db.rollback()
+            print("   ↩️  Rollback concluído — nenhuma alteração foi salva no banco.")
+
+            total_elapsed = time.time() - sync_start
+            print(f"\n{'=' * 60}")
+            print(f"❌ SINCRONIZAÇÃO FALHOU (revertida)")
+            print(f"   Manhwas processados: {len(manhwas_to_download)}")
+            print(f"   Manhwas com erro:    {len(failed_manhwas)}")
+            print(f"   Tempo total:        {total_elapsed:.1f}s")
+            print(f"{'=' * 60}\n")
+
+            return {
+                "success": False,
+                "message": f"Sincronização falhou em {len(failed_manhwas)} manhwa(s) ({', '.join(failed_manhwas)}). Nenhuma alteração foi salva — tente novamente.",
+                "results": results_list,
+                "total_downloaded": total_downloaded,
+                "total_skipped": total_skipped,
+                "total_errors": total_errors,
+                "manhwas_processed": len(manhwas_to_download),
+            }
+
+        # Todos os manhwas tiveram sucesso: não é preciso commit manual, a
+        # dependency get_db() faz o commit da transação inteira ao final.
+        total_elapsed = time.time() - sync_start
         print(f"\n{'=' * 60}")
         print(f"✅ SINCRONIZAÇÃO CONCLUÍDA")
         print(f"   Manhwas processados: {len(manhwas_to_download)}")
