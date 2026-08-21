@@ -192,12 +192,17 @@ estado atual do board.
    quando faltar detalhe, já que ninguém vai responder perguntas de esclarecimento no
    meio do processo).
 2. Arraste para **Em Andamento**.
-3. Espere (até ~30s de poll + o tempo dessa primeira chamada ao Claude Code, que é
-   rápida) até ele aparecer em **Em Desenvolvimento**, com o prompt gerado comentado
-   no card.
-4. O Claude Code roda sozinho (agora com o modelo principal, liberado pra editar
-   arquivos e rodar comandos). Isso pode levar de minutos a bem mais, dependendo da
-   task (timeout padrão: 45 min, ajustável em `CLAUDE_RUN_TIMEOUT_SECONDS`).
+3. Espere (até ~30s de poll + o tempo dessa primeira chamada ao Claude Code - na
+   prática ~30-90s, testado ao vivo em ~40s) até ele aparecer em **Em
+   Desenvolvimento**, com o prompt gerado comentado no card.
+4. Mais um poll (~30s) até o watcher notar que o card chegou em Em Desenvolvimento e
+   começar a etapa de verdade: cria a branch e o Claude Code roda sozinho (modelo
+   principal, liberado pra editar arquivos e rodar comandos). **Sem tempo fixo** -
+   pode ser bem rápido pra uma task pequena ou levar bem mais pra algo grande (timeout
+   máximo: 45 min, ajustável em `CLAUDE_RUN_TIMEOUT_SECONDS`). A janela do terminal
+   fica muda enquanto isso roda (é uma chamada bloqueante), mas imprime um heartbeat a
+   cada 1 minuto ("...Claude Code ainda rodando (Xmin decorridos...)") pra você
+   distinguir "trabalhando" de "travado".
 5. Quando terminar, o card vai pra **Teste** e você recebe o aviso no Telegram com o
    nome da branch (ex: `card-a1b2c3-adicionar-filtro`).
 6. Teste localmente: `git checkout <branch>` nos serviços relevantes (ou já vai estar

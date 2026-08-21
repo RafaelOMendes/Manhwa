@@ -43,10 +43,16 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import threading
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
 from proc_utils import resolve_command
+
+
+def _log(msg: str) -> None:
+    print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)
 
 EXEC_ALLOWED_TOOLS = "Bash,Read,Edit,Write,Glob,Grep,WebFetch,WebSearch"
 
@@ -99,6 +105,27 @@ def run_claude_code(
 
     timeout = timeout_seconds or DEFAULT_TIMEOUT_SECONDS
 
+    # Rascunho de prompt (permission_mode=None): rápido, só leitura, ~30-90s na
+    # prática (observado: ~40s). Execução de verdade (permission_mode="acceptEdits"):
+    # sem tempo fixo - depende do tamanho da task, de segundos a bem perto do limite
+    # de CLAUDE_RUN_TIMEOUT_SECONDS (padrão 45min) para tasks grandes. subprocess.run
+    # é bloqueante e não devolve nada até terminar, então sem esse heartbeat a janela
+    # do watcher fica muda o tempo todo - o log abaixo é só pra você acompanhar que
+    # ainda está rodando (e não travado) enquanto espera.
+    kind = "execução autônoma (edita arquivos/roda comandos)" if permission_mode else "rascunho de prompt (só leitura)"
+    _log(f"Chamando Claude Code - {kind}, modelo={model or 'padrão da conta'}, limite={timeout // 60}min...")
+
+    start = time.monotonic()
+    stop_heartbeat = threading.Event()
+
+    def _heartbeat() -> None:
+        while not stop_heartbeat.wait(60):
+            elapsed_min = (time.monotonic() - start) / 60
+            _log(f"...Claude Code ainda rodando ({elapsed_min:.1f}min decorridos, limite {timeout // 60}min)")
+
+    heartbeat = threading.Thread(target=_heartbeat, daemon=True)
+    heartbeat.start()
+
     try:
         proc = subprocess.run(
             args,
@@ -136,6 +163,12 @@ def run_claude_code(
             total_cost_usd=None,
             raw_output=str(exc),
         )
+    finally:
+        stop_heartbeat.set()
+        heartbeat.join(timeout=2)
+
+    elapsed_min = (time.monotonic() - start) / 60
+    _log(f"Claude Code terminou em {elapsed_min:.1f}min (returncode={proc.returncode}).")
 
     raw_output = (proc.stdout or "") + (proc.stderr or "")
 

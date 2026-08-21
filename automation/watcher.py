@@ -137,6 +137,10 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
             prompt = build_prompt(REPO_DIR, card["name"], card.get("desc", ""), comments)
             client.comment_card(card_id, f"🤖 Prompt gerado automaticamente para o Claude Code:\n\n{prompt}")
 
+    # Chamada bloqueante e sem tempo fixo: pode levar de segundos a quase o limite de
+    # CLAUDE_RUN_TIMEOUT_SECONDS (padrão 45min) dependendo do tamanho da task. Fica
+    # nesta linha até o Claude Code terminar de verdade - run_claude_code() já loga um
+    # heartbeat a cada 1min pra você acompanhar que ainda está rodando.
     result = run_claude_code(
         REPO_DIR,
         prompt,
