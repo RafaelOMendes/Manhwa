@@ -1,11 +1,11 @@
 """
-Loop principal da automação Trello -> Gemini -> Claude Code -> Telegram -> EAS Build.
+Loop principal da automação Trello -> Claude Code -> Telegram -> EAS Build.
 
 Fluxo (ver automation/SETUP.md para a explicação completa e o passo a passo de
 configuração):
 
   [A Fazer] --(você arrasta)--> [Em Andamento]
-        --(watcher: Gemini gera o prompt)--> [Em Desenvolvimento]
+        --(watcher: Claude Code, modelo leve, gera o prompt)--> [Em Desenvolvimento]
         --(watcher: Claude Code executa numa branch própria)--> [Teste]
         --(watcher: avisa no Telegram)
   Você testa. Se estiver ruim, arrasta de volta pra [Em Desenvolvimento] e comenta o
@@ -40,8 +40,8 @@ load_dotenv(AUTOMATION_DIR / ".env")
 # já vejam as variáveis carregadas.
 import state as state_mod  # noqa: E402
 from trello_client import TrelloClient, resolve_list_ids  # noqa: E402
-from gemini_prompt import build_prompt  # noqa: E402
-from claude_runner import run_claude_code  # noqa: E402
+from claude_prompt import build_prompt  # noqa: E402
+from claude_runner import run_claude_code, GRAPHIFY_REMINDER  # noqa: E402
 from telegram_notify import send_telegram_message  # noqa: E402
 from mobile_build import run_mobile_build  # noqa: E402
 import git_ops  # noqa: E402
@@ -65,13 +65,13 @@ def now_iso() -> str:
 
 
 def handle_doing(client: TrelloClient, card: dict, state: dict, list_ids: dict) -> None:
-    """Card acabou de entrar em 'Em Andamento': gera o prompt com o Gemini e move
-    pra 'Em Desenvolvimento'."""
+    """Card acabou de entrar em 'Em Andamento': gera o prompt com o Claude Code (modelo
+    leve) e move pra 'Em Desenvolvimento'."""
     card_id = card["id"]
-    log(f"Card '{card['name']}' entrou em Em Andamento -> gerando prompt com o Gemini...")
+    log(f"Card '{card['name']}' entrou em Em Andamento -> gerando prompt (Claude Code)...")
 
     comments = [c["data"]["text"] for c in client.get_comments(card_id) if c.get("data", {}).get("text")]
-    prompt = build_prompt(card["name"], card.get("desc", ""), comments)
+    prompt = build_prompt(REPO_DIR, card["name"], card.get("desc", ""), comments)
 
     client.comment_card(card_id, f"🤖 Prompt gerado automaticamente para o Claude Code:\n\n{prompt}")
     client.move_card(card_id, list_ids["DEV"])
@@ -128,15 +128,17 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
         prompt = card_state.get("prompt")
         if not prompt:
             # Card pulou direto pra 'Em Desenvolvimento' sem passar por 'Em Andamento'.
-            log(f"Card '{card['name']}' não tinha prompt gerado ainda - gerando agora via Gemini.")
+            log(f"Card '{card['name']}' não tinha prompt gerado ainda - gerando agora (Claude Code).")
             comments = [c["data"]["text"] for c in client.get_comments(card_id) if c.get("data", {}).get("text")]
-            prompt = build_prompt(card["name"], card.get("desc", ""), comments)
+            prompt = build_prompt(REPO_DIR, card["name"], card.get("desc", ""), comments)
             client.comment_card(card_id, f"🤖 Prompt gerado automaticamente para o Claude Code:\n\n{prompt}")
 
     result = run_claude_code(
         REPO_DIR,
         prompt,
         resume_session_id=card_state.get("session_id") if is_fix_round else None,
+        model=os.environ.get("CLAUDE_EXEC_MODEL") or None,
+        append_system_prompt=GRAPHIFY_REMINDER,
     )
 
     # rede de segurança: garante que nada ficou sem commit
@@ -261,7 +263,7 @@ def tick(client: TrelloClient, list_ids: dict) -> None:
 
 
 def main() -> None:
-    required = ["TRELLO_KEY", "TRELLO_TOKEN", "TRELLO_BOARD_ID", "GEMINI_API_KEY"]
+    required = ["TRELLO_KEY", "TRELLO_TOKEN", "TRELLO_BOARD_ID"]
     missing = [v for v in required if not os.environ.get(v)]
     if missing:
         print(f"Faltam variáveis no automation/.env: {', '.join(missing)}. Veja automation/SETUP.md.")
