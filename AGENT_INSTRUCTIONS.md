@@ -96,15 +96,19 @@ A posição de scroll dentro de um capítulo é salva tanto **local** (`AsyncSto
 ### 4. Automação Trello ↔ Claude Code
 - **Diretório:** `/automation`
 - **Descrição:** Script Python (`watcher.py`) que faz polling de um board do Trello e
-  orquestra o ciclo completo de uma task: Gemini gera o prompt a partir do card →
-  Claude Code (`claude -p`, headless, `--permission-mode acceptEdits`) executa sozinho
-  numa branch git própria do card → move o card pra "Teste" e avisa no Telegram →
+  orquestra o ciclo completo de uma task: Claude Code (`claude -p`, modelo leve, só
+  leitura) gera o prompt a partir do card → Claude Code (modelo principal,
+  `--permission-mode acceptEdits`) executa sozinho numa branch git própria do card →
+  move o card pra "Teste" e avisa no Telegram →
   quando o card é aprovado ("Concluído"), a branch é mergeada na `BASE_BRANCH` → quando
   não sobra nenhuma task ativa, dispara `eas build` do mobile e manda o link de
   download.
 - **Arquivos principais:** `watcher.py` (loop principal), `trello_client.py`,
-  `gemini_prompt.py`, `claude_runner.py`, `git_ops.py`, `telegram_notify.py`,
-  `mobile_build.py`, `state.py` (estado local em `state.json`, não versionado).
+  `claude_prompt.py`, `claude_runner.py`, `git_ops.py`, `telegram_notify.py`,
+  `mobile_build.py`, `state.py` (estado local em `state.json`, não versionado),
+  `proc_utils.py` (resolve o caminho completo de `claude`/`eas`/`git` antes de
+  chamar subprocess - contorna um bug clássico do Windows com shims `.cmd`/`.ps1`
+  de CLIs instalados via npm).
 - **Configuração:** `automation/.env` (não versionado — copie de `.env.example`).
   Passo a passo completo em `automation/SETUP.md`.
 - **Roda local**, disparado manualmente via `iniciaAutomation.bat` (não sobe pra
@@ -129,7 +133,7 @@ Sempre que você for iniciar uma nova tarefa neste projeto, siga este fluxo:
 Ao receber um prompt do usuário pedindo uma alteração, analise se a alteração afeta:
 - Apenas a interface de uma plataforma (modifique apenas a respectiva pasta).
 - A lógica de negócios (modifique o backend e garanta que os clientes `frontend` e `mobile` não quebrem com novos campos ou retornos diferentes).
-- Se a task chegou via automação do Trello (`/automation`), o prompt já foi escrito pelo Gemini a partir do card — ainda assim, siga as mesmas convenções abaixo e sempre feche com um commit.
+- Se a task chegou via automação do Trello (`/automation`), o prompt já foi escrito por outra sessão do Claude Code a partir do card — ainda assim, siga as mesmas convenções abaixo e sempre feche com um commit.
 
 **Boas práticas de código neste repositório:**
 - Frontend e Mobile compartilham a mesma paleta de cores e estilo visual (Tailwind/NativeWind).

@@ -13,6 +13,10 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
+from proc_utils import resolve_command
+
+GIT_CMD = resolve_command("git")
+
 
 class GitError(RuntimeError):
     pass
@@ -26,7 +30,7 @@ class GitResult:
 
 def _run(repo_dir: Path, *args: str) -> GitResult:
     proc = subprocess.run(
-        ["git", *args],
+        [*GIT_CMD, *args],
         cwd=str(repo_dir),
         capture_output=True,
         text=True,

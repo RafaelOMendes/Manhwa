@@ -18,6 +18,8 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
+from proc_utils import resolve_command
+
 DEFAULT_TIMEOUT_SECONDS = int(os.environ.get("EAS_BUILD_TIMEOUT_SECONDS", str(60 * 30)))
 
 
@@ -43,9 +45,9 @@ def _extract_download_url(build_entry: dict) -> str | None:
 
 
 def run_mobile_build(mobile_dir: Path, profile: str = "preview") -> BuildResult:
-    eas_bin = os.environ.get("EAS_CLI_PATH", "eas")
+    eas_cmd = resolve_command(os.environ.get("EAS_CLI_PATH") or "eas")
     args = [
-        eas_bin,
+        *eas_cmd,
         "build",
         "--platform",
         "android",
@@ -70,6 +72,17 @@ def run_mobile_build(mobile_dir: Path, profile: str = "preview") -> BuildResult:
             download_url=None,
             build_id=None,
             message=f"Timeout depois de {DEFAULT_TIMEOUT_SECONDS}s esperando o `eas build`.",
+        )
+    except OSError as exc:
+        return BuildResult(
+            ok=False,
+            download_url=None,
+            build_id=None,
+            message=(
+                f"Não consegui executar o `eas`: {exc}. Comando tentado: {args[0]}. "
+                "Rode `Get-Command eas` no PowerShell e confira o caminho; se quiser, "
+                "aponte direto em EAS_CLI_PATH no automation/.env."
+            ),
         )
 
     stdout = proc.stdout or ""
