@@ -103,10 +103,6 @@ def start_card_branch(repo_dir: Path, base_branch: str, branch: str, fresh: bool
         raise GitError(f"Não consegui criar/trocar para a branch '{branch}': {res.output}")
 
 
-def checkout(repo_dir: Path, branch: str) -> GitResult:
-    return _run(repo_dir, "checkout", branch)
-
-
 # Ordem intencional (Back, Front, Mobile) - é a ordem em que aparecem nos avisos.
 AREA_LABELS = {
     "backend": "Back",

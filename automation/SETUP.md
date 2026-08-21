@@ -144,14 +144,18 @@ Preencha tudo que ficou pendente nos passos 1–3. Confira principalmente:
 - `BASE_BRANCH` — a branch a partir da qual cada card vai criar sua branch, e pra
   onde ela volta quando aprovada. Hoje seu repo está em `fix_mobile`; se quiser usar
   ela como base por enquanto, mude `BASE_BRANCH=fix_mobile`.
-- `PUSH_TO_REMOTE=false` — deixe assim no início. Os merges ficam só localmente até
-  você se sentir confortável, aí muda pra `true` pra também dar `git push` depois de
-  cada merge.
+- `PUSH_TO_REMOTE=false` — controla só o `git push` do `BASE_BRANCH` depois de um
+  merge (quando você aprova um card em "Concluído"). Deixe `false` até se sentir
+  confortável. **Não afeta** o push da branch do próprio card: assim que o Claude Code
+  termina de mexer (sucesso ou falha), a branch do card sempre sobe pro remoto sozinha
+  - é assim que dá pra continuar corrigindo ela de fora (ex: manualmente, ou abrindo um
+  PR) sem depender do watcher.
 - `CLAUDE_PROMPT_MODEL=haiku` — modelo usado só pra reescrever o card num prompt
   (etapa rápida/barata). Aceita alias (`sonnet`, `opus`, `haiku`, `fable`) ou nome
   completo de modelo.
-- `CLAUDE_EXEC_MODEL` — deixe em branco pra usar o modelo padrão da sua conta na
-  execução de verdade, ou defina um alias/nome se quiser forçar um modelo específico.
+- `CLAUDE_EXEC_MODEL=opus` — modelo usado na execução de verdade (edita
+  arquivos/roda comandos). Deixe em branco pra usar o modelo padrão da sua
+  conta/assinatura em vez disso.
 
 Não precisa de nenhuma chave de API extra (Trello e Telegram à parte) — as duas
 etapas de IA usam o `claude` CLI já autenticado na sua máquina.
@@ -204,9 +208,12 @@ estado atual do board.
    cada 1 minuto ("...Claude Code ainda rodando (Xmin decorridos...)") pra você
    distinguir "trabalhando" de "travado".
 5. Quando terminar, o card vai pra **Teste** e você recebe o aviso no Telegram com o
-   nome da branch (ex: `card-a1b2c3-adicionar-filtro`).
-6. Teste localmente: `git checkout <branch>` nos serviços relevantes (ou já vai estar
-   ali se você não trocou de branch no meio do caminho).
+   nome da branch (ex: `card-a1b2c3-adicionar-filtro`) e as áreas alteradas (Back,
+   Front e/ou Mobile). O repositório fica checked out nessa branch (o watcher não
+   volta pro `BASE_BRANCH` sozinho) e ela já sobe pro remoto sozinha - se algo der
+   errado, dá pra continuar mexendo nela na hora, sem esperar o watcher.
+6. Teste localmente: já vai estar na branch certa (a menos que você tenha trocado de
+   branch manualmente no meio do caminho).
    - **Deu certo:** arraste o card pra **Concluído**. A branch é mergeada na
      `BASE_BRANCH` e apagada.
    - **Precisa ajustar:** comente no card o que está errado e arraste de volta pra

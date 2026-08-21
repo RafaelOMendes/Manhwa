@@ -158,13 +158,14 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
     areas = git_ops.changed_areas(REPO_DIR, BASE_BRANCH, branch)
     areas_text = ", ".join(areas) if areas else "nenhuma área identificada (backend/frontend/mobile)"
 
-    # Volta pro BASE_BRANCH assim que a branch do card está com tudo commitado, pra não
-    # deixar o repositório "preso" numa branch de card entre execuções. Roda mesmo em
-    # caso de falha (abaixo) - start_card_branch já faz checkout de volta pro
-    # BASE_BRANCH sozinho na próxima tentativa de qualquer forma.
-    back = git_ops.checkout(REPO_DIR, BASE_BRANCH)
-    if not back.ok:
-        log(f"AVISO: não consegui voltar pra {BASE_BRANCH} depois do card '{card['name']}': {back.output[:200]}")
+    # Sobe a branch do card pro remoto assim que tudo está commitado (sucesso ou
+    # falha) - fica disponível pra você continuar mexendo nela de fora se precisar.
+    # Propositalmente NÃO volta pro BASE_BRANCH depois: o repositório fica checked out
+    # na própria branch do card, pra qualquer correção manual/nova rodada continuar no
+    # mesmo lugar.
+    push_res = git_ops.push(REPO_DIR, branch)
+    if not push_res.ok:
+        log(f"AVISO: não consegui dar push da branch '{branch}': {push_res.output[:200]}")
 
     if not result.ok:
         if not card_state.get("blocked_notified"):
