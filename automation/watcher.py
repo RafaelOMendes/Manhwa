@@ -76,10 +76,14 @@ def handle_doing(client: TrelloClient, card: dict, state: dict, list_ids: dict) 
     client.comment_card(card_id, f"🤖 Prompt gerado automaticamente para o Claude Code:\n\n{prompt}")
     client.move_card(card_id, list_ids["DEV"])
 
+    # Propositalmente NÃO atualiza last_list_id aqui: o card já foi movido pra DEV de
+    # verdade no Trello, mas o estado local precisa continuar "desatualizado" (com o
+    # valor antigo) até o próximo tick, senão tick() nunca vai detectar a "mudança pra
+    # DEV" e handle_dev() nunca vai ser chamado - o card ficaria parado pra sempre em
+    # Em Desenvolvimento sem branch/sessão criada.
     state_mod.set_card(
         state,
         card_id,
-        last_list_id=list_ids["DEV"],
         stage="prompted",
         prompt=prompt,
         blocked_notified=False,
