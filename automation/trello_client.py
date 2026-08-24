@@ -10,8 +10,31 @@ import os
 from typing import Any
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 API_BASE = "https://api.trello.com/1"
+REQUEST_TIMEOUT_SECONDS = 20
+
+
+def _build_session() -> requests.Session:
+    """O watcher.py fica horas fazendo polling - uma lentidão passageira da API do
+    Trello (timeout de leitura, erro de conexão, 5xx) é normal nesse tempo todo, mas
+    sem retry ela derrubava o tick() inteiro (nenhum card processado naquele ciclo) e
+    disparava um alerta assustador no Telegram por causa de um blip que teria passado
+    sozinho. Retry automático com backoff exponencial (1s, 2s, 4s) resolve isso na
+    maioria dos casos sem que você nem perceba."""
+    session = requests.Session()
+    retry = Retry(
+        total=3,
+        backoff_factor=1,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=frozenset(["GET", "POST", "PUT"]),
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+    return session
 
 
 class TrelloClient:
@@ -19,22 +42,23 @@ class TrelloClient:
         self.key = os.environ["TRELLO_KEY"]
         self.token = os.environ["TRELLO_TOKEN"]
         self.board_id = os.environ["TRELLO_BOARD_ID"]
+        self._session = _build_session()
 
     def _auth(self) -> dict[str, str]:
         return {"key": self.key, "token": self.token}
 
     def _get(self, path: str, **params: Any) -> Any:
-        resp = requests.get(f"{API_BASE}{path}", params={**self._auth(), **params}, timeout=20)
+        resp = self._session.get(f"{API_BASE}{path}", params={**self._auth(), **params}, timeout=REQUEST_TIMEOUT_SECONDS)
         resp.raise_for_status()
         return resp.json()
 
     def _post(self, path: str, **params: Any) -> Any:
-        resp = requests.post(f"{API_BASE}{path}", params={**self._auth(), **params}, timeout=20)
+        resp = self._session.post(f"{API_BASE}{path}", params={**self._auth(), **params}, timeout=REQUEST_TIMEOUT_SECONDS)
         resp.raise_for_status()
         return resp.json()
 
     def _put(self, path: str, **params: Any) -> Any:
-        resp = requests.put(f"{API_BASE}{path}", params={**self._auth(), **params}, timeout=20)
+        resp = self._session.put(f"{API_BASE}{path}", params={**self._auth(), **params}, timeout=REQUEST_TIMEOUT_SECONDS)
         resp.raise_for_status()
         return resp.json()
 

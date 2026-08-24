@@ -5,9 +5,11 @@ repositório) em modo headless (`-p`).
 Usado em DOIS papéis diferentes pelo watcher, com parâmetros diferentes:
   1. Rascunhar o prompt a partir do card do Trello (claude_prompt.py) - modelo leve
      (haiku por padrão), só ferramentas de leitura, sem poder editar nada.
-  2. Executar a tarefa de verdade (watcher.py) - modelo principal (o default da sua
-     conta, a menos que CLAUDE_EXEC_MODEL esteja setado), com edição de arquivos e
-     bash liberados, de forma totalmente autônoma dentro da branch do card. É AQUI que
+  2. Executar a tarefa de verdade (watcher.py) - modelo e effort escolhidos pela
+     própria etapa de rascunho do prompt (claude_prompt.py), proporcional à
+     complexidade da task, com fallback pro default da conta/CLAUDE_EXEC_MODEL se a
+     escolha não vier ou não for válida - com edição de arquivos e bash liberados, de
+     forma totalmente autônoma dentro da branch do card. É AQUI que
      entra o lembrete de usar o graphify (via --append-system-prompt), porque os hooks
      do repo (.claude/settings.json) já reforçam isso automaticamente pro Bash/Read/
      Glob, mas queremos garantir mesmo que o prompt gerado não mencione graphify.
@@ -32,6 +34,7 @@ code.claude.com/docs/en/cli-reference, ago/2026):
   texto, nunca editar nada.
 - `--model <alias ou nome completo>` - aceita aliases (`sonnet`, `opus`, `haiku`,
   `fable`) ou o nome completo do modelo.
+- `--effort <low|medium|high|xhigh|max>` - nível de esforço/raciocínio da sessão.
 - `--output-format json` devolve um objeto com `result` (texto final), `session_id`,
   `total_cost_usd` etc, o que facilita registrar um resumo no Trello/Telegram e permite
   retomar a mesma conversa depois com `--resume <session_id>` (usado no fluxo de
@@ -84,6 +87,7 @@ def run_claude_code(
     prompt: str,
     resume_session_id: str | None = None,
     model: str | None = None,
+    effort: str | None = None,
     allowed_tools: str = EXEC_ALLOWED_TOOLS,
     permission_mode: str | None = "acceptEdits",
     timeout_seconds: int | None = None,
@@ -98,6 +102,8 @@ def run_claude_code(
         args += ["--allowedTools", allowed_tools]
     if model:
         args += ["--model", model]
+    if effort:
+        args += ["--effort", effort]
     if append_system_prompt:
         args += ["--append-system-prompt", append_system_prompt]
     if resume_session_id:
@@ -113,7 +119,10 @@ def run_claude_code(
     # do watcher fica muda o tempo todo - o log abaixo é só pra você acompanhar que
     # ainda está rodando (e não travado) enquanto espera.
     kind = "execução autônoma (edita arquivos/roda comandos)" if permission_mode else "rascunho de prompt (só leitura)"
-    _log(f"Chamando Claude Code - {kind}, modelo={model or 'padrão da conta'}, limite={timeout // 60}min...")
+    _log(
+        f"Chamando Claude Code - {kind}, modelo={model or 'padrão da conta'}, "
+        f"effort={effort or 'padrão'}, limite={timeout // 60}min..."
+    )
 
     start = time.monotonic()
     stop_heartbeat = threading.Event()
