@@ -152,10 +152,14 @@ Preencha tudo que ficou pendente nos passos 1–3. Confira principalmente:
   PR) sem depender do watcher.
 - `CLAUDE_PROMPT_MODEL=haiku` — modelo usado só pra reescrever o card num prompt
   (etapa rápida/barata). Aceita alias (`sonnet`, `opus`, `haiku`, `fable`) ou nome
-  completo de modelo.
-- `CLAUDE_EXEC_MODEL=opus` — modelo usado na execução de verdade (edita
-  arquivos/roda comandos). Deixe em branco pra usar o modelo padrão da sua
-  conta/assinatura em vez disso.
+  completo de modelo. **Essa mesma etapa também escolhe** com qual modelo (`sonnet`
+  ou `opus`) e com qual nível de esforço (`--effort`: `low`/`medium`/`high`/`xhigh`/
+  `max`) a execução de verdade deve rodar, proporcional à complexidade real de cada
+  card - fica registrado no comentário do card e na mensagem do Telegram quando a
+  task termina.
+- `CLAUDE_EXEC_MODEL=opus` / `CLAUDE_EXEC_EFFORT=` — só servem de **fallback**: entram
+  em jogo apenas se a escolha da etapa de rascunho não vier ou não for válida. Deixe
+  ambos em branco pra cair no modelo/effort padrão da sua conta/assinatura nesse caso.
 
 Não precisa de nenhuma chave de API extra (Trello e Telegram à parte) — as duas
 etapas de IA usam o `claude` CLI já autenticado na sua máquina.
@@ -196,9 +200,11 @@ estado atual do board.
    quando faltar detalhe, já que ninguém vai responder perguntas de esclarecimento no
    meio do processo).
 2. Arraste para **Em Andamento**.
-3. Espere (até ~30s de poll + o tempo dessa primeira chamada ao Claude Code - na
-   prática ~30-90s, testado ao vivo em ~40s) até ele aparecer em **Em
-   Desenvolvimento**, com o prompt gerado comentado no card.
+3. Espere (até ~30s de poll + o tempo dessa primeira chamada ao Claude Code - testado
+   ao vivo entre ~40s e ~4min, varia bastante porque essa etapa agora também dá uma
+   olhada na estrutura real do repositório e decide o modelo/effort da execução, não
+   só reescreve o texto) até ele aparecer em **Em Desenvolvimento**, com o prompt
+   gerado comentado no card (junto com o modelo e o effort escolhidos).
 4. Mais um poll (~30s) até o watcher notar que o card chegou em Em Desenvolvimento e
    começar a etapa de verdade: cria a branch e o Claude Code roda sozinho (modelo
    principal, liberado pra editar arquivos e rodar comandos). **Sem tempo fixo** -
