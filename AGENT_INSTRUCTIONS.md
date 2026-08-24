@@ -24,6 +24,21 @@ O projeto Manhwa Tracker é composto por três partes principais:
   vários manhwas e só deve persistir se TODOS derem certo), capture as falhas, chame
   `await db.rollback()` explicitamente antes de retornar, e retorne normalmente (sem raise) com
   `success: False` no payload — o `get_db()` faz um commit vazio depois, o que é um no-op seguro.
+- **Respostas HTTP consistentes (endpoints tipo "sync"):** qualquer endpoint que um client (frontend/mobile)
+  lê como `{ success, message, ... }` deve retornar **sempre** esse shape — nunca deixar um caminho de
+  erro cair no `{ detail: "..." }` padrão do FastAPI (`raise HTTPException`), pois o client não sabe ler
+  esse formato. Padrão usado em `/api/manhwas/download-all`:
+  - Um `response_model` Pydantic (`SyncResponse`) documenta e valida o shape único usado em todo caminho
+    de retorno (sucesso, falha parcial revertida, falha crítica).
+  - Erros esperados (ex.: `ImportError` do scraper) retornam `JSONResponse(status_code=..., content={...})`
+    diretamente com o mesmo shape, em vez de `raise HTTPException` — retornar um `Response`/`JSONResponse`
+    faz o FastAPI pular a validação do `response_model` e usar o status/body exatos que você montou.
+  - Um `@app.exception_handler(Exception)` global (perto da criação do `app`, em `main.py`) captura
+    qualquer exceção não tratada (inclusive uma que escape do commit automático do `get_db()` DEPOIS que
+    o endpoint já retornou) e converte pra `{ success: False, message: ... }` — sem isso, o client recebe
+    o texto puro "Internal Server Error" do Starlette, que quebra o `response.json()` e aparenta erro de
+    conexão mesmo quando os dados já foram salvos com sucesso. Não interfere no tratamento de
+    `HTTPException` dos demais endpoints (o FastAPI já registra um handler mais específico pra ela).
 - **Variáveis de ambiente (`backend/.env`):**
   - `DATABASE_URL` — string `postgresql+asyncpg://...` (default: `postgres:postgres@localhost:5432/manhwa_tracker`).
   - `DOWNLOAD_DIR` — pasta onde os `.cbz` baixados ficam (default: `D:\Manhwas`). Altere aqui para mover a biblioteca.

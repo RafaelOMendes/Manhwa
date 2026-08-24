@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import time
 from fastapi import FastAPI, HTTPException, Depends, Request
-from fastapi.responses import Response, FileResponse
+from fastapi.responses import Response, FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from typing import List, Optional
@@ -66,6 +66,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    """Garante corpo JSON consistente para qualquer exceção não tratada.
+
+    Sem isso, uma exceção que escapa do endpoint (ex.: no commit automático do
+    get_db() rodando DEPOIS que o endpoint já retornou um dict de sucesso) vira
+    o texto puro "Internal Server Error" do Starlette — não é JSON, então
+    `response.json()` no frontend quebra e cai no catch genérico ("Erro de
+    conexão com o servidor"), mesmo quando os dados já tinham sido salvos
+    corretamente no banco. Não intercepta HTTPException (tratada à parte pelo
+    FastAPI), só o que sobrar.
+    """
+    print(f"❌ ERRO NÃO TRATADO em {request.url.path}: {exc}")
+    return JSONResponse(
+        status_code=500,
+        content={"success": False, "message": f"Erro interno do servidor: {str(exc)}"},
+    )
+
 # Modelos Pydantic
 class ManhwaBase(BaseModel):
     title: str
@@ -95,6 +114,19 @@ class Manhwa(ManhwaBase):
 class TelegramImportRequest(BaseModel):
     channel_link: str
     auto_status: str = "plan_to_read"
+
+
+class SyncResponse(BaseModel):
+    """Formato de resposta único do /api/manhwas/download-all — sucesso, falha
+    parcial (revertida) e falha crítica sempre retornam este mesmo shape, para
+    o frontend nunca cair no `{ detail: ... }` padrão do FastAPI."""
+    success: bool
+    message: str
+    results: List[dict] = []
+    total_downloaded: int = 0
+    total_skipped: int = 0
+    total_errors: int = 0
+    manhwas_processed: int = 0
 
 
 import asyncio
@@ -398,7 +430,7 @@ async def get_cbz_page(manhwa_id: int, filename: str, page_num: int, db: AsyncSe
             headers={"Cache-Control": "public, max-age=86400"}
         )
 
-@app.post("/api/manhwas/download-all")
+@app.post("/api/manhwas/download-all", response_model=SyncResponse, status_code=200)
 async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
     """
     Sincroniza todos os manhwas em paralelo: baixa os .cbz de todos que possuem link do Telegram
@@ -428,14 +460,17 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
     if not manhwas_to_download:
         print("⚠️  Nenhum manhwa elegível para sincronização.")
         print("=" * 60 + "\n")
-        return {
+        resposta = {
             "success": True,
             "message": "Nenhum manhwa com link do Telegram encontrado.",
             "results": [],
             "total_downloaded": 0,
             "total_skipped": 0,
             "total_errors": 0,
+            "manhwas_processed": 0,
         }
+        print(f"✅ Retornando resposta de sucesso ao frontend: {resposta['message']}")
+        return resposta
 
     # Listar os manhwas que serão processados
     print("\n📋 Fila de sincronização:")
@@ -531,7 +566,7 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
             print(f"   Tempo total:        {total_elapsed:.1f}s")
             print(f"{'=' * 60}\n")
 
-            return {
+            resposta = {
                 "success": False,
                 "message": f"Sincronização falhou em {len(failed_manhwas)} manhwa(s) ({', '.join(failed_manhwas)}). Nenhuma alteração foi salva — tente novamente.",
                 "results": results_list,
@@ -540,6 +575,8 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
                 "total_errors": total_errors,
                 "manhwas_processed": len(manhwas_to_download),
             }
+            print(f"❌ Retornando resposta de falha (revertida) ao frontend: {resposta['message']}")
+            return resposta
 
         # Todos os manhwas tiveram sucesso: não é preciso commit manual, a
         # dependency get_db() faz o commit da transação inteira ao final.
@@ -553,7 +590,7 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
         print(f"   Tempo total:        {total_elapsed:.1f}s")
         print(f"{'=' * 60}\n")
 
-        return {
+        resposta = {
             "success": True,
             "message": f"Sincronização concluída! {total_downloaded} baixados, {total_skipped} já existiam, {total_errors} erros.",
             "results": results_list,
@@ -562,13 +599,36 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
             "total_errors": total_errors,
             "manhwas_processed": len(manhwas_to_download),
         }
+        print(f"✅ Retornando resposta de sucesso ao frontend: {resposta['message']}")
+        return resposta
 
     except ImportError:
+        # Falha crítica antes/durante a conexão com o Telegram — nenhuma alteração
+        # chegou a ser feita no banco (ainda não houve nenhum db.add). Retornamos
+        # JSONResponse diretamente (em vez de HTTPException) para que o corpo
+        # continue no mesmo formato { success, message, ... } que o frontend espera,
+        # ao invés do { detail: ... } padrão do FastAPI para HTTPException.
         print("❌ ERRO CRÍTICO: Módulo telegram_scraper não encontrado.")
-        raise HTTPException(status_code=500, detail="Módulo telegram_scraper não encontrado.")
+        return JSONResponse(status_code=500, content={
+            "success": False,
+            "message": "Módulo telegram_scraper não encontrado.",
+            "results": [],
+            "total_downloaded": 0,
+            "total_skipped": 0,
+            "total_errors": 0,
+            "manhwas_processed": 0,
+        })
     except Exception as e:
         print(f"❌ ERRO CRÍTICO na sincronização: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Erro na sincronização: {str(e)}")
+        return JSONResponse(status_code=500, content={
+            "success": False,
+            "message": f"Erro na sincronização: {str(e)}",
+            "results": [],
+            "total_downloaded": 0,
+            "total_skipped": 0,
+            "total_errors": 0,
+            "manhwas_processed": 0,
+        })
 
 @app.post("/api/telegram/import")
 async def import_from_telegram(request: TelegramImportRequest, db: AsyncSession = Depends(get_db)):
