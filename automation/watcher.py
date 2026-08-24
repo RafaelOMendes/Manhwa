@@ -341,13 +341,21 @@ def main() -> None:
     log(f"Listas do Trello resolvidas: {list_ids}")
     send_telegram_message("🤖 Automação Trello ↔ Claude Code iniciada. De olho no board!")
 
+    # Só notifica a PRIMEIRA falha de uma sequência (ex: Trello fora do ar por
+    # alguns minutos) - sem isso, cada poll (a cada POLL_INTERVAL_SECONDS) durante
+    # uma instabilidade manda outro alerta no Telegram, o que vira spam rápido.
+    loop_error_notified = False
+
     while True:
         try:
             tick(client, list_ids)
+            loop_error_notified = False
         except Exception:
             err = traceback.format_exc()
             log(f"ERRO no loop principal:\n{err}")
-            send_telegram_message(f"❌ Erro no watcher: {err.splitlines()[-1][:300]}")
+            if not loop_error_notified:
+                send_telegram_message(f"❌ Erro no watcher: {err.splitlines()[-1][:300]}")
+                loop_error_notified = True
         time.sleep(POLL_INTERVAL_SECONDS)
 
 
