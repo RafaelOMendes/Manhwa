@@ -162,6 +162,7 @@ Leitor CBZ:
 Telegram:
 - `POST /api/telegram/import` — importa manhwas de um tópico
 - `POST /api/manhwas/download-all` — baixa `.cbz` de todos com `download=true`
+- `POST /api/manhwas/review-all` — revisa todos com link do Telegram e recalcula `total_chapters` e `medium_reaction` (sem baixar nada)
 - `GET  /api/telegram/test` — testa credenciais do `.env`
 
 Documentação completa interativa: `http://localhost:8000/docs`.

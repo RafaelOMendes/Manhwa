@@ -20,10 +20,27 @@ O projeto Manhwa Tracker é composto por três partes principais:
   retornar sem exceção, e `rollback()` se uma exceção propagar. **Não dê `await db.commit()` manual
   dentro de um endpoint** — deixe o `get_db()` cuidar disso, senão fica fácil deixar o banco com commits
   parciais (ex.: um loop que atualiza vários registros e falha no meio). Se um endpoint precisa de
-  atomicidade "tudo ou nada" sobre múltiplas operações (ex.: `/api/manhwas/download-all`, que processa
-  vários manhwas e só deve persistir se TODOS derem certo), capture as falhas, chame
-  `await db.rollback()` explicitamente antes de retornar, e retorne normalmente (sem raise) com
-  `success: False` no payload — o `get_db()` faz um commit vazio depois, o que é um no-op seguro.
+  atomicidade "tudo ou nada" sobre múltiplas operações (ex.: `/api/manhwas/download-all` e
+  `/api/manhwas/review-all`, que processam vários manhwas e só devem persistir se TODOS derem certo),
+  capture as falhas, chame `await db.rollback()` explicitamente antes de retornar, e retorne
+  normalmente (sem raise) com `success: False` no payload — o `get_db()` faz um commit vazio depois,
+  o que é um no-op seguro.
+- **`POST /api/manhwas/review-all` (revisão de metadados):** revisita todos os manhwas cujo `notes`
+  contém `t.me` e recalcula, via `scraper._get_topic_stats(link)`, o `total_chapters` (nº de `.cbz` no
+  tópico) e o `medium_reaction` (média de reações por capítulo). **Não baixa nada** — é a versão
+  "só leitura" do `download-all`, útil pra corrigir contagens sem tocar no disco.
+  - Usa a instância compartilhada via `get_telegram_scraper()` (obrigatório: instanciar um
+    `TelegramManhwaScraper` novo dá "database is locked" no `.session`) e um `asyncio.Semaphore(1)`,
+    para não tomar Flood 429 do Telegram.
+  - Manhwas sem link do Telegram são **pulados silenciosamente** (não entram em `results` nem contam
+    como erro), diferente do `download-all` que também exige a flag `download`.
+  - ❗ **`_get_topic_stats()` engole as próprias exceções** e devolve `{"cbz_count": 0, "avg_reactions": 0}`
+    quando falha. Por isso o endpoint trata `cbz_count == 0` como **falha**, não como dado válido —
+    sem esse guarda, uma queda de rede gravaria `total_chapters = 0` por cima de um valor correto.
+    Qualquer falha (exceção OU 0 CBZs) dispara o rollback de TODA a revisão.
+  - Resposta: `success`, `message`, `total_processed`, `total_updated`, `total_errors` e `results`
+    (por manhwa: `manhwa_id`, `manhwa_title`, `success`, `updated`, valores antigo/novo de
+    `total_chapters` e `medium_reaction`, `elapsed`).
 - **Variáveis de ambiente (`backend/.env`):**
   - `DATABASE_URL` — string `postgresql+asyncpg://...` (default: `postgres:postgres@localhost:5432/manhwa_tracker`).
   - `DOWNLOAD_DIR` — pasta onde os `.cbz` baixados ficam (default: `D:\Manhwas`). Altere aqui para mover a biblioteca.
