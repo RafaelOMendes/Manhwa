@@ -25,8 +25,8 @@
     "semantic_hash": "7ef9f5edc693e896e11c7238d0f973ce"
   },
   "backend/main.py": {
-    "mtime": 1787686824.1501324,
-    "ast_hash": "4eec771be6ae6f46cf502c1688ac446d",
+    "mtime": 1787686858.3898287,
+    "ast_hash": "6dae8bebe9c43c83d8619bda0a48bd95",
     "semantic_hash": ""
   },
   "backend/models.py": {
@@ -320,8 +320,8 @@
     "semantic_hash": ""
   },
   "AGENT_INSTRUCTIONS.md": {
-    "mtime": 1787686838.7447507,
-    "ast_hash": "b98e2abd5de533d38b4d53acaa830e0d",
+    "mtime": 1787686858.387829,
+    "ast_hash": "b18b099e75d069831b8644ff6dc33b28",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -330,14 +330,14 @@
     "semantic_hash": "8a6643a420fdad6bfb583523bc6cef16"
   },
   "README.md": {
-    "mtime": 1787660037.363057,
-    "ast_hash": "91814ae1b84034b9a859cd9b35674f2a",
+    "mtime": 1787686892.1808019,
+    "ast_hash": "3e934bc96dadbc14903dc3e19bcd9fa2",
     "semantic_hash": ""
   },
   "backend/README.md": {
-    "mtime": 1779105847.484825,
-    "ast_hash": "fb697931b93d96cf8cc9eedf490b60af",
-    "semantic_hash": "fb697931b93d96cf8cc9eedf490b60af"
+    "mtime": 1787686908.8502238,
+    "ast_hash": "8928ac5f5865d22fa747b88da02b9c4b",
+    "semantic_hash": ""
   },
   "backend/requirements.txt": {
     "mtime": 1770657011.3634615,
@@ -365,9 +365,9 @@
     "semantic_hash": "771faa62feb60b7de901a397aebb29b0"
   },
   "mobile/README.md": {
-    "mtime": 1779278804.7016337,
-    "ast_hash": "d1f58d9e70143584d1e1af79b79b17f3",
-    "semantic_hash": "d1f58d9e70143584d1e1af79b79b17f3"
+    "mtime": 1787686920.8210464,
+    "ast_hash": "c7071068e00eb64c2efd3cc452279efb",
+    "semantic_hash": ""
   },
   "mobile/.expo/web/cache/production/images/favicon/favicon-a4e030697a7571b3e95d31860e4da55d2f98e5e861e2b55e414f45a8556828ba-contain-transparent/favicon-48.png": {
     "mtime": 1779299493.9028203,
@@ -549,9 +549,9 @@
     "ast_hash": "51425c6e20fcbf8d7c19d1fef29925d3",
     "semantic_hash": ""
   },
-  "backend/error_logger.py": {
-    "mtime": 1787686806.7290063,
-    "ast_hash": "ea4b3c31084b9f8eb409a9c3cea1a8ee",
+  "frontend/README.md": {
+    "mtime": 1787686930.805212,
+    "ast_hash": "1fef2189602dae76a64baae10cd09e44",
     "semantic_hash": ""
   }
 }
