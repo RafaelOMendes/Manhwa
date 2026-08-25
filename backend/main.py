@@ -270,21 +270,51 @@ def _extract_chapter_number(filename: str) -> float:
     return 0
 
 
-def _list_cbz_files(download_dir: str) -> List[dict]:
-    """Lista os .cbz de um diretório já ordenados pelo número do capítulo."""
-    if not os.path.isdir(download_dir):
-        return []
+def _scan_cbz_files(download_dir: str) -> List[dict]:
+    """Lista os .cbz de um diretório já ordenados pelo número do capítulo.
 
+    Bloqueante por natureza (syscalls de disco): não chame direto de uma rota
+    async — use `_list_cbz_files_async`, que joga isso numa thread.
+
+    Usa `os.scandir` em vez de `listdir` + `getsize` por arquivo: o DirEntry já
+    vem com os metadados da própria listagem (no Windows, sempre; no Linux, o
+    stat é feito uma vez só), então some um syscall por arquivo.
+    """
     raw_files = []
-    for f in os.listdir(download_dir):
-        if f.lower().endswith('.cbz'):
-            full_path = os.path.join(download_dir, f)
-            size_mb = round(os.path.getsize(full_path) / (1024 * 1024), 1)
-            chapter_num = _extract_chapter_number(f)
-            raw_files.append({"name": f, "size_mb": size_mb, "chapter_number": chapter_num})
+    try:
+        with os.scandir(download_dir) as entradas:
+            for entrada in entradas:
+                if not entrada.name.lower().endswith('.cbz'):
+                    continue
+                try:
+                    tamanho = entrada.stat().st_size
+                except OSError:
+                    # Arquivo sumiu no meio da varredura (download em andamento,
+                    # por exemplo). Ignorar é melhor que derrubar a listagem toda.
+                    continue
+                raw_files.append({
+                    "name": entrada.name,
+                    "size_mb": round(tamanho / (1024 * 1024), 1),
+                    "chapter_number": _extract_chapter_number(entrada.name),
+                })
+    except (FileNotFoundError, NotADirectoryError, PermissionError):
+        # Diretório inexistente (manhwa sem nada baixado ainda) ou inacessível.
+        return []
 
     raw_files.sort(key=lambda x: x["chapter_number"])
     return raw_files
+
+
+async def _list_cbz_files_async(download_dir: str) -> List[dict]:
+    """Versão não-bloqueante de `_scan_cbz_files`.
+
+    O ganho aqui não é paralelizar `getsize` arquivo a arquivo — despachar uma
+    thread por arquivo custa mais que o syscall que ela faria. É tirar a
+    varredura inteira do event loop: assim as chamadas simultâneas de
+    `/files` (o mobile pede 4 manhwas em paralelo) de fato se sobrepõem em vez
+    de enfileirar atrás de uma listagem síncrona.
+    """
+    return await asyncio.to_thread(_scan_cbz_files, download_dir)
 
 
 @app.get("/api/manhwas/{manhwa_id}/files")
@@ -298,11 +328,10 @@ async def list_manhwa_files(manhwa_id: int, db: AsyncSession = Depends(get_db)):
 
     download_dir = _manhwa_download_dir(manhwa.title)
 
-    if not os.path.exists(download_dir):
-        return {"files": [], "path": download_dir}
-
+    # Diretório inexistente já cai em [] dentro do scan — sem checagem extra
+    # aqui, a resposta tem sempre o mesmo formato (inclusive `current_chapter`).
     return {
-        "files": _list_cbz_files(download_dir),
+        "files": await _list_cbz_files_async(download_dir),
         "path": download_dir,
         "current_chapter": manhwa.current_chapter or 0,
     }
@@ -325,7 +354,7 @@ async def _mark_previous_chapters_read(db: AsyncSession, manhwa: ManhwaModel, cu
     if current_chapter <= 1:
         return 0
 
-    arquivos = _list_cbz_files(_manhwa_download_dir(manhwa.title))
+    arquivos = await _list_cbz_files_async(_manhwa_download_dir(manhwa.title))
     if not arquivos:
         return 0
 

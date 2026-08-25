@@ -1780,34 +1780,44 @@
       "source_location": "L260",
       "_origin": "ast",
       "id": "backend_main_extract_chapter_number",
-      "community": 62,
+      "community": 57,
       "norm_label": "_extract_chapter_number()"
     },
     {
-      "label": "_list_cbz_files()",
+      "label": "_scan_cbz_files()",
       "file_type": "code",
       "source_file": "backend/main.py",
       "source_location": "L273",
       "_origin": "ast",
-      "id": "backend_main_list_cbz_files",
-      "community": 62,
-      "norm_label": "_list_cbz_files()"
+      "id": "backend_main_scan_cbz_files",
+      "community": 57,
+      "norm_label": "_scan_cbz_files()"
+    },
+    {
+      "label": "_list_cbz_files_async()",
+      "file_type": "code",
+      "source_file": "backend/main.py",
+      "source_location": "L308",
+      "_origin": "ast",
+      "id": "backend_main_list_cbz_files_async",
+      "community": 79,
+      "norm_label": "_list_cbz_files_async()"
     },
     {
       "label": "list_manhwa_files()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L291",
+      "source_location": "L321",
       "_origin": "ast",
       "id": "backend_main_list_manhwa_files",
-      "community": 62,
+      "community": 79,
       "norm_label": "list_manhwa_files()"
     },
     {
       "label": "UpdateCurrentChapter",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L310",
+      "source_location": "L339",
       "_origin": "ast",
       "id": "backend_main_updatecurrentchapter",
       "community": 1,
@@ -1817,7 +1827,7 @@
       "label": "_mark_previous_chapters_read()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L314",
+      "source_location": "L343",
       "_origin": "ast",
       "id": "backend_main_mark_previous_chapters_read",
       "community": 1,
@@ -1827,7 +1837,7 @@
       "label": "ManhwaModel",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L314",
+      "source_location": "L343",
       "_origin": "ast",
       "id": "manhwamodel",
       "community": 1,
@@ -1837,7 +1847,7 @@
       "label": "update_current_chapter()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L354",
+      "source_location": "L383",
       "_origin": "ast",
       "id": "backend_main_update_current_chapter",
       "community": 1,
@@ -1847,7 +1857,7 @@
       "label": "ScrollUpdate",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L389",
+      "source_location": "L418",
       "_origin": "ast",
       "id": "backend_main_scrollupdate",
       "community": 1,
@@ -1857,17 +1867,17 @@
       "label": "update_scroll()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L393",
+      "source_location": "L422",
       "_origin": "ast",
       "id": "backend_main_update_scroll",
-      "community": 1,
+      "community": 79,
       "norm_label": "update_scroll()"
     },
     {
       "label": "get_scroll()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L411",
+      "source_location": "L440",
       "_origin": "ast",
       "id": "backend_main_get_scroll",
       "community": 79,
@@ -1877,7 +1887,7 @@
       "label": "get_cbz_info()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L422",
+      "source_location": "L451",
       "_origin": "ast",
       "id": "backend_main_get_cbz_info",
       "community": 79,
@@ -1887,7 +1897,7 @@
       "label": "download_cbz_file()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L448",
+      "source_location": "L477",
       "_origin": "ast",
       "id": "backend_main_download_cbz_file",
       "community": 79,
@@ -1897,7 +1907,7 @@
       "label": "get_cbz_page()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L473",
+      "source_location": "L502",
       "_origin": "ast",
       "id": "backend_main_get_cbz_page",
       "community": 79,
@@ -1907,7 +1917,7 @@
       "label": "_persist_sync_updates()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L514",
+      "source_location": "L543",
       "_origin": "ast",
       "id": "backend_main_persist_sync_updates",
       "community": 81,
@@ -1917,7 +1927,7 @@
       "label": "download_all_manhwas()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L564",
+      "source_location": "L593",
       "_origin": "ast",
       "id": "backend_main_download_all_manhwas",
       "community": 81,
@@ -1927,7 +1937,7 @@
       "label": "review_all_manhwas()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L792",
+      "source_location": "L821",
       "_origin": "ast",
       "id": "backend_main_review_all_manhwas",
       "community": 81,
@@ -1937,7 +1947,7 @@
       "label": "import_from_telegram()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L1143",
+      "source_location": "L1172",
       "_origin": "ast",
       "id": "backend_main_import_from_telegram",
       "community": 1,
@@ -1947,7 +1957,7 @@
       "label": "test_telegram_config()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L1284",
+      "source_location": "L1313",
       "_origin": "ast",
       "id": "backend_main_test_telegram_config",
       "community": 57,
@@ -2060,36 +2070,46 @@
       "source_location": "L261",
       "_origin": "ast",
       "id": "backend_main_rationale_261",
-      "community": 62,
+      "community": 57,
       "norm_label": "extrai o numero do capitulo do nome do arquivo para ordenacao."
     },
     {
-      "label": "Lista os .cbz de um diret\u00f3rio j\u00e1 ordenados pelo n\u00famero do cap\u00edtulo.",
+      "label": "Lista os .cbz de um diret\u00f3rio j\u00e1 ordenados pelo n\u00famero do cap\u00edtulo.      Bloqu",
       "file_type": "rationale",
       "source_file": "backend/main.py",
       "source_location": "L274",
       "_origin": "ast",
       "id": "backend_main_rationale_274",
-      "community": 62,
-      "norm_label": "lista os .cbz de um diretorio ja ordenados pelo numero do capitulo."
+      "community": 57,
+      "norm_label": "lista os .cbz de um diretorio ja ordenados pelo numero do capitulo.      bloqu"
+    },
+    {
+      "label": "Vers\u00e3o n\u00e3o-bloqueante de `_scan_cbz_files`.      O ganho aqui n\u00e3o \u00e9 paraleliza",
+      "file_type": "rationale",
+      "source_file": "backend/main.py",
+      "source_location": "L309",
+      "_origin": "ast",
+      "id": "backend_main_rationale_309",
+      "community": 79,
+      "norm_label": "versao nao-bloqueante de `_scan_cbz_files`.      o ganho aqui nao e paraleliza"
     },
     {
       "label": "Lista os arquivos .cbz baixados de um manhwa em D:\\\\Manhwas\\\\{titulo}\\\\",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L292",
+      "source_location": "L322",
       "_origin": "ast",
-      "id": "backend_main_rationale_292",
-      "community": 62,
+      "id": "backend_main_rationale_322",
+      "community": 79,
       "norm_label": "lista os arquivos .cbz baixados de um manhwa em d:\\\\manhwas\\\\{titulo}\\\\"
     },
     {
       "label": "Registra como lidos todos os cap\u00edtulos anteriores ao cap\u00edtulo atual.      Um c",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L315",
+      "source_location": "L344",
       "_origin": "ast",
-      "id": "backend_main_rationale_315",
+      "id": "backend_main_rationale_344",
       "community": 1,
       "norm_label": "registra como lidos todos os capitulos anteriores ao capitulo atual.      um c"
     },
@@ -2097,9 +2117,9 @@
       "label": "Atualiza o current_chapter de um manhwa (chamado ao terminar de ler um cap\u00edtulo)",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L355",
+      "source_location": "L384",
       "_origin": "ast",
-      "id": "backend_main_rationale_355",
+      "id": "backend_main_rationale_384",
       "community": 1,
       "norm_label": "atualiza o current_chapter de um manhwa (chamado ao terminar de ler um capitulo)"
     },
@@ -2107,19 +2127,19 @@
       "label": "Salva a posi\u00e7\u00e3o de rolagem de um cap\u00edtulo espec\u00edfico",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L394",
+      "source_location": "L423",
       "_origin": "ast",
-      "id": "backend_main_rationale_394",
-      "community": 1,
+      "id": "backend_main_rationale_423",
+      "community": 79,
       "norm_label": "salva a posicao de rolagem de um capitulo especifico"
     },
     {
       "label": "Retorna a posi\u00e7\u00e3o de rolagem salva de um cap\u00edtulo espec\u00edfico",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L412",
+      "source_location": "L441",
       "_origin": "ast",
-      "id": "backend_main_rationale_412",
+      "id": "backend_main_rationale_441",
       "community": 79,
       "norm_label": "retorna a posicao de rolagem salva de um capitulo especifico"
     },
@@ -2127,9 +2147,9 @@
       "label": "Retorna informa\u00e7\u00f5es do CBZ (n\u00famero de p\u00e1ginas)",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L423",
+      "source_location": "L452",
       "_origin": "ast",
-      "id": "backend_main_rationale_423",
+      "id": "backend_main_rationale_452",
       "community": 79,
       "norm_label": "retorna informacoes do cbz (numero de paginas)"
     },
@@ -2137,9 +2157,9 @@
       "label": "Serve o .cbz inteiro pra download (usado pelo cache local do mobile).",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L449",
+      "source_location": "L478",
       "_origin": "ast",
-      "id": "backend_main_rationale_449",
+      "id": "backend_main_rationale_478",
       "community": 79,
       "norm_label": "serve o .cbz inteiro pra download (usado pelo cache local do mobile)."
     },
@@ -2147,9 +2167,9 @@
       "label": "Serve uma p\u00e1gina individual do CBZ como imagem",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L474",
+      "source_location": "L503",
       "_origin": "ast",
-      "id": "backend_main_rationale_474",
+      "id": "backend_main_rationale_503",
       "community": 79,
       "norm_label": "serve uma pagina individual do cbz como imagem"
     },
@@ -2157,9 +2177,9 @@
       "label": "Persiste as altera\u00e7\u00f5es da sincroniza\u00e7\u00e3o numa sess\u00e3o/conex\u00e3o NOVA.      Motivo:",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L515",
+      "source_location": "L544",
       "_origin": "ast",
-      "id": "backend_main_rationale_515",
+      "id": "backend_main_rationale_544",
       "community": 81,
       "norm_label": "persiste as alteracoes da sincronizacao numa sessao/conexao nova.      motivo:"
     },
@@ -2167,9 +2187,9 @@
       "label": "Sincroniza todos os manhwas em paralelo: baixa os .cbz de todos que possuem link",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L565",
+      "source_location": "L594",
       "_origin": "ast",
-      "id": "backend_main_rationale_565",
+      "id": "backend_main_rationale_594",
       "community": 81,
       "norm_label": "sincroniza todos os manhwas em paralelo: baixa os .cbz de todos que possuem link"
     },
@@ -2177,9 +2197,9 @@
       "label": "Revisita todos os manhwas com link do Telegram e recalcula os metadados do t\u00f3pic",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L793",
+      "source_location": "L822",
       "_origin": "ast",
-      "id": "backend_main_rationale_793",
+      "id": "backend_main_rationale_822",
       "community": 81,
       "norm_label": "revisita todos os manhwas com link do telegram e recalcula os metadados do topic"
     },
@@ -2187,9 +2207,9 @@
       "label": "Importa manhwas de um canal do Telegram          Requer configura\u00e7\u00e3o pr\u00e9via da",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L1144",
+      "source_location": "L1173",
       "_origin": "ast",
-      "id": "backend_main_rationale_1144",
+      "id": "backend_main_rationale_1173",
       "community": 1,
       "norm_label": "importa manhwas de um canal do telegram          requer configuracao previa da"
     },
@@ -2197,9 +2217,9 @@
       "label": "Testa se as configura\u00e7\u00f5es do Telegram est\u00e3o corretas",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L1285",
+      "source_location": "L1314",
       "_origin": "ast",
-      "id": "backend_main_rationale_1285",
+      "id": "backend_main_rationale_1314",
       "community": 57,
       "norm_label": "testa se as configuracoes do telegram estao corretas"
     },
@@ -2620,7 +2640,7 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "backend_test_review_all_partial_fakemessage",
-      "community": 77,
+      "community": 1,
       "norm_label": "fakemessage"
     },
     {
@@ -2630,7 +2650,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "backend_test_review_all_partial_fakemessage_init",
-      "community": 77,
+      "community": 1,
       "norm_label": ".__init__()"
     },
     {
@@ -4100,7 +4120,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "mobile_package",
-      "community": 65,
+      "community": 11,
       "norm_label": "package.json"
     },
     {
@@ -4110,7 +4130,7 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "mobile_package_name",
-      "community": 65,
+      "community": 11,
       "norm_label": "name"
     },
     {
@@ -4120,7 +4140,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "mobile_package_main",
-      "community": 65,
+      "community": 11,
       "norm_label": "main"
     },
     {
@@ -4130,7 +4150,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "mobile_package_version",
-      "community": 65,
+      "community": 11,
       "norm_label": "version"
     },
     {
@@ -4580,7 +4600,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "mobile_package_devdependencies",
-      "community": 64,
+      "community": 11,
       "norm_label": "devdependencies"
     },
     {
@@ -4590,7 +4610,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "mobile_package_devdependencies_expo_ngrok",
-      "community": 64,
+      "community": 11,
       "norm_label": "@expo/ngrok"
     },
     {
@@ -4600,7 +4620,7 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "mobile_package_devdependencies_types_react",
-      "community": 64,
+      "community": 11,
       "norm_label": "@types/react"
     },
     {
@@ -4610,7 +4630,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "mobile_package_devdependencies_eslint",
-      "community": 64,
+      "community": 11,
       "norm_label": "eslint"
     },
     {
@@ -4620,7 +4640,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "mobile_package_devdependencies_eslint_config_expo",
-      "community": 64,
+      "community": 11,
       "norm_label": "eslint-config-expo"
     },
     {
@@ -4630,7 +4650,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "mobile_package_devdependencies_typescript",
-      "community": 64,
+      "community": 11,
       "norm_label": "typescript"
     },
     {
@@ -4640,7 +4660,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "mobile_package_private",
-      "community": 65,
+      "community": 11,
       "norm_label": "private"
     },
     {
@@ -4760,7 +4780,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "mobile_src_app_layout_tsx_app_layout",
-      "community": 48,
+      "community": 13,
       "norm_label": "_layout.tsx"
     },
     {
@@ -4770,7 +4790,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "mobile_src_app_layout_tsx_app_layout_rootlayout",
-      "community": 48,
+      "community": 13,
       "norm_label": "rootlayout()"
     },
     {
@@ -4940,7 +4960,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "mobile_src_components_cbzreader_tsx_components_cbzreader",
-      "community": 9,
+      "community": 48,
       "norm_label": "cbzreader.tsx"
     },
     {
@@ -4950,7 +4970,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "mobile_src_components_cbzreader_tsx_components_cbzreader_chapterfile",
-      "community": 9,
+      "community": 48,
       "norm_label": "chapterfile"
     },
     {
@@ -4960,7 +4980,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "mobile_src_components_cbzreader_tsx_components_cbzreader_cbzreaderprops",
-      "community": 9,
+      "community": 48,
       "norm_label": "cbzreaderprops"
     },
     {
@@ -4970,7 +4990,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "mobile_src_components_cbzreader_tsx_components_cbzreader_extractchapternumber",
-      "community": 9,
+      "community": 48,
       "norm_label": "extractchapternumber()"
     },
     {
@@ -4980,7 +5000,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "components_cbzreader_width_screen_width",
-      "community": 9,
+      "community": 48,
       "norm_label": "{ width: screen_width }"
     },
     {
@@ -4990,7 +5010,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "components_cbzreader_readerpageprops",
-      "community": 9,
+      "community": 48,
       "norm_label": "readerpageprops"
     },
     {
@@ -5000,7 +5020,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "components_cbzreader_readerpage",
-      "community": 9,
+      "community": 48,
       "norm_label": "readerpage"
     },
     {
@@ -5010,7 +5030,7 @@
       "source_location": "L88",
       "_origin": "ast",
       "id": "mobile_src_components_cbzreader_tsx_components_cbzreader_cbzreader",
-      "community": 9,
+      "community": 48,
       "norm_label": "cbzreader()"
     },
     {
@@ -5020,7 +5040,7 @@
       "source_location": "L800",
       "_origin": "ast",
       "id": "components_cbzreader_styles",
-      "community": 9,
+      "community": 48,
       "norm_label": "styles"
     },
     {
@@ -5240,7 +5260,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "lib_background_download_setupdownloadnotificationpress",
-      "community": 6,
+      "community": 13,
       "norm_label": "setupdownloadnotificationpress()"
     },
     {
@@ -5350,7 +5370,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "lib_cache_deletechapterdirasync",
-      "community": 48,
+      "community": 0,
       "norm_label": "deletechapterdirasync()"
     },
     {
@@ -5420,7 +5440,7 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "lib_cache_loadindex",
-      "community": 48,
+      "community": 0,
       "norm_label": "loadindex()"
     },
     {
@@ -5430,7 +5450,7 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "lib_cache_saveindex",
-      "community": 48,
+      "community": 0,
       "norm_label": "saveindex()"
     },
     {
@@ -5470,7 +5490,7 @@
       "source_location": "L114",
       "_origin": "ast",
       "id": "lib_cache_getlocalchapter",
-      "community": 48,
+      "community": 0,
       "norm_label": "getlocalchapter()"
     },
     {
@@ -5490,7 +5510,7 @@
       "source_location": "L140",
       "_origin": "ast",
       "id": "lib_cache_trimcached",
-      "community": 48,
+      "community": 0,
       "norm_label": "trimcached()"
     },
     {
@@ -5500,7 +5520,7 @@
       "source_location": "L155",
       "_origin": "ast",
       "id": "lib_cache_trimallcached",
-      "community": 48,
+      "community": 0,
       "norm_label": "trimallcached()"
     },
     {
@@ -5560,7 +5580,7 @@
       "source_location": "L242",
       "_origin": "ast",
       "id": "lib_cache_downloadcover",
-      "community": 48,
+      "community": 0,
       "norm_label": "downloadcover()"
     },
     {
@@ -5580,7 +5600,7 @@
       "source_location": "L269",
       "_origin": "ast",
       "id": "lib_cache_syncmanhwalocal",
-      "community": 48,
+      "community": 0,
       "norm_label": "syncmanhwalocal()"
     },
     {
@@ -5590,7 +5610,7 @@
       "source_location": "L411",
       "_origin": "ast",
       "id": "lib_cache_markchapterreadlocal",
-      "community": 48,
+      "community": 0,
       "norm_label": "markchapterreadlocal()"
     },
     {
@@ -5600,7 +5620,7 @@
       "source_location": "L446",
       "_origin": "ast",
       "id": "lib_cache_markmanhwaread",
-      "community": 48,
+      "community": 0,
       "norm_label": "markmanhwaread()"
     },
     {
@@ -5630,7 +5650,7 @@
       "source_location": "L480",
       "_origin": "ast",
       "id": "lib_cache_applyreadreconcile",
-      "community": 48,
+      "community": 0,
       "norm_label": "applyreadreconcile()"
     },
     {
@@ -5670,7 +5690,7 @@
       "source_location": "L526",
       "_origin": "ast",
       "id": "lib_cache_loadscrollmap",
-      "community": 0,
+      "community": 48,
       "norm_label": "loadscrollmap()"
     },
     {
@@ -5680,7 +5700,7 @@
       "source_location": "L535",
       "_origin": "ast",
       "id": "lib_cache_savescrollmap",
-      "community": 0,
+      "community": 48,
       "norm_label": "savescrollmap()"
     },
     {
@@ -5690,7 +5710,7 @@
       "source_location": "L539",
       "_origin": "ast",
       "id": "lib_cache_savelocalscroll",
-      "community": 0,
+      "community": 48,
       "norm_label": "savelocalscroll()"
     },
     {
@@ -5700,7 +5720,7 @@
       "source_location": "L551",
       "_origin": "ast",
       "id": "lib_cache_getlocalscroll",
-      "community": 0,
+      "community": 48,
       "norm_label": "getlocalscroll()"
     },
     {
@@ -5710,7 +5730,7 @@
       "source_location": "L561",
       "_origin": "ast",
       "id": "lib_cache_clearlocalscrollfor",
-      "community": 0,
+      "community": 48,
       "norm_label": "clearlocalscrollfor()"
     },
     {
@@ -5720,7 +5740,7 @@
       "source_location": "L572",
       "_origin": "ast",
       "id": "lib_cache_removemanhwalocal",
-      "community": 0,
+      "community": 45,
       "norm_label": "removemanhwalocal()"
     },
     {
@@ -5750,7 +5770,7 @@
       "source_location": "L605",
       "_origin": "ast",
       "id": "lib_cache_loadmanhwalist",
-      "community": 45,
+      "community": 53,
       "norm_label": "loadmanhwalist()"
     },
     {
@@ -5800,7 +5820,7 @@
       "source_location": "L666",
       "_origin": "ast",
       "id": "lib_cache_getmanhwastorage",
-      "community": 0,
+      "community": 45,
       "norm_label": "getmanhwastorage()"
     },
     {
@@ -5810,7 +5830,7 @@
       "source_location": "L673",
       "_origin": "ast",
       "id": "lib_cache_getmanhwaswithlocaldata",
-      "community": 48,
+      "community": 0,
       "norm_label": "getmanhwaswithlocaldata()"
     },
     {
@@ -5820,7 +5840,7 @@
       "source_location": "L693",
       "_origin": "ast",
       "id": "lib_cache_cleanupcorrupted",
-      "community": 48,
+      "community": 0,
       "norm_label": "cleanupcorrupted()"
     },
     {
@@ -5830,7 +5850,7 @@
       "source_location": "L761",
       "_origin": "ast",
       "id": "lib_cache_cleanupexpired",
-      "community": 48,
+      "community": 0,
       "norm_label": "cleanupexpired()"
     },
     {
@@ -6660,7 +6680,7 @@
       "source_location": "L646",
       "_origin": "ast",
       "id": "graphify_skill_honesty_rules",
-      "community": 2,
+      "community": 43,
       "norm_label": "honesty rules"
     },
     {
@@ -7037,7 +7057,7 @@
       "label": "2. Frontend (Next.js / React Web)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L175",
+      "source_location": "L197",
       "_origin": "ast",
       "id": "agent_instructions_2_frontend_next_js_react_web",
       "community": 47,
@@ -7047,7 +7067,7 @@
       "label": "3. Mobile (Expo / React Native)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L184",
+      "source_location": "L206",
       "_origin": "ast",
       "id": "agent_instructions_3_mobile_expo_react_native",
       "community": 47,
@@ -7057,7 +7077,7 @@
       "label": "\ud83d\udcc1 Estrutura Interna (`/mobile`)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L190",
+      "source_location": "L212",
       "_origin": "ast",
       "id": "agent_instructions_estrutura_interna_mobile",
       "community": 47,
@@ -7067,7 +7087,7 @@
       "label": "\u2699\ufe0f Configura\u00e7\u00f5es Importantes",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L218",
+      "source_location": "L240",
       "_origin": "ast",
       "id": "agent_instructions_configura\u00e7\u00f5es_importantes",
       "community": 47,
@@ -7077,7 +7097,7 @@
       "label": "\ud83d\udda5\ufe0f Modo Tela Cheia (Imersivo) \u2014 apenas no leitor CBZ",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L223",
+      "source_location": "L245",
       "_origin": "ast",
       "id": "agent_instructions_modo_tela_cheia_imersivo_apenas_no_leitor_cbz",
       "community": 47,
@@ -7087,7 +7107,7 @@
       "label": "\ud83d\udccc Persist\u00eancia de progresso de leitura (scroll por cap\u00edtulo)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L235",
+      "source_location": "L257",
       "_origin": "ast",
       "id": "agent_instructions_persist\u00eancia_de_progresso_de_leitura_scroll_por_cap\u00edtulo",
       "community": 47,
@@ -7097,7 +7117,7 @@
       "label": "4. Automa\u00e7\u00e3o Trello \u2194 Claude Code",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L246",
+      "source_location": "L268",
       "_origin": "ast",
       "id": "agent_instructions_4_automa\u00e7\u00e3o_trello_claude_code",
       "community": 47,
@@ -7107,7 +7127,7 @@
       "label": "\ud83d\udd0d Como se Orientar (Instru\u00e7\u00f5es para Agentes)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L310",
+      "source_location": "L332",
       "_origin": "ast",
       "id": "agent_instructions_como_se_orientar_instru\u00e7\u00f5es_para_agentes",
       "community": 47,
@@ -7117,7 +7137,7 @@
       "label": "\ud83c\udfaf Pr\u00f3ximos Passos (Para a IA)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L331",
+      "source_location": "L353",
       "_origin": "ast",
       "id": "agent_instructions_pr\u00f3ximos_passos_para_a_ia",
       "community": 47,
@@ -7127,7 +7147,7 @@
       "label": "\ud83d\udcdd Manuten\u00e7\u00e3o deste Arquivo (Obrigat\u00f3rio para Agentes)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L344",
+      "source_location": "L366",
       "_origin": "ast",
       "id": "agent_instructions_manuten\u00e7\u00e3o_deste_arquivo_obrigat\u00f3rio_para_agentes",
       "community": 47,
@@ -7137,7 +7157,7 @@
       "label": "Como editar este arquivo corretamente",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L348",
+      "source_location": "L370",
       "_origin": "ast",
       "id": "agent_instructions_como_editar_este_arquivo_corretamente",
       "community": 47,
@@ -7147,7 +7167,7 @@
       "label": "Exemplo de fluxo",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L356",
+      "source_location": "L378",
       "_origin": "ast",
       "id": "agent_instructions_exemplo_de_fluxo",
       "community": 47,
@@ -8342,7 +8362,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 43,
       "norm_label": "audit trail (extracted/inferred/ambiguous)",
       "id": "graphify_skill_audit_trail"
     },
@@ -8368,7 +8388,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 52,
+      "community": 60,
       "norm_label": "ast structural extraction (part a)",
       "id": "graphify_skill_ast_extraction"
     },
@@ -8576,7 +8596,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 60,
+      "community": 54,
       "norm_label": "/graphify add (url ingestion)",
       "id": "add_watch_graphify_add"
     },
@@ -8589,7 +8609,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 52,
+      "community": 54,
       "norm_label": "--watch folder watcher",
       "id": "add_watch_watch_mode"
     },
@@ -8602,7 +8622,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 52,
+      "community": 54,
       "norm_label": "debounce mechanism",
       "id": "add_watch_debounce"
     },
@@ -8615,7 +8635,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 60,
+      "community": 54,
       "norm_label": "graphify.ingest.ingest",
       "id": "add_watch_ingest"
     },
@@ -8732,7 +8752,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 43,
       "norm_label": "confidence score rubric",
       "id": "extraction_spec_confidence_rubric"
     },
@@ -8745,7 +8765,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 60,
       "norm_label": "node id format rule",
       "id": "extraction_spec_node_id_format"
     },
@@ -8823,7 +8843,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 54,
+      "community": 62,
       "norm_label": "github repo clone (step 0)",
       "id": "github_and_merge_clone"
     },
@@ -8836,7 +8856,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 54,
+      "community": 62,
       "norm_label": "cross-repo merge",
       "id": "github_and_merge_cross_repo"
     },
@@ -8849,7 +8869,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 54,
+      "community": 62,
       "norm_label": "graphify merge-graphs",
       "id": "github_and_merge_graphs"
     },
@@ -12013,9 +12033,9 @@
       "source_file": "backend/main.py",
       "source_location": "L260",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main",
-      "target": "backend_main_extract_chapter_number",
-      "confidence_score": 1.0
+      "target": "backend_main_extract_chapter_number"
     },
     {
       "relation": "contains",
@@ -12101,10 +12121,10 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L273",
+      "source_location": "L308",
       "weight": 1.0,
       "source": "backend_main",
-      "target": "backend_main_list_cbz_files",
+      "target": "backend_main_list_cbz_files_async",
       "confidence_score": 1.0
     },
     {
@@ -12133,9 +12153,9 @@
       "source_file": "backend/main.py",
       "source_location": "L254",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main",
-      "target": "backend_main_manhwa_download_dir",
-      "confidence_score": 1.0
+      "target": "backend_main_manhwa_download_dir"
     },
     {
       "relation": "contains",
@@ -12173,9 +12193,9 @@
       "source_file": "backend/main.py",
       "source_location": "L314",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main",
-      "target": "backend_main_mark_previous_chapters_read",
-      "confidence_score": 1.0
+      "target": "backend_main_mark_previous_chapters_read"
     },
     {
       "relation": "contains",
@@ -12206,6 +12226,16 @@
       "confidence_score": 1.0,
       "source": "backend_main",
       "target": "backend_main_root"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/main.py",
+      "source_location": "L273",
+      "weight": 1.0,
+      "source": "backend_main",
+      "target": "backend_main_scan_cbz_files",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -12418,9 +12448,9 @@
       "source_file": "backend/test_auto_mark_read.py",
       "source_location": "L15",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_auto_mark_read",
-      "target": "fastapi",
-      "confidence_score": 1.0
+      "target": "fastapi"
     },
     {
       "relation": "uses",
@@ -13028,9 +13058,9 @@
       "source_file": "backend/main.py",
       "source_location": "L314",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_mark_previous_chapters_read",
-      "target": "asyncsession",
-      "confidence_score": 1.0
+      "target": "asyncsession"
     },
     {
       "relation": "references",
@@ -13093,9 +13123,9 @@
       "source_file": "backend/main.py",
       "source_location": "L214",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_create_manhwa",
-      "target": "manhwamodel",
-      "confidence_score": 1.0
+      "target": "manhwamodel"
     },
     {
       "relation": "rationale_for",
@@ -13114,9 +13144,9 @@
       "source_file": "backend/main.py",
       "source_location": "L456",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_download_cbz_file",
-      "target": "backend_main_manhwa_download_dir",
-      "confidence_score": 1.0
+      "target": "backend_main_manhwa_download_dir"
     },
     {
       "relation": "calls",
@@ -13125,9 +13155,9 @@
       "source_file": "backend/main.py",
       "source_location": "L431",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_get_cbz_info",
-      "target": "backend_main_manhwa_download_dir",
-      "confidence_score": 1.0
+      "target": "backend_main_manhwa_download_dir"
     },
     {
       "relation": "calls",
@@ -13136,9 +13166,9 @@
       "source_file": "backend/main.py",
       "source_location": "L482",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_get_cbz_page",
-      "target": "backend_main_manhwa_download_dir",
-      "confidence_score": 1.0
+      "target": "backend_main_manhwa_download_dir"
     },
     {
       "relation": "calls",
@@ -13147,9 +13177,9 @@
       "source_file": "backend/main.py",
       "source_location": "L299",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_list_manhwa_files",
-      "target": "backend_main_manhwa_download_dir",
-      "confidence_score": 1.0
+      "target": "backend_main_manhwa_download_dir"
     },
     {
       "relation": "calls",
@@ -13158,9 +13188,9 @@
       "source_file": "backend/main.py",
       "source_location": "L328",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_mark_previous_chapters_read",
-      "target": "backend_main_manhwa_download_dir",
-      "confidence_score": 1.0
+      "target": "backend_main_manhwa_download_dir"
     },
     {
       "relation": "rationale_for",
@@ -13168,20 +13198,9 @@
       "source_file": "backend/main.py",
       "source_location": "L255",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_255",
-      "target": "backend_main_manhwa_download_dir",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L283",
-      "weight": 1.0,
-      "source": "backend_main_list_cbz_files",
-      "target": "backend_main_extract_chapter_number",
-      "confidence_score": 1.0
+      "target": "backend_main_manhwa_download_dir"
     },
     {
       "relation": "rationale_for",
@@ -13189,30 +13208,19 @@
       "source_file": "backend/main.py",
       "source_location": "L261",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_261",
+      "target": "backend_main_extract_chapter_number"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/main.py",
+      "source_location": "L298",
+      "weight": 1.0,
+      "source": "backend_main_scan_cbz_files",
       "target": "backend_main_extract_chapter_number",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L305",
-      "weight": 1.0,
-      "source": "backend_main_list_manhwa_files",
-      "target": "backend_main_list_cbz_files",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L328",
-      "weight": 1.0,
-      "source": "backend_main_mark_previous_chapters_read",
-      "target": "backend_main_list_cbz_files",
       "confidence_score": 1.0
     },
     {
@@ -13222,16 +13230,48 @@
       "source_location": "L274",
       "weight": 1.0,
       "source": "backend_main_rationale_274",
-      "target": "backend_main_list_cbz_files",
+      "target": "backend_main_scan_cbz_files",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/main.py",
+      "source_location": "L334",
+      "weight": 1.0,
+      "source": "backend_main_list_manhwa_files",
+      "target": "backend_main_list_cbz_files_async",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/main.py",
+      "source_location": "L357",
+      "weight": 1.0,
+      "source": "backend_main_mark_previous_chapters_read",
+      "target": "backend_main_list_cbz_files_async",
       "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L292",
+      "source_location": "L309",
       "weight": 1.0,
-      "source": "backend_main_rationale_292",
+      "source": "backend_main_rationale_309",
+      "target": "backend_main_list_cbz_files_async",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/main.py",
+      "source_location": "L322",
+      "weight": 1.0,
+      "source": "backend_main_rationale_322",
       "target": "backend_main_list_manhwa_files",
       "confidence_score": 1.0
     },
@@ -13294,17 +13334,17 @@
       "source_file": "backend/main.py",
       "source_location": "L314",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_mark_previous_chapters_read",
-      "target": "manhwamodel",
-      "confidence_score": 1.0
+      "target": "manhwamodel"
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L315",
+      "source_location": "L344",
       "weight": 1.0,
-      "source": "backend_main_rationale_315",
+      "source": "backend_main_rationale_344",
       "target": "backend_main_mark_previous_chapters_read",
       "confidence_score": 1.0
     },
@@ -13315,9 +13355,9 @@
       "source_file": "backend/main.py",
       "source_location": "L376",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_update_current_chapter",
-      "target": "backend_main_mark_previous_chapters_read",
-      "confidence_score": 1.0
+      "target": "backend_main_mark_previous_chapters_read"
     },
     {
       "relation": "calls",
@@ -13326,9 +13366,9 @@
       "source_file": "backend/main.py",
       "source_location": "L1225",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_import_from_telegram",
-      "target": "manhwamodel",
-      "confidence_score": 1.0
+      "target": "manhwamodel"
     },
     {
       "relation": "calls",
@@ -13358,9 +13398,9 @@
       "source_file": "backend/main.py",
       "source_location": "L23",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "manhwamodel",
-      "target": "backend_models_chapterprogress",
-      "confidence_score": 0.5
+      "target": "backend_models_chapterprogress"
     },
     {
       "relation": "uses",
@@ -13368,9 +13408,9 @@
       "source_file": "backend/main.py",
       "source_location": "L23",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "manhwamodel",
-      "target": "backend_models_manhwa",
-      "confidence_score": 0.5
+      "target": "backend_models_manhwa"
     },
     {
       "relation": "uses",
@@ -13378,17 +13418,17 @@
       "source_file": "backend/main.py",
       "source_location": "L162",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "manhwamodel",
-      "target": "backend_telegram_scraper_telegrammanhwascraper",
-      "confidence_score": 0.5
+      "target": "backend_telegram_scraper_telegrammanhwascraper"
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L355",
+      "source_location": "L384",
       "weight": 1.0,
-      "source": "backend_main_rationale_355",
+      "source": "backend_main_rationale_384",
       "target": "backend_main_update_current_chapter",
       "confidence_score": 1.0
     },
@@ -13437,9 +13477,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L394",
+      "source_location": "L423",
       "weight": 1.0,
-      "source": "backend_main_rationale_394",
+      "source": "backend_main_rationale_423",
       "target": "backend_main_update_scroll",
       "confidence_score": 1.0
     },
@@ -13458,9 +13498,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L412",
+      "source_location": "L441",
       "weight": 1.0,
-      "source": "backend_main_rationale_412",
+      "source": "backend_main_rationale_441",
       "target": "backend_main_get_scroll",
       "confidence_score": 1.0
     },
@@ -13470,7 +13510,17 @@
       "source_file": "backend/main.py",
       "source_location": "L423",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_423",
+      "target": "backend_main_get_cbz_info"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/main.py",
+      "source_location": "L452",
+      "weight": 1.0,
+      "source": "backend_main_rationale_452",
       "target": "backend_main_get_cbz_info",
       "confidence_score": 1.0
     },
@@ -13478,9 +13528,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L449",
+      "source_location": "L478",
       "weight": 1.0,
-      "source": "backend_main_rationale_449",
+      "source": "backend_main_rationale_478",
       "target": "backend_main_download_cbz_file",
       "confidence_score": 1.0
     },
@@ -13488,9 +13538,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L474",
+      "source_location": "L503",
       "weight": 1.0,
-      "source": "backend_main_rationale_474",
+      "source": "backend_main_rationale_503",
       "target": "backend_main_get_cbz_page",
       "confidence_score": 1.0
     },
@@ -13509,9 +13559,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L515",
+      "source_location": "L544",
       "weight": 1.0,
-      "source": "backend_main_rationale_515",
+      "source": "backend_main_rationale_544",
       "target": "backend_main_persist_sync_updates",
       "confidence_score": 1.0
     },
@@ -13530,9 +13580,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L565",
+      "source_location": "L594",
       "weight": 1.0,
-      "source": "backend_main_rationale_565",
+      "source": "backend_main_rationale_594",
       "target": "backend_main_download_all_manhwas",
       "confidence_score": 1.0
     },
@@ -13540,9 +13590,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L793",
+      "source_location": "L822",
       "weight": 1.0,
-      "source": "backend_main_rationale_793",
+      "source": "backend_main_rationale_822",
       "target": "backend_main_review_all_manhwas",
       "confidence_score": 1.0
     },
@@ -13550,9 +13600,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L1144",
+      "source_location": "L1173",
       "weight": 1.0,
-      "source": "backend_main_rationale_1144",
+      "source": "backend_main_rationale_1173",
       "target": "backend_main_import_from_telegram",
       "confidence_score": 1.0
     },
@@ -13560,9 +13610,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L1285",
+      "source_location": "L1314",
       "weight": 1.0,
-      "source": "backend_main_rationale_1285",
+      "source": "backend_main_rationale_1314",
       "target": "backend_main_test_telegram_config",
       "confidence_score": 1.0
     },
@@ -14083,9 +14133,9 @@
       "source_file": "backend/test_auto_mark_read.py",
       "source_location": "L28",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_auto_mark_read",
-      "target": "backend_test_auto_mark_read_check",
-      "confidence_score": 1.0
+      "target": "backend_test_auto_mark_read_check"
     },
     {
       "relation": "contains",
@@ -14093,9 +14143,9 @@
       "source_file": "backend/test_auto_mark_read.py",
       "source_location": "L43",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_auto_mark_read",
-      "target": "backend_test_auto_mark_read_patch_chapter",
-      "confidence_score": 1.0
+      "target": "backend_test_auto_mark_read_patch_chapter"
     },
     {
       "relation": "contains",
@@ -14103,9 +14153,9 @@
       "source_file": "backend/test_auto_mark_read.py",
       "source_location": "L34",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_auto_mark_read",
-      "target": "backend_test_auto_mark_read_registros",
-      "confidence_score": 1.0
+      "target": "backend_test_auto_mark_read_registros"
     },
     {
       "relation": "contains",
@@ -14113,9 +14163,9 @@
       "source_file": "backend/test_auto_mark_read.py",
       "source_location": "L50",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_auto_mark_read",
-      "target": "backend_test_auto_mark_read_rodar",
-      "confidence_score": 1.0
+      "target": "backend_test_auto_mark_read_rodar"
     },
     {
       "relation": "calls",
@@ -14124,9 +14174,9 @@
       "source_file": "backend/test_auto_mark_read.py",
       "source_location": "L79",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_auto_mark_read_rodar",
-      "target": "backend_test_auto_mark_read_check",
-      "confidence_score": 1.0
+      "target": "backend_test_auto_mark_read_check"
     },
     {
       "relation": "rationale_for",
@@ -14134,9 +14184,9 @@
       "source_file": "backend/test_auto_mark_read.py",
       "source_location": "L35",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_auto_mark_read_rationale_35",
-      "target": "backend_test_auto_mark_read_registros",
-      "confidence_score": 1.0
+      "target": "backend_test_auto_mark_read_registros"
     },
     {
       "relation": "calls",
@@ -14145,9 +14195,9 @@
       "source_file": "backend/test_auto_mark_read.py",
       "source_location": "L83",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_auto_mark_read_rodar",
-      "target": "backend_test_auto_mark_read_registros",
-      "confidence_score": 1.0
+      "target": "backend_test_auto_mark_read_registros"
     },
     {
       "relation": "calls",
@@ -14156,9 +14206,9 @@
       "source_file": "backend/test_auto_mark_read.py",
       "source_location": "L77",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_auto_mark_read_rodar",
-      "target": "backend_test_auto_mark_read_patch_chapter",
-      "confidence_score": 1.0
+      "target": "backend_test_auto_mark_read_patch_chapter"
     },
     {
       "relation": "contains",
@@ -22130,5 +22180,5 @@
       "source_file": ".claude/skills/graphify/references/query.md"
     }
   ],
-  "built_at_commit": "d74e7ba5a4dd002739943f181bb1ec77c0e0d398"
+  "built_at_commit": "ab03537d1f427b3e2a7c70fc32e8c5fd562f9de7"
 }

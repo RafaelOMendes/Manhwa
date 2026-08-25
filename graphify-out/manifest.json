@@ -25,8 +25,8 @@
     "semantic_hash": "7ef9f5edc693e896e11c7238d0f973ce"
   },
   "backend/main.py": {
-    "mtime": 1787690511.6375425,
-    "ast_hash": "9fac38a59ccdbc00363be808d8799082",
+    "mtime": 1787697219.351802,
+    "ast_hash": "cbce0630a9422ae95c746499bfe80a8b",
     "semantic_hash": ""
   },
   "backend/models.py": {
@@ -320,8 +320,8 @@
     "semantic_hash": ""
   },
   "AGENT_INSTRUCTIONS.md": {
-    "mtime": 1787690546.345497,
-    "ast_hash": "3128fb2aa7e3cff2bae3bd743590fc34",
+    "mtime": 1787697313.7159657,
+    "ast_hash": "68f6667f2b640e0bd27a581e6f4319d5",
     "semantic_hash": ""
   },
   "CLAUDE.md": {

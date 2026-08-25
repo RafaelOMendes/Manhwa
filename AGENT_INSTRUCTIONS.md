@@ -124,6 +124,27 @@ O projeto Manhwa Tracker é composto por três partes principais:
   - `get_db()` engole o erro do commit final **apenas** quando a sessão não tem alterações pendentes
     (só houve leitura, ou o endpoint já persistiu por conta própria) — nesse caso não há nada a perder e
     deixar o erro subir viraria um 500 confuso. Se houver escrita pendente, o erro sobe normalmente.
+- **⚡ I/O de disco dentro de rota async: mande pra thread, não paralelize arquivo a arquivo.**
+  Listar os `.cbz` de um manhwa é I/O bloqueante (varrer o diretório + ler o tamanho de cada arquivo).
+  Feito direto numa rota `async def`, isso **trava o event loop inteiro**: o mobile pede
+  `/api/manhwas/{id}/files` de 4 manhwas em paralelo (`poolMap(..., 4, ...)`), mas as listagens
+  enfileiravam uma atrás da outra e ainda seguravam todo o resto da API. Padrão adotado
+  (`_scan_cbz_files` + `_list_cbz_files_async` em `main.py`):
+  1. A varredura fica numa função **síncrona** normal, e a rota chama `await asyncio.to_thread(...)`.
+     **Não** dispare uma thread por arquivo (`gather` de `to_thread(os.path.getsize)`): despachar a
+     thread custa mais que o syscall que ela faria, e N tarefas por manhwa × 4 manhwas esgotam o
+     threadpool padrão (`min(32, cpu+4)`).
+  2. Prefira `os.scandir()` a `os.listdir()` + `os.path.getsize()`: o `DirEntry` já traz os metadados
+     da listagem, então some um syscall por arquivo.
+  3. Trate o diretório inexistente/inacessível **dentro** do scan (`except FileNotFoundError,
+     NotADirectoryError, PermissionError` → `[]`) e o arquivo que some no meio da varredura
+     (`entry.stat()` → `except OSError`, pula). Assim a rota não precisa de um `os.path.exists()`
+     extra antes e a resposta tem sempre o mesmo formato.
+  - Medido em 2026-08-25 sobre o `D:\Manhwas` real (42 diretórios, 8899 `.cbz`, 4 em paralelo):
+    **611ms → 78ms** de tempo de parede (~7,8x) e o pior atraso do event loop caiu de **571ms para
+    3,6ms**. Saída idêntica à da versão antiga nos 42 diretórios.
+  - Vale para qualquer rota async que toque disco: `_mark_previous_chapters_read()` também usa a
+    versão async por isso.
 - **Respostas HTTP consistentes (endpoints tipo "sync"):** qualquer endpoint que um client (frontend/mobile)
   lê como `{ success, message, ... }` deve retornar **sempre** esse shape — nunca deixar um caminho de
   erro cair no `{ detail: "..." }` padrão do FastAPI (`raise HTTPException`), pois o client não sabe ler
@@ -160,8 +181,9 @@ O projeto Manhwa Tracker é composto por três partes principais:
      Os dois clients só olham `res.ok`, então nada quebrou — mas é o número a conferir ao depurar.
   - **Helpers extraídos para uso compartilhado** (antes eram lógica duplicada/aninhada em cada rota):
     `_manhwa_download_dir(title)` (saneamento do nome igual ao do scraper), `_extract_chapter_number(filename)`
-    (agora no nível do módulo, não mais dentro de `list_manhwa_files`) e `_list_cbz_files(dir)` (listagem
-    ordenada por capítulo). A marcação e o `GET /files` **precisam** enxergar exatamente o mesmo diretório
+    (agora no nível do módulo, não mais dentro de `list_manhwa_files`) e `_list_cbz_files_async(dir)`
+    (listagem ordenada por capítulo, fora do event loop — ver a regra de I/O de disco acima).
+    A marcação e o `GET /files` **precisam** enxergar exatamente o mesmo diretório
     e o mesmo número de capítulo — se divergirem, o app marca o arquivo errado como lido.
   - Testes: `backend/test_auto_mark_read.py` (SQLite em memória + diretório temporário, sem Postgres e sem
     servidor no ar) cobre avanço, preservação de scroll real, regressão, idempotência, capítulo fracionário,
