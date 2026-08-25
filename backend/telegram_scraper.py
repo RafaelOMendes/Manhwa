@@ -1,3 +1,4 @@
+import asyncio
 import os
 import re
 import html
@@ -5,6 +6,86 @@ import time
 from telethon import TelegramClient
 from telethon.tl.types import MessageService, MessageActionTopicCreate, Message, DocumentAttributeFilename
 from telethon.tl.functions.channels import GetForumTopicsByIDRequest
+from telethon.errors import (
+    ChannelInvalidError,
+    ChannelPrivateError,
+    ChatAdminRequiredError,
+    ChatForbiddenError,
+    FloodWaitError,
+    RPCError,
+)
+
+# ---------------------------------------------------------------------------
+# Tipos de erro de `_get_topic_stats()`
+#
+# O caller (ex.: /api/manhwas/review-all) precisa distinguir "esse tópico está
+# legitimamente vazio" de "não consegui ler o tópico" — antes tudo virava
+# `cbz_count = 0` sem contexto e o endpoint tratava os dois casos como falha.
+# ---------------------------------------------------------------------------
+ERROR_INVALID_LINK = "invalid_link"        # link malformado, nem dá pra extrair chat_id/topic_id
+ERROR_ENTITY_NOT_FOUND = "entity_not_found"  # chat/tópico não existe (ou foi apagado)
+ERROR_PRIVATE_TOPIC = "private_topic"      # existe, mas a conta não tem acesso
+ERROR_FLOOD_WAIT = "flood_wait"            # Telegram pediu pra esperar (429)
+ERROR_TIMEOUT = "timeout"                  # estourou o tempo lendo as mensagens
+ERROR_NETWORK = "network"                  # queda de conexão com o Telegram
+ERROR_UNKNOWN = "unknown"                  # não classificado — tratado como temporário
+EMPTY_TOPIC = "empty"                      # leitura OK, mas o tópico não tem nenhum .cbz
+
+# Não adianta repetir: o problema é do link/permissão, não do momento.
+DEFINITIVE_ERROR_TYPES = frozenset({
+    ERROR_INVALID_LINK,
+    ERROR_ENTITY_NOT_FOUND,
+    ERROR_PRIVATE_TOPIC,
+})
+
+# Vale um retry: provavelmente funciona daqui a pouco.
+TEMPORARY_ERROR_TYPES = frozenset({
+    ERROR_FLOOD_WAIT,
+    ERROR_TIMEOUT,
+    ERROR_NETWORK,
+    ERROR_UNKNOWN,
+})
+
+
+def classify_telegram_error(exc: BaseException) -> tuple:
+    """Traduz uma exceção do Telethon num `(error_type, error_message)` legível.
+
+    Existe para o caller poder decidir o que fazer com a falha (registrar e
+    seguir em frente vs. tentar de novo) sem ter que inspecionar exceções do
+    Telethon por conta própria.
+    """
+    if isinstance(exc, (ChannelPrivateError, ChatAdminRequiredError, ChatForbiddenError)):
+        return ERROR_PRIVATE_TOPIC, f"Sem permissão para ler o tópico: {exc}"
+
+    if isinstance(exc, ChannelInvalidError):
+        return ERROR_ENTITY_NOT_FOUND, f"Canal/tópico inválido ou inexistente: {exc}"
+
+    if isinstance(exc, FloodWaitError):
+        return ERROR_FLOOD_WAIT, f"Telegram pediu para aguardar {exc.seconds}s (flood wait)."
+
+    if isinstance(exc, (asyncio.TimeoutError, TimeoutError)):
+        return ERROR_TIMEOUT, f"Timeout ao ler o tópico: {exc}"
+
+    if isinstance(exc, ValueError):
+        # get_entity() levanta ValueError puro quando não acha o peer.
+        texto = str(exc).lower()
+        if "entity" in texto or "peer" in texto or "not found" in texto:
+            return ERROR_ENTITY_NOT_FOUND, f"Entidade não encontrada: {exc}"
+        return ERROR_UNKNOWN, f"Erro inesperado: {exc}"
+
+    if isinstance(exc, (ConnectionError, OSError)):
+        return ERROR_NETWORK, f"Falha de conexão com o Telegram: {exc}"
+
+    if isinstance(exc, RPCError):
+        texto = str(exc).upper()
+        if "NOT_FOUND" in texto or "INVALID" in texto or "EMPTY" in texto:
+            return ERROR_ENTITY_NOT_FOUND, f"Telegram respondeu que o alvo não existe: {exc}"
+        if "FORBIDDEN" in texto or "PRIVATE" in texto or "ADMIN_REQUIRED" in texto:
+            return ERROR_PRIVATE_TOPIC, f"Acesso negado pelo Telegram: {exc}"
+        return ERROR_UNKNOWN, f"Erro RPC do Telegram: {exc}"
+
+    return ERROR_UNKNOWN, f"{type(exc).__name__}: {exc}"
+
 
 class TelegramManhwaScraper:
     def __init__(self):
@@ -47,12 +128,24 @@ class TelegramManhwaScraper:
         Entra em um tópico do Telegram e retorna:
         - cbz_count: quantos arquivos .cbz existem
         - avg_reactions: média de reações por capítulo
+        - error_type: `None` se leu com sucesso; `EMPTY_TOPIC` se o tópico existe mas
+          não tem nenhum .cbz; ou um dos `ERROR_*` se a leitura falhou
+        - error_message: descrição legível quando `error_type` não é `None`
+
+        `cbz_count = 0` sozinho é ambíguo (tópico vazio? link morto? rede caiu?), então
+        o caller deve olhar `error_type` antes de gravar qualquer coisa no banco.
         """
         chat_id_or_username, topic_id = self._parse_telegram_link(topic_link)
         if not chat_id_or_username or not topic_id:
-            print(f"      ⚠️  Link inválido para stats: {topic_link}")
-            return {"cbz_count": 0, "avg_reactions": 0}
-        
+            msg = f"Link malformado: não foi possível extrair chat_id/topic_id de {topic_link!r}"
+            print(f"      ⚠️  [{ERROR_INVALID_LINK}] {msg}")
+            return {
+                "cbz_count": 0,
+                "avg_reactions": 0,
+                "error_type": ERROR_INVALID_LINK,
+                "error_message": msg,
+            }
+
         try:
             if isinstance(chat_id_or_username, int):
                 await self.client.get_dialogs()
@@ -83,13 +176,39 @@ class TelegramManhwaScraper:
                     msg_reactions = sum(r.count for r in msg.reactions.results)
                     total_reactions += msg_reactions
             
-            avg_reactions = round(total_reactions / cbz_count) if cbz_count > 0 else 0
+            if cbz_count == 0:
+                # Leitura funcionou (nenhuma exceção) — o tópico realmente não tem CBZ.
+                # Não é erro: é um tópico vazio, e o caller não deve gravar 0 por cima
+                # de um valor válido nem contabilizar isso como falha.
+                msg = "Tópico lido com sucesso, mas não contém nenhum arquivo .cbz."
+                print(f"      📭 [{EMPTY_TOPIC}] {msg}")
+                return {
+                    "cbz_count": 0,
+                    "avg_reactions": 0,
+                    "error_type": EMPTY_TOPIC,
+                    "error_message": msg,
+                }
+
+            avg_reactions = round(total_reactions / cbz_count)
             print(f"      📊 Stats: {cbz_count} CBZs | reação média: {avg_reactions}")
-            
-            return {"cbz_count": cbz_count, "avg_reactions": avg_reactions}
+
+            return {
+                "cbz_count": cbz_count,
+                "avg_reactions": avg_reactions,
+                "error_type": None,
+                "error_message": None,
+            }
         except Exception as e:
-            print(f"      ❌ Erro ao obter stats: {e}")
-            return {"cbz_count": 0, "avg_reactions": 0}
+            error_type, error_message = classify_telegram_error(e)
+            categoria = "definitivo" if error_type in DEFINITIVE_ERROR_TYPES else "temporário"
+            print(f"      ❌ [{error_type}/{categoria}] {error_message}")
+            print(f"         Link: {topic_link}")
+            return {
+                "cbz_count": 0,
+                "avg_reactions": 0,
+                "error_type": error_type,
+                "error_message": error_message,
+            }
 
     async def download_cbz_from_topic(self, topic_link: str, manhwa_title: str, base_dir: str = None, max_concurrent: int = 5) -> dict:
         """

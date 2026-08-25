@@ -24,7 +24,8 @@ O projeto Manhwa Tracker é composto por três partes principais:
   vários manhwas e só deve persistir se TODOS derem certo), capture as falhas, descarte/reverta as
   alterações antes de retornar, e retorne normalmente (sem raise) com `success: False` no payload — o
   `get_db()` faz um commit vazio depois, o que é um no-op seguro. Veja também a regra de requests longos
-  abaixo, que muda ONDE a escrita deve acontecer.
+  abaixo, que muda ONDE a escrita deve acontecer — e a de **partial success**, que define QUANDO
+  reverter tudo ainda faz sentido (só em falha de escrita, não em falha de scraper).
 - **❗ Requests longos: NÃO escreva na sessão do request depois de uma espera longa.** A sessão injetada
   por `Depends(get_db)` segura uma conexão asyncpg aberta durante todo o request. Em endpoints que passam
   minutos fora do banco (ex.: `/api/manhwas/download-all`, que baixa do Telegram), essa conexão fica
@@ -48,6 +49,32 @@ O projeto Manhwa Tracker é composto por três partes principais:
      Transaction.commit()` depois que a resposta de sucesso já foi enviada. Endpoints que seguem o padrão:
      `/api/manhwas/download-all` e `/api/manhwas/review-all`.
   - `is_connection_closed_error()` (em `database.py`) centraliza a detecção desse tipo de erro.
+- **Partial success: erro de SCRAPER não reverte escrita boa (`/api/manhwas/review-all`).** A política
+  antiga era "tudo ou nada" sobre o lote inteiro: se qualquer manhwa falhasse, TODAS as alterações eram
+  descartadas. Na prática isso doeu — numa revisão real, 15 tópicos falharam na leitura do Telegram e as
+  **996 alterações corretas foram jogadas fora**. O porquê da mudança: uma falha de leitura no Telegram
+  (link morto, tópico privado, timeout) não diz nada sobre a validade das outras 996 leituras, então
+  reverter tudo perde trabalho certo sem proteger nada. Regra atual:
+  1. **Atomicidade vale só para a PERSISTÊNCIA.** Se o commit falhar (constraint, permissão no banco,
+     conexão morta), nada entra — resposta com `success: False`, `persisted: False` e HTTP 500.
+     Falha do scraper **nunca** dispara rollback das outras alterações.
+  2. **Diferencie os tipos de erro em vez de olhar só o resultado numérico.** `cbz_count = 0` sozinho é
+     ambíguo. `_get_topic_stats()` (em `telegram_scraper.py`) devolve `error_type` + `error_message`:
+     `None` (sucesso), `empty` (tópico lido, mas sem `.cbz`), `invalid_link`, `entity_not_found`,
+     `private_topic`, `flood_wait`, `timeout`, `network`, `unknown`. Os conjuntos
+     `DEFINITIVE_ERROR_TYPES` (não adianta repetir) e `TEMPORARY_ERROR_TYPES` (vale um retry) dizem ao
+     caller o que fazer; `classify_telegram_error()` faz a tradução das exceções do Telethon.
+  3. **Tópico vazio é sucesso, não erro** — e mesmo assim NÃO se grava `0` por cima de um valor válido;
+     o resultado só marca "sem mudança".
+  4. **Erro temporário ganha um retry** dentro do próprio endpoint antes de virar falha.
+  5. **Toda entrada de `results` carrega `error_type` e `error_message`** (`None` quando deu certo), mais
+     um `errors_by_type` agregado na resposta — o client precisa saber *por que* cada manhwa falhou para
+     decidir entre corrigir o link e tentar de novo mais tarde.
+  6. **`await safe_rollback(db)` só no fim do endpoint**, quando ele já vai retornar. Chamar no meio do
+     partial success quebraria a sessão do request à toa (o que importava já foi gravado na conexão nova).
+  - Testes: `backend/test_review_all_partial.py` (roda sem pytest e sem Telegram, num SQLite temporário —
+    nunca no banco real) cobre a classificação de erros, o partial success com 5 manhwas (1 falhando de
+    propósito, os outros 4 conferidos por `SELECT`) e a falha de escrita.
   - `get_db()` engole o erro do commit final **apenas** quando a sessão não tem alterações pendentes
     (só houve leitura, ou o endpoint já persistiu por conta própria) — nesse caso não há nada a perder e
     deixar o erro subir viraria um 500 confuso. Se houver escrita pendente, o erro sobe normalmente.

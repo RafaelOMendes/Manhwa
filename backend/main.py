@@ -721,7 +721,10 @@ async def review_all_manhwas(db: AsyncSession = Depends(get_db)):
     Diferente do `/api/manhwas/download-all`, nada é baixado — só a leitura das estatísticas
     do tópico. Manhwas sem link do Telegram nas `notes` são pulados silenciosamente.
 
-    Atomicidade: se qualquer manhwa falhar, TODAS as alterações desta revisão são revertidas.
+    Política: **partial success**. Uma falha de leitura no Telegram (link morto, tópico
+    privado, timeout) afeta apenas o manhwa em questão — os demais são persistidos
+    normalmente. A atomicidade "tudo ou nada" vale só para a escrita no banco: se o
+    commit falhar, nenhuma alteração entra. Ver AGENT_INSTRUCTIONS.md (Backend).
     """
     review_start = time.time()
     print("\n" + "=" * 60)
@@ -757,6 +760,14 @@ async def review_all_manhwas(db: AsyncSession = Depends(get_db)):
         print(f"   {i}. {m.title}")
 
     try:
+        # Import tardio (igual ao get_telegram_scraper()): mantém o telethon opcional
+        # e faz o `except ImportError` abaixo continuar valendo.
+        from telegram_scraper import (
+            DEFINITIVE_ERROR_TYPES,
+            EMPTY_TOPIC,
+            TEMPORARY_ERROR_TYPES,
+        )
+
         print("\n🔌 Conectando ao Telegram...")
         scraper = await get_telegram_scraper()
         print("   ✅ Conexão com Telegram estabelecida.")
@@ -764,11 +775,28 @@ async def review_all_manhwas(db: AsyncSession = Depends(get_db)):
         # Semáforo de 1: conservador, evita Flood 429 do Telegram (mesmo critério do download-all)
         manhwa_sem = asyncio.Semaphore(1)
         processed_count = 0
+        RETRY_DELAY_SECONDS = 5
 
         # Mesmo padrão do download-all: a leitura das stats de todos os tópicos leva
         # minutos e a conexão da sessão `db` morre nesse meio tempo. As alterações
         # ficam como dados simples aqui e são aplicadas no fim, numa conexão nova.
         pending_updates: dict = {}
+
+        async def read_stats_with_retry(manhwa):
+            """Lê as stats do tópico, repetindo UMA vez em caso de erro temporário.
+
+            Erro definitivo (link morto, tópico privado) não é repetido: o resultado
+            seria o mesmo e só atrasaria a revisão inteira.
+            """
+            stats = await scraper._get_topic_stats(manhwa.notes)
+            if stats.get("error_type") in TEMPORARY_ERROR_TYPES:
+                print(
+                    f"   ⏳ Erro temporário ({stats.get('error_type')}) — "
+                    f"tentando de novo em {RETRY_DELAY_SECONDS}s..."
+                )
+                await asyncio.sleep(RETRY_DELAY_SECONDS)
+                stats = await scraper._get_topic_stats(manhwa.notes)
+            return stats
 
         async def review_one_manhwa(manhwa):
             nonlocal processed_count
@@ -782,128 +810,186 @@ async def review_all_manhwas(db: AsyncSession = Depends(get_db)):
                 old_chapters = manhwa.total_chapters
                 old_reaction = manhwa.medium_reaction
 
+                base_result = {
+                    "manhwa_id": manhwa.id,
+                    "manhwa_title": manhwa.title,
+                    "old_total_chapters": old_chapters,
+                    "old_medium_reaction": old_reaction,
+                }
+
                 try:
-                    stats = await scraper._get_topic_stats(manhwa.notes)
-                    cbz_count = stats.get("cbz_count", 0)
-                    avg_reactions = stats.get("avg_reactions", 0)
+                    stats = await read_stats_with_retry(manhwa)
+                except Exception as e:
+                    # Rede/telethon explodindo fora do tratamento do scraper. Continua
+                    # sendo falha só DESTE manhwa — os outros seguem normalmente.
                     elapsed = time.time() - manhwa_start
-
-                    # _get_topic_stats() captura os próprios erros e devolve 0/0. Sem esse
-                    # guarda, uma falha de rede gravaria total_chapters = 0 por cima de um
-                    # valor válido. Tratamos 0 CBZs como falha para não corromper o banco.
-                    if cbz_count == 0:
-                        print(f"   ⚠️  Nenhum CBZ retornado — stats provavelmente falharam.")
-                        print(f"   ⏱️  Tempo: {elapsed:.1f}s")
-                        return {
-                            "manhwa_id": manhwa.id,
-                            "manhwa_title": manhwa.title,
-                            "success": False,
-                            "message": "Tópico retornou 0 CBZs (link inválido ou erro ao ler o tópico).",
-                            "updated": False,
-                        }
-
-                    print(f"   📊 Resultado: {cbz_count} CBZs | reação média: {avg_reactions}")
-                    print(f"   ⏱️  Tempo: {elapsed:.1f}s")
-
-                    changes = {}
-                    if manhwa.total_chapters != cbz_count:
-                        print(f"   🔄 Atualizando total de capítulos: {old_chapters} → {cbz_count}")
-                        changes["total_chapters"] = cbz_count
-                    if manhwa.medium_reaction != avg_reactions:
-                        print(f"   ❤️  Atualizando reação média: {old_reaction} → {avg_reactions}")
-                        changes["medium_reaction"] = avg_reactions
-
-                    updated = bool(changes)
-                    if updated:
-                        pending_updates[manhwa.id] = changes
-                    else:
-                        print("   ✔️  Já estava atualizado — nada a alterar.")
-
+                    print(f"   ❌ ERRO inesperado após {elapsed:.1f}s: {e}")
                     return {
-                        "manhwa_id": manhwa.id,
-                        "manhwa_title": manhwa.title,
-                        "success": True,
-                        "updated": updated,
-                        "old_total_chapters": old_chapters,
-                        "total_chapters": cbz_count,
-                        "old_medium_reaction": old_reaction,
-                        "medium_reaction": avg_reactions,
+                        **base_result,
+                        "success": False,
+                        "updated": False,
+                        "error_type": "unknown",
+                        "error_message": f"{type(e).__name__}: {e}",
+                        "message": f"Erro inesperado ao ler o tópico: {e}",
                         "elapsed": round(elapsed, 1),
                     }
-                except Exception as e:
-                    elapsed = time.time() - manhwa_start
-                    print(f"   ❌ ERRO após {elapsed:.1f}s: {str(e)}")
+
+                cbz_count = stats.get("cbz_count", 0)
+                avg_reactions = stats.get("avg_reactions", 0)
+                error_type = stats.get("error_type")
+                error_message = stats.get("error_message")
+                elapsed = time.time() - manhwa_start
+
+                # Tópico existe e foi lido, só não tem CBZ. Não é erro — mas também não
+                # gravamos 0 por cima de um valor válido, então conta como "sem mudança".
+                if error_type == EMPTY_TOPIC:
+                    print(f"   📭 Tópico vazio (0 CBZs) — nada a alterar. ⏱️  {elapsed:.1f}s")
                     return {
-                        "manhwa_id": manhwa.id,
-                        "manhwa_title": manhwa.title,
-                        "success": False,
-                        "message": str(e),
+                        **base_result,
+                        "success": True,
                         "updated": False,
+                        "error_type": EMPTY_TOPIC,
+                        "error_message": error_message,
+                        "message": "Tópico sem nenhum .cbz — banco mantido como está.",
+                        "total_chapters": old_chapters,
+                        "medium_reaction": old_reaction,
+                        "elapsed": round(elapsed, 1),
                     }
+
+                # Falha de leitura: registra o motivo e segue. NÃO reverte os outros —
+                # antes, um único tópico morto descartava centenas de updates corretos.
+                if error_type:
+                    definitivo = error_type in DEFINITIVE_ERROR_TYPES
+                    rotulo = "definitivo" if definitivo else "temporário"
+                    print(f"   ❌ Falha [{error_type}/{rotulo}] após {elapsed:.1f}s: {error_message}")
+                    return {
+                        **base_result,
+                        "success": False,
+                        "updated": False,
+                        "error_type": error_type,
+                        "error_message": error_message,
+                        "definitive": definitivo,
+                        "message": f"Falha ao ler o tópico ({error_type}): {error_message}",
+                        "elapsed": round(elapsed, 1),
+                    }
+
+                print(f"   📊 Resultado: {cbz_count} CBZs | reação média: {avg_reactions}")
+                print(f"   ⏱️  Tempo: {elapsed:.1f}s")
+
+                changes = {}
+                if manhwa.total_chapters != cbz_count:
+                    print(f"   🔄 Atualizando total de capítulos: {old_chapters} → {cbz_count}")
+                    changes["total_chapters"] = cbz_count
+                if manhwa.medium_reaction != avg_reactions:
+                    print(f"   ❤️  Atualizando reação média: {old_reaction} → {avg_reactions}")
+                    changes["medium_reaction"] = avg_reactions
+
+                updated = bool(changes)
+                if updated:
+                    pending_updates[manhwa.id] = changes
+                else:
+                    print("   ✔️  Já estava atualizado — nada a alterar.")
+
+                return {
+                    **base_result,
+                    "success": True,
+                    "updated": updated,
+                    "error_type": None,
+                    "error_message": None,
+                    "total_chapters": cbz_count,
+                    "medium_reaction": avg_reactions,
+                    "elapsed": round(elapsed, 1),
+                }
 
         tasks = [review_one_manhwa(m) for m in manhwas_to_review]
         results_list = await asyncio.gather(*tasks)
 
         total_updated = sum(1 for r in results_list if r.get("updated"))
-        failed_manhwas = [r.get("manhwa_title", "?") for r in results_list if not r.get("success")]
-        total_errors = len(failed_manhwas)
+        failed_results = [r for r in results_list if not r.get("success")]
+        failed_manhwas = [r.get("manhwa_title", "?") for r in failed_results]
+        total_errors = len(failed_results)
+        total_empty = sum(1 for r in results_list if r.get("error_type") == EMPTY_TOPIC)
 
-        if failed_manhwas:
-            # Atomicidade: mesma regra do download-all — se QUALQUER manhwa falhou,
-            # desfaz TODAS as alterações desta revisão para não deixar o banco num
-            # estado intermediário.
-            print(f"\n🔄 ROLLBACK: {total_errors} manhwa(s) falharam — revertendo TODAS as alterações desta revisão.")
-            print(f"   Manhwas com falha: {', '.join(failed_manhwas)}")
-            print(f"   Alterações descartadas: {len(pending_updates)} manhwa(s) que haviam tido sucesso.")
-            pending_updates.clear()
-            # Nada foi escrito (as mudanças só existiam em memória), mas ainda assim
-            # descartamos a sessão do request para o get_db() não commitar numa
-            # conexão que ficou ociosa durante a revisão inteira.
+        # Resumo por tipo de erro: ajuda a saber se é link podre (definitivo) ou se
+        # vale rodar a revisão de novo mais tarde (temporário).
+        errors_by_type: dict = {}
+        for r in failed_results:
+            tipo = r.get("error_type") or "unknown"
+            errors_by_type[tipo] = errors_by_type.get(tipo, 0) + 1
+
+        if failed_results:
+            print(f"\n⚠️  {total_errors} manhwa(s) falharam na leitura do Telegram:")
+            for r in failed_results:
+                print(f"   • {r.get('manhwa_title')} [{r.get('error_type')}]: {r.get('error_message')}")
+            print(f"   Resumo por tipo: {errors_by_type}")
+            print(
+                f"   ➡️  Partial success: as {len(pending_updates)} alteração(ões) bem-sucedida(s) "
+                "serão persistidas mesmo assim."
+            )
+
+        # Persistir os sucessos numa conexão nova, independentemente das falhas de
+        # leitura acima. Atomicidade agora vale só para a ESCRITA: ou todas as
+        # alterações válidas entram, ou nenhuma entra.
+        try:
+            await _persist_sync_updates(pending_updates)
+        except Exception as persist_exc:
+            # Falha de PERSISTÊNCIA (constraint, permissão no banco, conexão morta):
+            # aqui sim nada foi salvo. `_persist_sync_updates()` já desfez a própria
+            # transação; o rollback abaixo só descarta a sessão do request.
             await safe_rollback(db)
-            print("   ↩️  Rollback concluído — nenhuma alteração foi salva no banco.")
-
             total_elapsed = time.time() - review_start
             print(f"\n{'=' * 60}")
-            print(f"❌ REVISÃO FALHOU (revertida)")
-            print(f"   Manhwas processados: {len(manhwas_to_review)}")
-            print(f"   Manhwas com erro:    {total_errors}")
-            print(f"   Tempo total:         {total_elapsed:.1f}s")
+            print("❌ REVISÃO FALHOU AO PERSISTIR — nenhuma alteração foi salva.")
+            print(f"   Motivo: {persist_exc}")
+            print(f"   Tempo total: {total_elapsed:.1f}s")
             print(f"{'=' * 60}\n")
-
-            return {
+            return JSONResponse(status_code=500, content={
                 "success": False,
-                "message": f"Revisão falhou em {total_errors} manhwa(s) ({', '.join(failed_manhwas)}). Nenhuma alteração foi salva — tente novamente.",
+                "message": f"Erro ao salvar as alterações no banco: {persist_exc}. Nenhuma alteração foi salva — tente novamente.",
                 "total_processed": len(manhwas_to_review),
                 "total_updated": 0,
                 "total_errors": total_errors,
+                "total_empty": total_empty,
+                "errors_by_type": errors_by_type,
+                "persisted": False,
                 "results": results_list,
-            }
-
-        # Todos com sucesso: persistir agora, numa conexão nova. Se falhar, cai no
-        # except abaixo e o frontend recebe erro — em vez de "sucesso" seguido de
-        # um 500 solto vindo do commit do get_db().
-        await _persist_sync_updates(pending_updates)
+            })
 
         # Alterações já persistidas; a sessão `db` não tem nada em memória. Rollback
-        # explícito para o get_db() não tentar commitar na conexão morta.
+        # explícito para o get_db() não tentar commitar na conexão morta. Só aqui, no
+        # fim do endpoint — no meio do partial success ele quebraria a sessão à toa.
         await safe_rollback(db)
 
         total_elapsed = time.time() - review_start
         print(f"\n{'=' * 60}")
-        print(f"✅ REVISÃO CONCLUÍDA")
+        print("✅ REVISÃO CONCLUÍDA" + (" (com falhas parciais)" if total_errors else ""))
         print(f"   Manhwas processados: {len(manhwas_to_review)}")
         print(f"   Manhwas atualizados: {total_updated}")
+        print(f"   Tópicos vazios:      {total_empty}")
         print(f"   Sem link (pulados):  {skipped_count}")
         print(f"   Erros:               {total_errors}")
         print(f"   Tempo total:         {total_elapsed:.1f}s")
         print(f"{'=' * 60}\n")
 
+        mensagem = (
+            f"Revisão concluída! {len(manhwas_to_review)} processados, "
+            f"{total_updated} atualizados, {total_errors} erros."
+        )
+        if total_errors:
+            mensagem += (
+                f" As alterações dos {len(manhwas_to_review) - total_errors} manhwa(s) que deram certo"
+                f" foram salvas. Falharam: {', '.join(failed_manhwas)}."
+            )
+
         return {
             "success": True,
-            "message": f"Revisão concluída! {len(manhwas_to_review)} processados, {total_updated} atualizados, {total_errors} erros.",
+            "message": mensagem,
             "total_processed": len(manhwas_to_review),
             "total_updated": total_updated,
             "total_errors": total_errors,
+            "total_empty": total_empty,
+            "errors_by_type": errors_by_type,
+            "persisted": True,
             "results": results_list,
         }
 

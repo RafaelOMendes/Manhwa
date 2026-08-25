@@ -107,41 +107,51 @@
       "label": "PromptDraft",
       "file_type": "code",
       "source_file": "automation/claude_prompt.py",
-      "source_location": "L108",
+      "source_location": "L118",
       "_origin": "ast",
       "id": "automation_claude_prompt_promptdraft",
       "community": 42,
       "norm_label": "promptdraft"
     },
     {
-      "label": "_parse_draft()",
+      "label": "_parse_choice()",
       "file_type": "code",
       "source_file": "automation/claude_prompt.py",
-      "source_location": "L114",
+      "source_location": "L124",
       "_origin": "ast",
-      "id": "automation_claude_prompt_parse_draft",
+      "id": "automation_claude_prompt_parse_choice",
       "community": 42,
-      "norm_label": "_parse_draft()"
+      "norm_label": "_parse_choice()"
     },
     {
-      "label": "build_prompt()",
+      "label": "_choose_model_and_effort()",
       "file_type": "code",
       "source_file": "automation/claude_prompt.py",
-      "source_location": "L136",
+      "source_location": "L139",
       "_origin": "ast",
-      "id": "automation_claude_prompt_build_prompt",
+      "id": "automation_claude_prompt_choose_model_and_effort",
       "community": 42,
-      "norm_label": "build_prompt()"
+      "norm_label": "_choose_model_and_effort()"
     },
     {
       "label": "Path",
       "file_type": "code",
       "source_file": "automation/claude_prompt.py",
-      "source_location": "L136",
+      "source_location": "L139",
       "_origin": "ast",
       "id": "automation_claude_prompt_py_path",
       "community": 42,
       "norm_label": "path"
+    },
+    {
+      "label": "build_prompt()",
+      "file_type": "code",
+      "source_file": "automation/claude_prompt.py",
+      "source_location": "L162",
+      "_origin": "ast",
+      "id": "automation_claude_prompt_build_prompt",
+      "community": 42,
+      "norm_label": "build_prompt()"
     },
     {
       "label": "Usa o pr\u00f3prio Claude Code CLI (headless, -p) para transformar um card do Trello",
@@ -154,14 +164,14 @@
       "norm_label": "usa o proprio claude code cli (headless, -p) para transformar um card do trello"
     },
     {
-      "label": "Extrai MODELO/EFFORT/prompt da resposta do modelo leve. Se o formato n\u00e3o bater",
+      "label": "Chamada curta e focada s\u00f3 nessa decis\u00e3o (sem ferramentas, resposta de duas",
       "file_type": "rationale",
       "source_file": "automation/claude_prompt.py",
-      "source_location": "L115",
+      "source_location": "L140",
       "_origin": "ast",
-      "id": "automation_claude_prompt_rationale_115",
+      "id": "automation_claude_prompt_rationale_140",
       "community": 42,
-      "norm_label": "extrai modelo/effort/prompt da resposta do modelo leve. se o formato nao bater"
+      "norm_label": "chamada curta e focada so nessa decisao (sem ferramentas, resposta de duas"
     },
     {
       "label": "claude_runner.py",
@@ -907,7 +917,7 @@
       "label": "log()",
       "file_type": "code",
       "source_file": "automation/watcher.py",
-      "source_location": "L55",
+      "source_location": "L62",
       "_origin": "ast",
       "id": "automation_watcher_log",
       "community": 42,
@@ -917,7 +927,7 @@
       "label": "card_url()",
       "file_type": "code",
       "source_file": "automation/watcher.py",
-      "source_location": "L59",
+      "source_location": "L66",
       "_origin": "ast",
       "id": "automation_watcher_card_url",
       "community": 42,
@@ -927,17 +937,37 @@
       "label": "now_iso()",
       "file_type": "code",
       "source_file": "automation/watcher.py",
-      "source_location": "L63",
+      "source_location": "L70",
       "_origin": "ast",
       "id": "automation_watcher_now_iso",
       "community": 42,
       "norm_label": "now_iso()"
     },
     {
+      "label": "_short_summary()",
+      "file_type": "code",
+      "source_file": "automation/watcher.py",
+      "source_location": "L74",
+      "_origin": "ast",
+      "id": "automation_watcher_short_summary",
+      "community": 42,
+      "norm_label": "_short_summary()"
+    },
+    {
+      "label": "_extract_objective()",
+      "file_type": "code",
+      "source_file": "automation/watcher.py",
+      "source_location": "L88",
+      "_origin": "ast",
+      "id": "automation_watcher_extract_objective",
+      "community": 42,
+      "norm_label": "_extract_objective()"
+    },
+    {
       "label": "handle_doing()",
       "file_type": "code",
       "source_file": "automation/watcher.py",
-      "source_location": "L67",
+      "source_location": "L99",
       "_origin": "ast",
       "id": "automation_watcher_handle_doing",
       "community": 42,
@@ -947,7 +977,7 @@
       "label": "TrelloClient",
       "file_type": "code",
       "source_file": "automation/watcher.py",
-      "source_location": "L67",
+      "source_location": "L99",
       "_origin": "ast",
       "id": "trelloclient",
       "community": 42,
@@ -957,7 +987,7 @@
       "label": "handle_dev()",
       "file_type": "code",
       "source_file": "automation/watcher.py",
-      "source_location": "L100",
+      "source_location": "L136",
       "_origin": "ast",
       "id": "automation_watcher_handle_dev",
       "community": 42,
@@ -967,17 +997,27 @@
       "label": "handle_done()",
       "file_type": "code",
       "source_file": "automation/watcher.py",
-      "source_location": "L232",
+      "source_location": "L294",
       "_origin": "ast",
       "id": "automation_watcher_handle_done",
       "community": 42,
       "norm_label": "handle_done()"
     },
     {
+      "label": "check_test_for_new_comment()",
+      "file_type": "code",
+      "source_file": "automation/watcher.py",
+      "source_location": "L323",
+      "_origin": "ast",
+      "id": "automation_watcher_check_test_for_new_comment",
+      "community": 42,
+      "norm_label": "check_test_for_new_comment()"
+    },
+    {
       "label": "maybe_trigger_build()",
       "file_type": "code",
       "source_file": "automation/watcher.py",
-      "source_location": "L261",
+      "source_location": "L350",
       "_origin": "ast",
       "id": "automation_watcher_maybe_trigger_build",
       "community": 42,
@@ -987,7 +1027,7 @@
       "label": "tick()",
       "file_type": "code",
       "source_file": "automation/watcher.py",
-      "source_location": "L287",
+      "source_location": "L376",
       "_origin": "ast",
       "id": "automation_watcher_tick",
       "community": 42,
@@ -997,7 +1037,7 @@
       "label": "main()",
       "file_type": "code",
       "source_file": "automation/watcher.py",
-      "source_location": "L321",
+      "source_location": "L416",
       "_origin": "ast",
       "id": "automation_watcher_main",
       "community": 42,
@@ -1014,12 +1054,32 @@
       "norm_label": "loop principal da automacao trello -> claude code -> telegram -> eas build.  f"
     },
     {
+      "label": "Resumo de uma linha pras notifica\u00e7\u00f5es do Telegram - pega s\u00f3 o primeiro     par\u00e1",
+      "file_type": "rationale",
+      "source_file": "automation/watcher.py",
+      "source_location": "L75",
+      "_origin": "ast",
+      "id": "automation_watcher_rationale_75",
+      "community": 42,
+      "norm_label": "resumo de uma linha pras notificacoes do telegram - pega so o primeiro     para"
+    },
+    {
+      "label": "O prompt gerado (META_PROMPT_TEMPLATE em claude_prompt.py) sempre come\u00e7a com",
+      "file_type": "rationale",
+      "source_file": "automation/watcher.py",
+      "source_location": "L89",
+      "_origin": "ast",
+      "id": "automation_watcher_rationale_89",
+      "community": 42,
+      "norm_label": "o prompt gerado (meta_prompt_template em claude_prompt.py) sempre comeca com"
+    },
+    {
       "label": "Card acabou de entrar em 'Em Andamento': gera o prompt com o Claude Code (modelo",
       "file_type": "rationale",
       "source_file": "automation/watcher.py",
-      "source_location": "L68",
+      "source_location": "L100",
       "_origin": "ast",
-      "id": "automation_watcher_rationale_68",
+      "id": "automation_watcher_rationale_100",
       "community": 42,
       "norm_label": "card acabou de entrar em 'em andamento': gera o prompt com o claude code (modelo"
     },
@@ -1027,9 +1087,9 @@
       "label": "Card est\u00e1 em 'Em Desenvolvimento': roda o Claude Code (aut\u00f4nomo) numa branch",
       "file_type": "rationale",
       "source_file": "automation/watcher.py",
-      "source_location": "L101",
+      "source_location": "L137",
       "_origin": "ast",
-      "id": "automation_watcher_rationale_101",
+      "id": "automation_watcher_rationale_137",
       "community": 42,
       "norm_label": "card esta em 'em desenvolvimento': roda o claude code (autonomo) numa branch"
     },
@@ -1037,11 +1097,21 @@
       "label": "Card foi aprovado (movido pra 'Conclu\u00eddo'): d\u00e1 merge da branch dele na branch",
       "file_type": "rationale",
       "source_file": "automation/watcher.py",
-      "source_location": "L233",
+      "source_location": "L295",
       "_origin": "ast",
-      "id": "automation_watcher_rationale_233",
+      "id": "automation_watcher_rationale_295",
       "community": 42,
       "norm_label": "card foi aprovado (movido pra 'concluido'): da merge da branch dele na branch"
+    },
+    {
+      "label": "Card est\u00e1 em 'Teste' - normalmente n\u00e3o tem nada a fazer aqui (espera voc\u00ea     t",
+      "file_type": "rationale",
+      "source_file": "automation/watcher.py",
+      "source_location": "L324",
+      "_origin": "ast",
+      "id": "automation_watcher_rationale_324",
+      "community": 42,
+      "norm_label": "card esta em 'teste' - normalmente nao tem nada a fazer aqui (espera voce     t"
     },
     {
       "label": "add_col.py",
@@ -1089,7 +1159,7 @@
       "source_file": "backend/database.py",
       "source_location": "L37",
       "_origin": "ast",
-      "id": "baseexception",
+      "id": "backend_database_py_baseexception",
       "community": 14,
       "norm_label": "baseexception"
     },
@@ -1270,7 +1340,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_main",
-      "community": 1,
+      "community": 80,
       "norm_label": "main.py"
     },
     {
@@ -1280,7 +1350,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "backend_main_verify_token",
-      "community": 1,
+      "community": 83,
       "norm_label": "verify_token()"
     },
     {
@@ -1290,7 +1360,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "request",
-      "community": 1,
+      "community": 83,
       "norm_label": "request"
     },
     {
@@ -1300,7 +1370,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "backend_main_lifespan",
-      "community": 1,
+      "community": 80,
       "norm_label": "lifespan()"
     },
     {
@@ -1310,7 +1380,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "fastapi",
-      "community": 1,
+      "community": 80,
       "norm_label": "fastapi"
     },
     {
@@ -1320,7 +1390,7 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "backend_main_unhandled_exception_handler",
-      "community": 1,
+      "community": 83,
       "norm_label": "unhandled_exception_handler()"
     },
     {
@@ -1330,7 +1400,7 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "exception",
-      "community": 1,
+      "community": 83,
       "norm_label": "exception"
     },
     {
@@ -1340,7 +1410,7 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "backend_main_manhwabase",
-      "community": 1,
+      "community": 80,
       "norm_label": "manhwabase"
     },
     {
@@ -1360,7 +1430,7 @@
       "source_location": "L107",
       "_origin": "ast",
       "id": "backend_main_manhwacreate",
-      "community": 1,
+      "community": 80,
       "norm_label": "manhwacreate"
     },
     {
@@ -1370,7 +1440,7 @@
       "source_location": "L110",
       "_origin": "ast",
       "id": "backend_main_manhwaupdate",
-      "community": 1,
+      "community": 80,
       "norm_label": "manhwaupdate"
     },
     {
@@ -1380,7 +1450,7 @@
       "source_location": "L113",
       "_origin": "ast",
       "id": "backend_main_manhwa",
-      "community": 1,
+      "community": 80,
       "norm_label": "manhwa"
     },
     {
@@ -1390,7 +1460,7 @@
       "source_location": "L120",
       "_origin": "ast",
       "id": "backend_main_telegramimportrequest",
-      "community": 1,
+      "community": 81,
       "norm_label": "telegramimportrequest"
     },
     {
@@ -1410,7 +1480,7 @@
       "source_location": "L143",
       "_origin": "ast",
       "id": "backend_main_get_telegram_scraper",
-      "community": 1,
+      "community": 81,
       "norm_label": "get_telegram_scraper()"
     },
     {
@@ -1420,7 +1490,7 @@
       "source_location": "L169",
       "_origin": "ast",
       "id": "backend_main_root",
-      "community": 1,
+      "community": 80,
       "norm_label": "root()"
     },
     {
@@ -1430,7 +1500,7 @@
       "source_location": "L173",
       "_origin": "ast",
       "id": "backend_main_get_manhwas",
-      "community": 1,
+      "community": 79,
       "norm_label": "get_manhwas()"
     },
     {
@@ -1440,7 +1510,7 @@
       "source_location": "L173",
       "_origin": "ast",
       "id": "asyncsession",
-      "community": 1,
+      "community": 79,
       "norm_label": "asyncsession"
     },
     {
@@ -1450,7 +1520,7 @@
       "source_location": "L185",
       "_origin": "ast",
       "id": "backend_main_get_manhwa",
-      "community": 1,
+      "community": 79,
       "norm_label": "get_manhwa()"
     },
     {
@@ -1460,7 +1530,7 @@
       "source_location": "L196",
       "_origin": "ast",
       "id": "backend_main_create_manhwa",
-      "community": 1,
+      "community": 80,
       "norm_label": "create_manhwa()"
     },
     {
@@ -1470,7 +1540,7 @@
       "source_location": "L207",
       "_origin": "ast",
       "id": "backend_main_update_manhwa",
-      "community": 1,
+      "community": 80,
       "norm_label": "update_manhwa()"
     },
     {
@@ -1480,7 +1550,7 @@
       "source_location": "L225",
       "_origin": "ast",
       "id": "backend_main_delete_manhwa",
-      "community": 1,
+      "community": 79,
       "norm_label": "delete_manhwa()"
     },
     {
@@ -1490,7 +1560,7 @@
       "source_location": "L239",
       "_origin": "ast",
       "id": "backend_main_list_manhwa_files",
-      "community": 1,
+      "community": 79,
       "norm_label": "list_manhwa_files()"
     },
     {
@@ -1540,7 +1610,7 @@
       "source_location": "L333",
       "_origin": "ast",
       "id": "backend_main_get_scroll",
-      "community": 1,
+      "community": 79,
       "norm_label": "get_scroll()"
     },
     {
@@ -1550,7 +1620,7 @@
       "source_location": "L344",
       "_origin": "ast",
       "id": "backend_main_get_cbz_info",
-      "community": 1,
+      "community": 79,
       "norm_label": "get_cbz_info()"
     },
     {
@@ -1560,7 +1630,7 @@
       "source_location": "L371",
       "_origin": "ast",
       "id": "backend_main_download_cbz_file",
-      "community": 1,
+      "community": 79,
       "norm_label": "download_cbz_file()"
     },
     {
@@ -1570,7 +1640,7 @@
       "source_location": "L397",
       "_origin": "ast",
       "id": "backend_main_get_cbz_page",
-      "community": 1,
+      "community": 79,
       "norm_label": "get_cbz_page()"
     },
     {
@@ -1580,7 +1650,7 @@
       "source_location": "L439",
       "_origin": "ast",
       "id": "backend_main_persist_sync_updates",
-      "community": 1,
+      "community": 81,
       "norm_label": "_persist_sync_updates()"
     },
     {
@@ -1590,7 +1660,7 @@
       "source_location": "L489",
       "_origin": "ast",
       "id": "backend_main_download_all_manhwas",
-      "community": 1,
+      "community": 81,
       "norm_label": "download_all_manhwas()"
     },
     {
@@ -1600,27 +1670,27 @@
       "source_location": "L716",
       "_origin": "ast",
       "id": "backend_main_review_all_manhwas",
-      "community": 1,
+      "community": 81,
       "norm_label": "review_all_manhwas()"
     },
     {
       "label": "import_from_telegram()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L918",
+      "source_location": "L1004",
       "_origin": "ast",
       "id": "backend_main_import_from_telegram",
-      "community": 1,
+      "community": 81,
       "norm_label": "import_from_telegram()"
     },
     {
       "label": "test_telegram_config()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L1059",
+      "source_location": "L1145",
       "_origin": "ast",
       "id": "backend_main_test_telegram_config",
-      "community": 1,
+      "community": 80,
       "norm_label": "test_telegram_config()"
     },
     {
@@ -1630,7 +1700,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "backend_main_rationale_33",
-      "community": 1,
+      "community": 83,
       "norm_label": "exige o token quando api_token esta definido.      aceita via header `authoriz"
     },
     {
@@ -1640,7 +1710,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "backend_main_rationale_51",
-      "community": 1,
+      "community": 80,
       "norm_label": "gerencia o ciclo de vida da aplicacao"
     },
     {
@@ -1650,7 +1720,7 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "backend_main_rationale_78",
-      "community": 1,
+      "community": 83,
       "norm_label": "garante corpo json consistente para qualquer excecao nao tratada.      sem iss"
     },
     {
@@ -1670,7 +1740,7 @@
       "source_location": "L144",
       "_origin": "ast",
       "id": "backend_main_rationale_144",
-      "community": 1,
+      "community": 81,
       "norm_label": "retorna uma instancia unica e conectada do scraper do telegram para evitar erro"
     },
     {
@@ -1680,7 +1750,7 @@
       "source_location": "L174",
       "_origin": "ast",
       "id": "backend_main_rationale_174",
-      "community": 1,
+      "community": 79,
       "norm_label": "retorna todos os manhwas, opcionalmente filtrados por status"
     },
     {
@@ -1690,7 +1760,7 @@
       "source_location": "L186",
       "_origin": "ast",
       "id": "backend_main_rationale_186",
-      "community": 1,
+      "community": 79,
       "norm_label": "retorna um manhwa especifico"
     },
     {
@@ -1700,7 +1770,7 @@
       "source_location": "L208",
       "_origin": "ast",
       "id": "backend_main_rationale_208",
-      "community": 1,
+      "community": 80,
       "norm_label": "atualiza um manhwa existente"
     },
     {
@@ -1710,7 +1780,7 @@
       "source_location": "L240",
       "_origin": "ast",
       "id": "backend_main_rationale_240",
-      "community": 1,
+      "community": 79,
       "norm_label": "lista os arquivos .cbz baixados de um manhwa em d:\\\\manhwas\\\\{titulo}\\\\"
     },
     {
@@ -1740,7 +1810,7 @@
       "source_location": "L334",
       "_origin": "ast",
       "id": "backend_main_rationale_334",
-      "community": 1,
+      "community": 79,
       "norm_label": "retorna a posicao de rolagem salva de um capitulo especifico"
     },
     {
@@ -1750,7 +1820,7 @@
       "source_location": "L345",
       "_origin": "ast",
       "id": "backend_main_rationale_345",
-      "community": 1,
+      "community": 79,
       "norm_label": "retorna informacoes do cbz (numero de paginas)"
     },
     {
@@ -1760,7 +1830,7 @@
       "source_location": "L372",
       "_origin": "ast",
       "id": "backend_main_rationale_372",
-      "community": 1,
+      "community": 79,
       "norm_label": "serve o .cbz inteiro pra download (usado pelo cache local do mobile)."
     },
     {
@@ -1770,7 +1840,7 @@
       "source_location": "L398",
       "_origin": "ast",
       "id": "backend_main_rationale_398",
-      "community": 1,
+      "community": 79,
       "norm_label": "serve uma pagina individual do cbz como imagem"
     },
     {
@@ -1780,7 +1850,7 @@
       "source_location": "L440",
       "_origin": "ast",
       "id": "backend_main_rationale_440",
-      "community": 1,
+      "community": 81,
       "norm_label": "persiste as alteracoes da sincronizacao numa sessao/conexao nova.      motivo:"
     },
     {
@@ -1790,7 +1860,7 @@
       "source_location": "L490",
       "_origin": "ast",
       "id": "backend_main_rationale_490",
-      "community": 1,
+      "community": 81,
       "norm_label": "sincroniza todos os manhwas em paralelo: baixa os .cbz de todos que possuem link"
     },
     {
@@ -1800,27 +1870,27 @@
       "source_location": "L717",
       "_origin": "ast",
       "id": "backend_main_rationale_717",
-      "community": 1,
+      "community": 81,
       "norm_label": "revisita todos os manhwas com link do telegram e recalcula os metadados do topic"
     },
     {
       "label": "Importa manhwas de um canal do Telegram          Requer configura\u00e7\u00e3o pr\u00e9via da",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L919",
+      "source_location": "L1005",
       "_origin": "ast",
-      "id": "backend_main_rationale_919",
-      "community": 1,
+      "id": "backend_main_rationale_1005",
+      "community": 81,
       "norm_label": "importa manhwas de um canal do telegram          requer configuracao previa da"
     },
     {
       "label": "Testa se as configura\u00e7\u00f5es do Telegram est\u00e3o corretas",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L1060",
+      "source_location": "L1146",
       "_origin": "ast",
-      "id": "backend_main_rationale_1060",
-      "community": 1,
+      "id": "backend_main_rationale_1146",
+      "community": 80,
       "norm_label": "testa se as configuracoes do telegram estao corretas"
     },
     {
@@ -1920,118 +1990,448 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_telegram_scraper",
-      "community": 1,
+      "community": 78,
       "norm_label": "telegram_scraper.py"
+    },
+    {
+      "label": "classify_telegram_error()",
+      "file_type": "code",
+      "source_file": "backend/telegram_scraper.py",
+      "source_location": "L50",
+      "_origin": "ast",
+      "id": "backend_telegram_scraper_classify_telegram_error",
+      "community": 78,
+      "norm_label": "classify_telegram_error()"
+    },
+    {
+      "label": "BaseException",
+      "file_type": "code",
+      "source_file": "backend/telegram_scraper.py",
+      "source_location": "L50",
+      "_origin": "ast",
+      "id": "backend_telegram_scraper_py_baseexception",
+      "community": 78,
+      "norm_label": "baseexception"
     },
     {
       "label": "TelegramManhwaScraper",
       "file_type": "code",
       "source_file": "backend/telegram_scraper.py",
-      "source_location": "L9",
+      "source_location": "L90",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper",
-      "community": 1,
+      "community": 78,
       "norm_label": "telegrammanhwascraper"
     },
     {
       "label": ".__init__()",
       "file_type": "code",
       "source_file": "backend/telegram_scraper.py",
-      "source_location": "L10",
+      "source_location": "L91",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_init",
-      "community": 1,
+      "community": 78,
       "norm_label": ".__init__()"
     },
     {
       "label": ".connect()",
       "file_type": "code",
       "source_file": "backend/telegram_scraper.py",
-      "source_location": "L22",
+      "source_location": "L103",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_connect",
-      "community": 1,
+      "community": 78,
       "norm_label": ".connect()"
     },
     {
       "label": ".disconnect()",
       "file_type": "code",
       "source_file": "backend/telegram_scraper.py",
-      "source_location": "L25",
+      "source_location": "L106",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_disconnect",
-      "community": 1,
+      "community": 78,
       "norm_label": ".disconnect()"
     },
     {
       "label": "._parse_telegram_link()",
       "file_type": "code",
       "source_file": "backend/telegram_scraper.py",
-      "source_location": "L28",
+      "source_location": "L109",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_parse_telegram_link",
-      "community": 1,
+      "community": 78,
       "norm_label": "._parse_telegram_link()"
     },
     {
       "label": "._get_topic_stats()",
       "file_type": "code",
       "source_file": "backend/telegram_scraper.py",
-      "source_location": "L45",
+      "source_location": "L126",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_get_topic_stats",
-      "community": 1,
+      "community": 78,
       "norm_label": "._get_topic_stats()"
     },
     {
       "label": ".download_cbz_from_topic()",
       "file_type": "code",
       "source_file": "backend/telegram_scraper.py",
-      "source_location": "L94",
+      "source_location": "L213",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_download_cbz_from_topic",
-      "community": 1,
+      "community": 78,
       "norm_label": ".download_cbz_from_topic()"
     },
     {
       "label": ".scrape_manhwa_topic()",
       "file_type": "code",
       "source_file": "backend/telegram_scraper.py",
-      "source_location": "L216",
+      "source_location": "L335",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_scrape_manhwa_topic",
-      "community": 1,
+      "community": 78,
       "norm_label": ".scrape_manhwa_topic()"
+    },
+    {
+      "label": "Traduz uma exce\u00e7\u00e3o do Telethon num `(error_type, error_message)` leg\u00edvel.",
+      "file_type": "rationale",
+      "source_file": "backend/telegram_scraper.py",
+      "source_location": "L51",
+      "_origin": "ast",
+      "id": "backend_telegram_scraper_rationale_51",
+      "community": 78,
+      "norm_label": "traduz uma excecao do telethon num `(error_type, error_message)` legivel."
     },
     {
       "label": "Entra em um t\u00f3pico do Telegram e retorna:         - cbz_count: quantos arquivos",
       "file_type": "rationale",
       "source_file": "backend/telegram_scraper.py",
-      "source_location": "L46",
+      "source_location": "L127",
       "_origin": "ast",
-      "id": "backend_telegram_scraper_rationale_46",
-      "community": 1,
+      "id": "backend_telegram_scraper_rationale_127",
+      "community": 78,
       "norm_label": "entra em um topico do telegram e retorna:         - cbz_count: quantos arquivos"
     },
     {
       "label": "Baixa todos os arquivos .cbz de um t\u00f3pico do Telegram em paralelo.         Salv",
       "file_type": "rationale",
       "source_file": "backend/telegram_scraper.py",
-      "source_location": "L95",
+      "source_location": "L214",
       "_origin": "ast",
-      "id": "backend_telegram_scraper_rationale_95",
-      "community": 1,
+      "id": "backend_telegram_scraper_rationale_214",
+      "community": 78,
       "norm_label": "baixa todos os arquivos .cbz de um topico do telegram em paralelo.         salv"
     },
     {
       "label": "L\u00ea apenas um t\u00f3pico. O nome do manhwa \u00e9 o nome do t\u00f3pico.         A partir da p",
       "file_type": "rationale",
       "source_file": "backend/telegram_scraper.py",
-      "source_location": "L217",
+      "source_location": "L336",
       "_origin": "ast",
-      "id": "backend_telegram_scraper_rationale_217",
-      "community": 1,
+      "id": "backend_telegram_scraper_rationale_336",
+      "community": 78,
       "norm_label": "le apenas um topico. o nome do manhwa e o nome do topico.         a partir da p"
+    },
+    {
+      "label": "test_review_all_partial.py",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial",
+      "community": 77,
+      "norm_label": "test_review_all_partial.py"
+    },
+    {
+      "label": "check()",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L40",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_check",
+      "community": 77,
+      "norm_label": "check()"
+    },
+    {
+      "label": "FakeFilenameAttr",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L51",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_fakefilenameattr",
+      "community": 84,
+      "norm_label": "fakefilenameattr"
+    },
+    {
+      "label": ".__init__()",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L54",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_fakefilenameattr_init",
+      "community": 84,
+      "norm_label": ".__init__()"
+    },
+    {
+      "label": "FakeMessage",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L58",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_fakemessage",
+      "community": 78,
+      "norm_label": "fakemessage"
+    },
+    {
+      "label": ".__init__()",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L59",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_fakemessage_init",
+      "community": 78,
+      "norm_label": ".__init__()"
+    },
+    {
+      "label": "FakeClient",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L74",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_fakeclient",
+      "community": 77,
+      "norm_label": "fakeclient"
+    },
+    {
+      "label": ".__init__()",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L77",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_fakeclient_init",
+      "community": 77,
+      "norm_label": ".__init__()"
+    },
+    {
+      "label": ".get_dialogs()",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L81",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_fakeclient_get_dialogs",
+      "community": 77,
+      "norm_label": ".get_dialogs()"
+    },
+    {
+      "label": ".get_entity()",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L84",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_fakeclient_get_entity",
+      "community": 77,
+      "norm_label": ".get_entity()"
+    },
+    {
+      "label": ".iter_messages()",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L89",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_fakeclient_iter_messages",
+      "community": 77,
+      "norm_label": ".iter_messages()"
+    },
+    {
+      "label": "BareScraper",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L99",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_barescraper",
+      "community": 77,
+      "norm_label": "barescraper"
+    },
+    {
+      "label": ".__init__()",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L105",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_barescraper_init",
+      "community": 77,
+      "norm_label": ".__init__()"
+    },
+    {
+      "label": "testar_get_topic_stats()",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L112",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_testar_get_topic_stats",
+      "community": 77,
+      "norm_label": "testar_get_topic_stats()"
+    },
+    {
+      "label": "FakeScraper",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L167",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_fakescraper",
+      "community": 77,
+      "norm_label": "fakescraper"
+    },
+    {
+      "label": ".__init__()",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L170",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_fakescraper_init",
+      "community": 77,
+      "norm_label": ".__init__()"
+    },
+    {
+      "label": "._get_topic_stats()",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L174",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_fakescraper_get_topic_stats",
+      "community": 77,
+      "norm_label": "._get_topic_stats()"
+    },
+    {
+      "label": "stats_ok()",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L179",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_stats_ok",
+      "community": 77,
+      "norm_label": "stats_ok()"
+    },
+    {
+      "label": "stats_erro()",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L183",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_stats_erro",
+      "community": 77,
+      "norm_label": "stats_erro()"
+    },
+    {
+      "label": "preparar_banco()",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L203",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_preparar_banco",
+      "community": 77,
+      "norm_label": "preparar_banco()"
+    },
+    {
+      "label": "ler_banco()",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L224",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_ler_banco",
+      "community": 77,
+      "norm_label": "ler_banco()"
+    },
+    {
+      "label": "instalar_scraper_falso()",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L230",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_instalar_scraper_falso",
+      "community": 77,
+      "norm_label": "instalar_scraper_falso()"
+    },
+    {
+      "label": "testar_partial_success()",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L240",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_testar_partial_success",
+      "community": 77,
+      "norm_label": "testar_partial_success()"
+    },
+    {
+      "label": "testar_falha_de_persistencia()",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L293",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_testar_falha_de_persistencia",
+      "community": 77,
+      "norm_label": "testar_falha_de_persistencia()"
+    },
+    {
+      "label": "main_async()",
+      "file_type": "code",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L327",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_main_async",
+      "community": 77,
+      "norm_label": "main_async()"
+    },
+    {
+      "label": "Imita DocumentAttributeFilename (o isinstance real \u00e9 checado no scraper).",
+      "file_type": "rationale",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L52",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_rationale_52",
+      "community": 84,
+      "norm_label": "imita documentattributefilename (o isinstance real e checado no scraper)."
+    },
+    {
+      "label": "Client m\u00ednimo: devolve `messages` ou levanta `raise_on_entity`.",
+      "file_type": "rationale",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L75",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_rationale_75",
+      "community": 77,
+      "norm_label": "client minimo: devolve `messages` ou levanta `raise_on_entity`."
+    },
+    {
+      "label": "Inst\u00e2ncia sem TelegramClient real \u2014 s\u00f3 o que `_get_topic_stats` usa.",
+      "file_type": "rationale",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L100",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_rationale_100",
+      "community": 77,
+      "norm_label": "instancia sem telegramclient real \u2014 so o que `_get_topic_stats` usa."
+    },
+    {
+      "label": "Devolve stats canned por link, no mesmo formato do `_get_topic_stats` real.",
+      "file_type": "rationale",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L168",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_rationale_168",
+      "community": 77,
+      "norm_label": "devolve stats canned por link, no mesmo formato do `_get_topic_stats` real."
+    },
+    {
+      "label": "Recria o SQLite de teste com o cen\u00e1rio acima.",
+      "file_type": "rationale",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L204",
+      "_origin": "ast",
+      "id": "backend_test_review_all_partial_rationale_204",
+      "community": 77,
+      "norm_label": "recria o sqlite de teste com o cenario acima."
     },
     {
       "label": ".eslintrc.json",
@@ -3270,7 +3670,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "mobile_package_scripts",
-      "community": 11,
+      "community": 82,
       "norm_label": "scripts"
     },
     {
@@ -3280,7 +3680,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "mobile_package_scripts_start",
-      "community": 11,
+      "community": 82,
       "norm_label": "start"
     },
     {
@@ -3290,7 +3690,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "mobile_package_scripts_reset_project",
-      "community": 11,
+      "community": 82,
       "norm_label": "reset-project"
     },
     {
@@ -3300,7 +3700,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "mobile_package_scripts_android",
-      "community": 11,
+      "community": 82,
       "norm_label": "android"
     },
     {
@@ -3310,7 +3710,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "mobile_package_scripts_ios",
-      "community": 11,
+      "community": 82,
       "norm_label": "ios"
     },
     {
@@ -3320,7 +3720,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "mobile_package_scripts_web",
-      "community": 11,
+      "community": 82,
       "norm_label": "web"
     },
     {
@@ -3330,7 +3730,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "mobile_package_scripts_lint",
-      "community": 11,
+      "community": 82,
       "norm_label": "lint"
     },
     {
@@ -5770,7 +6170,7 @@
       "source_location": "L646",
       "_origin": "ast",
       "id": "graphify_skill_honesty_rules",
-      "community": 43,
+      "community": 2,
       "norm_label": "honesty rules"
     },
     {
@@ -6147,7 +6547,7 @@
       "label": "2. Frontend (Next.js / React Web)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L75",
+      "source_location": "L102",
       "_origin": "ast",
       "id": "agent_instructions_2_frontend_next_js_react_web",
       "community": 47,
@@ -6157,7 +6557,7 @@
       "label": "3. Mobile (Expo / React Native)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L84",
+      "source_location": "L111",
       "_origin": "ast",
       "id": "agent_instructions_3_mobile_expo_react_native",
       "community": 47,
@@ -6167,7 +6567,7 @@
       "label": "\ud83d\udcc1 Estrutura Interna (`/mobile`)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L90",
+      "source_location": "L117",
       "_origin": "ast",
       "id": "agent_instructions_estrutura_interna_mobile",
       "community": 47,
@@ -6177,7 +6577,7 @@
       "label": "\u2699\ufe0f Configura\u00e7\u00f5es Importantes",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L118",
+      "source_location": "L145",
       "_origin": "ast",
       "id": "agent_instructions_configura\u00e7\u00f5es_importantes",
       "community": 47,
@@ -6187,7 +6587,7 @@
       "label": "\ud83d\udda5\ufe0f Modo Tela Cheia (Imersivo) \u2014 apenas no leitor CBZ",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L123",
+      "source_location": "L150",
       "_origin": "ast",
       "id": "agent_instructions_modo_tela_cheia_imersivo_apenas_no_leitor_cbz",
       "community": 47,
@@ -6197,7 +6597,7 @@
       "label": "\ud83d\udccc Persist\u00eancia de progresso de leitura (scroll por cap\u00edtulo)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L135",
+      "source_location": "L162",
       "_origin": "ast",
       "id": "agent_instructions_persist\u00eancia_de_progresso_de_leitura_scroll_por_cap\u00edtulo",
       "community": 47,
@@ -6207,7 +6607,7 @@
       "label": "4. Automa\u00e7\u00e3o Trello \u2194 Claude Code",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L146",
+      "source_location": "L173",
       "_origin": "ast",
       "id": "agent_instructions_4_automa\u00e7\u00e3o_trello_claude_code",
       "community": 47,
@@ -6217,7 +6617,7 @@
       "label": "\ud83d\udd0d Como se Orientar (Instru\u00e7\u00f5es para Agentes)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L171",
+      "source_location": "L198",
       "_origin": "ast",
       "id": "agent_instructions_como_se_orientar_instru\u00e7\u00f5es_para_agentes",
       "community": 47,
@@ -6227,7 +6627,7 @@
       "label": "\ud83c\udfaf Pr\u00f3ximos Passos (Para a IA)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L192",
+      "source_location": "L219",
       "_origin": "ast",
       "id": "agent_instructions_pr\u00f3ximos_passos_para_a_ia",
       "community": 47,
@@ -6237,7 +6637,7 @@
       "label": "\ud83d\udcdd Manuten\u00e7\u00e3o deste Arquivo (Obrigat\u00f3rio para Agentes)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L205",
+      "source_location": "L232",
       "_origin": "ast",
       "id": "agent_instructions_manuten\u00e7\u00e3o_deste_arquivo_obrigat\u00f3rio_para_agentes",
       "community": 47,
@@ -6247,7 +6647,7 @@
       "label": "Como editar este arquivo corretamente",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L209",
+      "source_location": "L236",
       "_origin": "ast",
       "id": "agent_instructions_como_editar_este_arquivo_corretamente",
       "community": 47,
@@ -6257,7 +6657,7 @@
       "label": "Exemplo de fluxo",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L217",
+      "source_location": "L244",
       "_origin": "ast",
       "id": "agent_instructions_exemplo_de_fluxo",
       "community": 47,
@@ -6537,7 +6937,7 @@
       "label": "7. Limita\u00e7\u00f5es conhecidas (v1)",
       "file_type": "document",
       "source_file": "automation/SETUP.md",
-      "source_location": "L235",
+      "source_location": "L243",
       "_origin": "ast",
       "id": "automation_setup_7_limita\u00e7\u00f5es_conhecidas_v1",
       "community": 50,
@@ -6547,7 +6947,7 @@
       "label": "8. Troubleshooting r\u00e1pido",
       "file_type": "document",
       "source_file": "automation/SETUP.md",
-      "source_location": "L256",
+      "source_location": "L264",
       "_origin": "ast",
       "id": "automation_setup_8_troubleshooting_r\u00e1pido",
       "community": 50,
@@ -7802,7 +8202,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 43,
+      "community": 2,
       "norm_label": "audit trail (extracted/inferred/ambiguous)",
       "id": "graphify_skill_audit_trail"
     },
@@ -7828,7 +8228,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 60,
+      "community": 52,
       "norm_label": "ast structural extraction (part a)",
       "id": "graphify_skill_ast_extraction"
     },
@@ -8036,7 +8436,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 54,
+      "community": 60,
       "norm_label": "/graphify add (url ingestion)",
       "id": "add_watch_graphify_add"
     },
@@ -8049,7 +8449,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 54,
+      "community": 52,
       "norm_label": "--watch folder watcher",
       "id": "add_watch_watch_mode"
     },
@@ -8062,7 +8462,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 54,
+      "community": 52,
       "norm_label": "debounce mechanism",
       "id": "add_watch_debounce"
     },
@@ -8075,7 +8475,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 54,
+      "community": 60,
       "norm_label": "graphify.ingest.ingest",
       "id": "add_watch_ingest"
     },
@@ -8192,7 +8592,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 43,
+      "community": 2,
       "norm_label": "confidence score rubric",
       "id": "extraction_spec_confidence_rubric"
     },
@@ -8205,7 +8605,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 60,
+      "community": 2,
       "norm_label": "node id format rule",
       "id": "extraction_spec_node_id_format"
     },
@@ -8283,7 +8683,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 77,
+      "community": 54,
       "norm_label": "github repo clone (step 0)",
       "id": "github_and_merge_clone"
     },
@@ -8296,7 +8696,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 77,
+      "community": 54,
       "norm_label": "cross-repo merge",
       "id": "github_and_merge_cross_repo"
     },
@@ -8309,7 +8709,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 77,
+      "community": 54,
       "norm_label": "graphify merge-graphs",
       "id": "github_and_merge_graphs"
     },
@@ -8563,10 +8963,20 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "automation/claude_prompt.py",
-      "source_location": "L114",
+      "source_location": "L139",
       "weight": 1.0,
       "source": "automation_claude_prompt",
-      "target": "automation_claude_prompt_parse_draft",
+      "target": "automation_claude_prompt_choose_model_and_effort",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "automation/claude_prompt.py",
+      "source_location": "L124",
+      "weight": 1.0,
+      "source": "automation_claude_prompt",
+      "target": "automation_claude_prompt_parse_choice",
       "confidence_score": 1.0
     },
     {
@@ -8575,9 +8985,9 @@
       "source_file": "automation/claude_prompt.py",
       "source_location": "L108",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "automation_claude_prompt",
-      "target": "automation_claude_prompt_promptdraft",
-      "confidence_score": 1.0
+      "target": "automation_claude_prompt_promptdraft"
     },
     {
       "relation": "rationale_for",
@@ -8596,19 +9006,19 @@
       "source_file": "automation/claude_prompt.py",
       "source_location": "L136",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "automation_claude_prompt_build_prompt",
-      "target": "automation_claude_prompt_promptdraft",
-      "confidence_score": 1.0
+      "target": "automation_claude_prompt_promptdraft"
     },
     {
-      "relation": "references",
-      "context": "return_type",
+      "relation": "calls",
+      "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "automation/claude_prompt.py",
-      "source_location": "L114",
+      "source_location": "L159",
       "weight": 1.0,
-      "source": "automation_claude_prompt_parse_draft",
-      "target": "automation_claude_prompt_promptdraft",
+      "source": "automation_claude_prompt_choose_model_and_effort",
+      "target": "automation_claude_prompt_parse_choice",
       "confidence_score": 1.0
     },
     {
@@ -8616,20 +9026,42 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "automation/claude_prompt.py",
-      "source_location": "L158",
+      "source_location": "L163",
       "weight": 1.0,
       "source": "automation_claude_prompt_build_prompt",
-      "target": "automation_claude_prompt_parse_draft",
+      "target": "automation_claude_prompt_choose_model_and_effort",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "automation/claude_prompt.py",
+      "source_location": "L139",
+      "weight": 1.0,
+      "source": "automation_claude_prompt_choose_model_and_effort",
+      "target": "automation_claude_prompt_py_path",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "automation/claude_prompt.py",
+      "source_location": "L149",
+      "weight": 1.0,
+      "source": "automation_claude_prompt_choose_model_and_effort",
+      "target": "automation_claude_runner_run_claude_code"
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "automation/claude_prompt.py",
-      "source_location": "L115",
+      "source_location": "L140",
       "weight": 1.0,
-      "source": "automation_claude_prompt_rationale_115",
-      "target": "automation_claude_prompt_parse_draft",
+      "source": "automation_claude_prompt_rationale_140",
+      "target": "automation_claude_prompt_choose_model_and_effort",
       "confidence_score": 1.0
     },
     {
@@ -9632,9 +10064,31 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "automation/watcher.py",
+      "source_location": "L342",
+      "weight": 1.0,
+      "source": "automation_watcher_check_test_for_new_comment",
+      "target": "automation_telegram_notify_send_telegram_message"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "automation/watcher.py",
       "source_location": "L112",
       "weight": 1.0,
       "source": "automation_watcher_handle_dev",
+      "target": "automation_telegram_notify_send_telegram_message"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "automation/watcher.py",
+      "source_location": "L104",
+      "weight": 1.0,
+      "source": "automation_watcher_handle_doing",
       "target": "automation_telegram_notify_send_telegram_message"
     },
     {
@@ -9687,9 +10141,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L20",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "automation_trello_client",
-      "target": "automation_trello_client_build_session",
-      "confidence_score": 1.0
+      "target": "automation_trello_client_build_session"
     },
     {
       "relation": "contains",
@@ -9728,9 +10182,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L20",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "automation_trello_client_build_session",
-      "target": "session",
-      "confidence_score": 1.0
+      "target": "session"
     },
     {
       "relation": "rationale_for",
@@ -9738,9 +10192,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L21",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "automation_trello_client_rationale_21",
-      "target": "automation_trello_client_build_session",
-      "confidence_score": 1.0
+      "target": "automation_trello_client_build_session"
     },
     {
       "relation": "calls",
@@ -9749,9 +10203,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L45",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient_init",
-      "target": "automation_trello_client_build_session",
-      "confidence_score": 1.0
+      "target": "automation_trello_client_build_session"
     },
     {
       "relation": "references",
@@ -10055,9 +10509,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L68",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "automation_trello_client_rationale_68",
-      "target": "automation_trello_client_trelloclient_get_lists",
-      "confidence_score": 1.0
+      "target": "automation_trello_client_trelloclient_get_lists"
     },
     {
       "relation": "calls",
@@ -10076,9 +10530,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L72",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "automation_trello_client_rationale_72",
-      "target": "automation_trello_client_trelloclient_get_cards",
-      "confidence_score": 1.0
+      "target": "automation_trello_client_trelloclient_get_cards"
     },
     {
       "relation": "rationale_for",
@@ -10086,9 +10540,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L97",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "automation_trello_client_rationale_97",
-      "target": "automation_trello_client_trelloclient_add_label_name",
-      "confidence_score": 1.0
+      "target": "automation_trello_client_trelloclient_add_label_name"
     },
     {
       "relation": "rationale_for",
@@ -10096,9 +10550,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L102",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "automation_trello_client_rationale_102",
-      "target": "automation_trello_client_resolve_list_ids",
-      "confidence_score": 1.0
+      "target": "automation_trello_client_resolve_list_ids"
     },
     {
       "relation": "calls",
@@ -10120,6 +10574,26 @@
       "confidence_score": 1.0,
       "source": "automation_watcher",
       "target": "automation_watcher_card_url"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "automation/watcher.py",
+      "source_location": "L323",
+      "weight": 1.0,
+      "source": "automation_watcher",
+      "target": "automation_watcher_check_test_for_new_comment",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "automation/watcher.py",
+      "source_location": "L88",
+      "weight": 1.0,
+      "source": "automation_watcher",
+      "target": "automation_watcher_extract_objective",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -10195,6 +10669,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "automation/watcher.py",
+      "source_location": "L74",
+      "weight": 1.0,
+      "source": "automation_watcher",
+      "target": "automation_watcher_short_summary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "automation/watcher.py",
       "source_location": "L259",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -10210,6 +10694,17 @@
       "confidence_score": 1.0,
       "source": "automation_watcher_rationale_1",
       "target": "automation_watcher"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "automation/watcher.py",
+      "source_location": "L341",
+      "weight": 1.0,
+      "source": "automation_watcher_check_test_for_new_comment",
+      "target": "automation_watcher_log",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -10300,6 +10795,70 @@
       "target": "automation_watcher_now_iso"
     },
     {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "automation/watcher.py",
+      "source_location": "L95",
+      "weight": 1.0,
+      "source": "automation_watcher_extract_objective",
+      "target": "automation_watcher_short_summary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "automation/watcher.py",
+      "source_location": "L205",
+      "weight": 1.0,
+      "source": "automation_watcher_handle_dev",
+      "target": "automation_watcher_short_summary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "automation/watcher.py",
+      "source_location": "L106",
+      "weight": 1.0,
+      "source": "automation_watcher_handle_doing",
+      "target": "automation_watcher_short_summary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "automation/watcher.py",
+      "source_location": "L75",
+      "weight": 1.0,
+      "source": "automation_watcher_rationale_75",
+      "target": "automation_watcher_short_summary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "automation/watcher.py",
+      "source_location": "L220",
+      "weight": 1.0,
+      "source": "automation_watcher_handle_dev",
+      "target": "automation_watcher_extract_objective",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "automation/watcher.py",
+      "source_location": "L89",
+      "weight": 1.0,
+      "source": "automation_watcher_rationale_89",
+      "target": "automation_watcher_extract_objective",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "references",
       "context": "parameter_type",
       "confidence": "EXTRACTED",
@@ -10314,11 +10873,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "automation/watcher.py",
-      "source_location": "L68",
+      "source_location": "L100",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "automation_watcher_rationale_68",
-      "target": "automation_watcher_handle_doing"
+      "source": "automation_watcher_rationale_100",
+      "target": "automation_watcher_handle_doing",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -10330,6 +10889,17 @@
       "confidence_score": 1.0,
       "source": "automation_watcher_tick",
       "target": "automation_watcher_handle_doing"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "automation/watcher.py",
+      "source_location": "L323",
+      "weight": 1.0,
+      "source": "automation_watcher_check_test_for_new_comment",
+      "target": "trelloclient",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -10379,9 +10949,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "automation/watcher.py",
-      "source_location": "L101",
+      "source_location": "L137",
       "weight": 1.0,
-      "source": "automation_watcher_rationale_101",
+      "source": "automation_watcher_rationale_137",
       "target": "automation_watcher_handle_dev",
       "confidence_score": 1.0
     },
@@ -10400,9 +10970,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "automation/watcher.py",
-      "source_location": "L233",
+      "source_location": "L295",
       "weight": 1.0,
-      "source": "automation_watcher_rationale_233",
+      "source": "automation_watcher_rationale_295",
       "target": "automation_watcher_handle_done",
       "confidence_score": 1.0
     },
@@ -10416,6 +10986,27 @@
       "confidence_score": 1.0,
       "source": "automation_watcher_tick",
       "target": "automation_watcher_handle_done"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "automation/watcher.py",
+      "source_location": "L324",
+      "weight": 1.0,
+      "source": "automation_watcher_rationale_324",
+      "target": "automation_watcher_check_test_for_new_comment",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "automation/watcher.py",
+      "source_location": "L390",
+      "weight": 1.0,
+      "source": "automation_watcher_tick",
+      "target": "automation_watcher_check_test_for_new_comment",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -10485,9 +11076,9 @@
       "source_file": "backend/database.py",
       "source_location": "L37",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_database",
-      "target": "backend_database_is_connection_closed_error",
-      "confidence_score": 1.0
+      "target": "backend_database_is_connection_closed_error"
     },
     {
       "relation": "contains",
@@ -10495,9 +11086,9 @@
       "source_file": "backend/database.py",
       "source_location": "L64",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_database",
-      "target": "backend_database_safe_close",
-      "confidence_score": 1.0
+      "target": "backend_database_safe_close"
     },
     {
       "relation": "contains",
@@ -10505,9 +11096,9 @@
       "source_file": "backend/database.py",
       "source_location": "L50",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_database",
-      "target": "backend_database_safe_rollback",
-      "confidence_score": 1.0
+      "target": "backend_database_safe_rollback"
     },
     {
       "relation": "calls",
@@ -10516,9 +11107,9 @@
       "source_file": "backend/database.py",
       "source_location": "L92",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_database_get_db",
-      "target": "backend_database_is_connection_closed_error",
-      "confidence_score": 1.0
+      "target": "backend_database_is_connection_closed_error"
     },
     {
       "relation": "references",
@@ -10528,7 +11119,7 @@
       "source_location": "L37",
       "weight": 1.0,
       "source": "backend_database_is_connection_closed_error",
-      "target": "baseexception",
+      "target": "backend_database_py_baseexception",
       "confidence_score": 1.0
     },
     {
@@ -10537,9 +11128,9 @@
       "source_file": "backend/database.py",
       "source_location": "L38",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_database_rationale_38",
-      "target": "backend_database_is_connection_closed_error",
-      "confidence_score": 1.0
+      "target": "backend_database_is_connection_closed_error"
     },
     {
       "relation": "calls",
@@ -10559,9 +11150,9 @@
       "source_file": "backend/database.py",
       "source_location": "L97",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_database_get_db",
-      "target": "backend_database_safe_rollback",
-      "confidence_score": 1.0
+      "target": "backend_database_safe_rollback"
     },
     {
       "relation": "rationale_for",
@@ -10569,9 +11160,9 @@
       "source_file": "backend/database.py",
       "source_location": "L51",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_database_rationale_51",
-      "target": "backend_database_safe_rollback",
-      "confidence_score": 1.0
+      "target": "backend_database_safe_rollback"
     },
     {
       "relation": "calls",
@@ -10602,9 +11193,9 @@
       "source_file": "backend/database.py",
       "source_location": "L104",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_database_get_db",
-      "target": "backend_database_safe_close",
-      "confidence_score": 1.0
+      "target": "backend_database_safe_close"
     },
     {
       "relation": "rationale_for",
@@ -10612,9 +11203,9 @@
       "source_file": "backend/database.py",
       "source_location": "L65",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_database_rationale_65",
-      "target": "backend_database_safe_close",
-      "confidence_score": 1.0
+      "target": "backend_database_safe_close"
     },
     {
       "relation": "rationale_for",
@@ -10632,9 +11223,9 @@
       "source_file": "backend/database.py",
       "source_location": "L74",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_database_rationale_74",
-      "target": "backend_database_get_db",
-      "confidence_score": 1.0
+      "target": "backend_database_get_db"
     },
     {
       "relation": "rationale_for",
@@ -10642,9 +11233,9 @@
       "source_file": "backend/database.py",
       "source_location": "L109",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_database_rationale_109",
-      "target": "backend_database_create_tables",
-      "confidence_score": 1.0
+      "target": "backend_database_create_tables"
     },
     {
       "relation": "calls",
@@ -10674,9 +11265,9 @@
       "source_file": "backend/database.py",
       "source_location": "L116",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_database_rationale_116",
-      "target": "backend_database_drop_tables",
-      "confidence_score": 1.0
+      "target": "backend_database_drop_tables"
     },
     {
       "relation": "calls",
@@ -10937,9 +11528,9 @@
       "source_file": "backend/main.py",
       "source_location": "L439",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main",
-      "target": "backend_main_persist_sync_updates",
-      "confidence_score": 1.0
+      "target": "backend_main_persist_sync_updates"
     },
     {
       "relation": "contains",
@@ -10977,9 +11568,9 @@
       "source_file": "backend/main.py",
       "source_location": "L125",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main",
-      "target": "backend_main_syncresponse",
-      "confidence_score": 1.0
+      "target": "backend_main_syncresponse"
     },
     {
       "relation": "contains",
@@ -11007,9 +11598,9 @@
       "source_file": "backend/main.py",
       "source_location": "L77",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main",
-      "target": "backend_main_unhandled_exception_handler",
-      "confidence_score": 1.0
+      "target": "backend_main_unhandled_exception_handler"
     },
     {
       "relation": "contains",
@@ -11078,9 +11669,9 @@
       "source_file": "backend/main.py",
       "source_location": "L33",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_33",
-      "target": "backend_main_verify_token",
-      "confidence_score": 1.0
+      "target": "backend_main_verify_token"
     },
     {
       "relation": "references",
@@ -11100,9 +11691,9 @@
       "source_file": "backend/main.py",
       "source_location": "L77",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_unhandled_exception_handler",
-      "target": "request",
-      "confidence_score": 1.0
+      "target": "request"
     },
     {
       "relation": "uses",
@@ -11151,9 +11742,9 @@
       "source_file": "backend/main.py",
       "source_location": "L51",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_51",
-      "target": "backend_main_lifespan",
-      "confidence_score": 1.0
+      "target": "backend_main_lifespan"
     },
     {
       "relation": "uses",
@@ -11191,9 +11782,9 @@
       "source_file": "backend/main.py",
       "source_location": "L78",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_78",
-      "target": "backend_main_unhandled_exception_handler",
-      "confidence_score": 1.0
+      "target": "backend_main_unhandled_exception_handler"
     },
     {
       "relation": "references",
@@ -11202,9 +11793,9 @@
       "source_file": "backend/main.py",
       "source_location": "L77",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_unhandled_exception_handler",
-      "target": "exception",
-      "confidence_score": 1.0
+      "target": "exception"
     },
     {
       "relation": "uses",
@@ -11212,9 +11803,9 @@
       "source_file": "backend/main.py",
       "source_location": "L23",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "exception",
-      "target": "backend_models_chapterprogress",
-      "confidence_score": 0.5
+      "target": "backend_models_chapterprogress"
     },
     {
       "relation": "uses",
@@ -11222,9 +11813,9 @@
       "source_file": "backend/main.py",
       "source_location": "L23",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "exception",
-      "target": "backend_models_manhwa",
-      "confidence_score": 0.5
+      "target": "backend_models_manhwa"
     },
     {
       "relation": "uses",
@@ -11232,9 +11823,9 @@
       "source_file": "backend/main.py",
       "source_location": "L146",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "exception",
-      "target": "backend_telegram_scraper_telegrammanhwascraper",
-      "confidence_score": 0.5
+      "target": "backend_telegram_scraper_telegrammanhwascraper"
     },
     {
       "relation": "inherits",
@@ -11322,9 +11913,9 @@
       "source_file": "backend/main.py",
       "source_location": "L125",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_syncresponse",
-      "target": "basemodel",
-      "confidence_score": 1.0
+      "target": "basemodel"
     },
     {
       "relation": "inherits",
@@ -11505,9 +12096,9 @@
       "source_file": "backend/main.py",
       "source_location": "L126",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_126",
-      "target": "backend_main_syncresponse",
-      "confidence_score": 1.0
+      "target": "backend_main_syncresponse"
     },
     {
       "relation": "uses",
@@ -11515,9 +12106,9 @@
       "source_file": "backend/main.py",
       "source_location": "L23",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "backend_main_syncresponse",
-      "target": "backend_models_chapterprogress",
-      "confidence_score": 0.5
+      "target": "backend_models_chapterprogress"
     },
     {
       "relation": "uses",
@@ -11525,9 +12116,9 @@
       "source_file": "backend/main.py",
       "source_location": "L23",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "backend_main_syncresponse",
-      "target": "backend_models_manhwa",
-      "confidence_score": 0.5
+      "target": "backend_models_manhwa"
     },
     {
       "relation": "uses",
@@ -11535,9 +12126,9 @@
       "source_file": "backend/main.py",
       "source_location": "L146",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "backend_main_syncresponse",
-      "target": "backend_telegram_scraper_telegrammanhwascraper",
-      "confidence_score": 0.5
+      "target": "backend_telegram_scraper_telegrammanhwascraper"
     },
     {
       "relation": "calls",
@@ -11578,9 +12169,9 @@
       "source_file": "backend/main.py",
       "source_location": "L144",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_144",
-      "target": "backend_main_get_telegram_scraper",
-      "confidence_score": 1.0
+      "target": "backend_main_get_telegram_scraper"
     },
     {
       "relation": "calls",
@@ -11610,9 +12201,9 @@
       "source_file": "backend/main.py",
       "source_location": "L174",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_174",
-      "target": "backend_main_get_manhwas",
-      "confidence_score": 1.0
+      "target": "backend_main_get_manhwas"
     },
     {
       "relation": "uses",
@@ -11804,9 +12395,9 @@
       "source_file": "backend/main.py",
       "source_location": "L186",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_186",
-      "target": "backend_main_get_manhwa",
-      "confidence_score": 1.0
+      "target": "backend_main_get_manhwa"
     },
     {
       "relation": "rationale_for",
@@ -11814,9 +12405,9 @@
       "source_file": "backend/main.py",
       "source_location": "L208",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_208",
-      "target": "backend_main_update_manhwa",
-      "confidence_score": 1.0
+      "target": "backend_main_update_manhwa"
     },
     {
       "relation": "rationale_for",
@@ -11824,9 +12415,9 @@
       "source_file": "backend/main.py",
       "source_location": "L240",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_240",
-      "target": "backend_main_list_manhwa_files",
-      "confidence_score": 1.0
+      "target": "backend_main_list_manhwa_files"
     },
     {
       "relation": "references",
@@ -11875,9 +12466,9 @@
       "source_file": "backend/main.py",
       "source_location": "L288",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_288",
-      "target": "backend_main_update_current_chapter",
-      "confidence_score": 1.0
+      "target": "backend_main_update_current_chapter"
     },
     {
       "relation": "uses",
@@ -11926,9 +12517,9 @@
       "source_file": "backend/main.py",
       "source_location": "L316",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_316",
-      "target": "backend_main_update_scroll",
-      "confidence_score": 1.0
+      "target": "backend_main_update_scroll"
     },
     {
       "relation": "calls",
@@ -11947,9 +12538,9 @@
       "source_file": "backend/main.py",
       "source_location": "L334",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_334",
-      "target": "backend_main_get_scroll",
-      "confidence_score": 1.0
+      "target": "backend_main_get_scroll"
     },
     {
       "relation": "rationale_for",
@@ -11957,9 +12548,9 @@
       "source_file": "backend/main.py",
       "source_location": "L345",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_345",
-      "target": "backend_main_get_cbz_info",
-      "confidence_score": 1.0
+      "target": "backend_main_get_cbz_info"
     },
     {
       "relation": "rationale_for",
@@ -11977,9 +12568,9 @@
       "source_file": "backend/main.py",
       "source_location": "L372",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_372",
-      "target": "backend_main_download_cbz_file",
-      "confidence_score": 1.0
+      "target": "backend_main_download_cbz_file"
     },
     {
       "relation": "rationale_for",
@@ -11987,9 +12578,9 @@
       "source_file": "backend/main.py",
       "source_location": "L398",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_398",
-      "target": "backend_main_get_cbz_page",
-      "confidence_score": 1.0
+      "target": "backend_main_get_cbz_page"
     },
     {
       "relation": "calls",
@@ -11998,9 +12589,9 @@
       "source_file": "backend/main.py",
       "source_location": "L656",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_download_all_manhwas",
-      "target": "backend_main_persist_sync_updates",
-      "confidence_score": 1.0
+      "target": "backend_main_persist_sync_updates"
     },
     {
       "relation": "rationale_for",
@@ -12008,9 +12599,9 @@
       "source_file": "backend/main.py",
       "source_location": "L440",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_440",
-      "target": "backend_main_persist_sync_updates",
-      "confidence_score": 1.0
+      "target": "backend_main_persist_sync_updates"
     },
     {
       "relation": "calls",
@@ -12019,9 +12610,9 @@
       "source_file": "backend/main.py",
       "source_location": "L885",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_review_all_manhwas",
-      "target": "backend_main_persist_sync_updates",
-      "confidence_score": 1.0
+      "target": "backend_main_persist_sync_updates"
     },
     {
       "relation": "rationale_for",
@@ -12029,9 +12620,9 @@
       "source_file": "backend/main.py",
       "source_location": "L490",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_490",
-      "target": "backend_main_download_all_manhwas",
-      "confidence_score": 1.0
+      "target": "backend_main_download_all_manhwas"
     },
     {
       "relation": "rationale_for",
@@ -12039,17 +12630,17 @@
       "source_file": "backend/main.py",
       "source_location": "L717",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_717",
-      "target": "backend_main_review_all_manhwas",
-      "confidence_score": 1.0
+      "target": "backend_main_review_all_manhwas"
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L919",
+      "source_location": "L1005",
       "weight": 1.0,
-      "source": "backend_main_rationale_919",
+      "source": "backend_main_rationale_1005",
       "target": "backend_main_import_from_telegram",
       "confidence_score": 1.0
     },
@@ -12057,9 +12648,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L1060",
+      "source_location": "L1146",
       "weight": 1.0,
-      "source": "backend_main_rationale_1060",
+      "source": "backend_main_rationale_1146",
       "target": "backend_main_test_telegram_config",
       "confidence_score": 1.0
     },
@@ -12124,6 +12715,56 @@
       "target": "backend_models_manhwa"
     },
     {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L27",
+      "weight": 0.8,
+      "source": "backend_test_review_all_partial_barescraper",
+      "target": "backend_models_manhwa",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L27",
+      "weight": 0.8,
+      "source": "backend_test_review_all_partial_fakeclient",
+      "target": "backend_models_manhwa",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L27",
+      "weight": 0.8,
+      "source": "backend_test_review_all_partial_fakefilenameattr",
+      "target": "backend_models_manhwa",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L27",
+      "weight": 0.8,
+      "source": "backend_test_review_all_partial_fakemessage",
+      "target": "backend_models_manhwa",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L27",
+      "weight": 0.8,
+      "source": "backend_test_review_all_partial_fakescraper",
+      "target": "backend_models_manhwa",
+      "confidence_score": 0.5
+    },
+    {
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "backend/models.py",
@@ -12157,11 +12798,53 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/telegram_scraper.py",
+      "source_location": "L50",
+      "weight": 1.0,
+      "source": "backend_telegram_scraper",
+      "target": "backend_telegram_scraper_classify_telegram_error",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/telegram_scraper.py",
       "source_location": "L9",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "backend_telegram_scraper",
       "target": "backend_telegram_scraper_telegrammanhwascraper"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/telegram_scraper.py",
+      "source_location": "L50",
+      "weight": 1.0,
+      "source": "backend_telegram_scraper_classify_telegram_error",
+      "target": "backend_telegram_scraper_py_baseexception",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/telegram_scraper.py",
+      "source_location": "L51",
+      "weight": 1.0,
+      "source": "backend_telegram_scraper_rationale_51",
+      "target": "backend_telegram_scraper_classify_telegram_error",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/telegram_scraper.py",
+      "source_location": "L202",
+      "weight": 1.0,
+      "source": "backend_telegram_scraper_telegrammanhwascraper_get_topic_stats",
+      "target": "backend_telegram_scraper_classify_telegram_error",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -12234,6 +12917,56 @@
       "target": "backend_telegram_scraper_telegrammanhwascraper_scrape_manhwa_topic"
     },
     {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L28",
+      "weight": 0.8,
+      "source": "backend_test_review_all_partial_barescraper",
+      "target": "backend_telegram_scraper_telegrammanhwascraper",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L28",
+      "weight": 0.8,
+      "source": "backend_test_review_all_partial_fakeclient",
+      "target": "backend_telegram_scraper_telegrammanhwascraper",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L28",
+      "weight": 0.8,
+      "source": "backend_test_review_all_partial_fakefilenameattr",
+      "target": "backend_telegram_scraper_telegrammanhwascraper",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L28",
+      "weight": 0.8,
+      "source": "backend_test_review_all_partial_fakemessage",
+      "target": "backend_telegram_scraper_telegrammanhwascraper",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L28",
+      "weight": 0.8,
+      "source": "backend_test_review_all_partial_fakescraper",
+      "target": "backend_telegram_scraper_telegrammanhwascraper",
+      "confidence_score": 0.5
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -12270,11 +13003,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/telegram_scraper.py",
-      "source_location": "L46",
+      "source_location": "L127",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_telegram_scraper_rationale_46",
-      "target": "backend_telegram_scraper_telegrammanhwascraper_get_topic_stats"
+      "source": "backend_telegram_scraper_rationale_127",
+      "target": "backend_telegram_scraper_telegrammanhwascraper_get_topic_stats",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -12291,21 +13024,498 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/telegram_scraper.py",
-      "source_location": "L95",
+      "source_location": "L214",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_telegram_scraper_rationale_95",
-      "target": "backend_telegram_scraper_telegrammanhwascraper_download_cbz_from_topic"
+      "source": "backend_telegram_scraper_rationale_214",
+      "target": "backend_telegram_scraper_telegrammanhwascraper_download_cbz_from_topic",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/telegram_scraper.py",
-      "source_location": "L217",
+      "source_location": "L336",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_telegram_scraper_rationale_217",
-      "target": "backend_telegram_scraper_telegrammanhwascraper_scrape_manhwa_topic"
+      "source": "backend_telegram_scraper_rationale_336",
+      "target": "backend_telegram_scraper_telegrammanhwascraper_scrape_manhwa_topic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L99",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial",
+      "target": "backend_test_review_all_partial_barescraper",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L40",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial",
+      "target": "backend_test_review_all_partial_check",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L74",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial",
+      "target": "backend_test_review_all_partial_fakeclient",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L51",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial",
+      "target": "backend_test_review_all_partial_fakefilenameattr",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L58",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial",
+      "target": "backend_test_review_all_partial_fakemessage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L167",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial",
+      "target": "backend_test_review_all_partial_fakescraper",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L230",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial",
+      "target": "backend_test_review_all_partial_instalar_scraper_falso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L224",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial",
+      "target": "backend_test_review_all_partial_ler_banco",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L327",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial",
+      "target": "backend_test_review_all_partial_main_async",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L203",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial",
+      "target": "backend_test_review_all_partial_preparar_banco",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L183",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial",
+      "target": "backend_test_review_all_partial_stats_erro",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L179",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial",
+      "target": "backend_test_review_all_partial_stats_ok",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L293",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial",
+      "target": "backend_test_review_all_partial_testar_falha_de_persistencia",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L112",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial",
+      "target": "backend_test_review_all_partial_testar_get_topic_stats",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L240",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial",
+      "target": "backend_test_review_all_partial_testar_partial_success",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L317",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_testar_falha_de_persistencia",
+      "target": "backend_test_review_all_partial_check",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L120",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_testar_get_topic_stats",
+      "target": "backend_test_review_all_partial_check",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L252",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_testar_partial_success",
+      "target": "backend_test_review_all_partial_check",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L54",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_fakefilenameattr",
+      "target": "backend_test_review_all_partial_fakefilenameattr_init",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L52",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_rationale_52",
+      "target": "backend_test_review_all_partial_fakefilenameattr",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L59",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_fakemessage",
+      "target": "backend_test_review_all_partial_fakemessage_init",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L125",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_testar_get_topic_stats",
+      "target": "backend_test_review_all_partial_fakemessage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L81",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_fakeclient",
+      "target": "backend_test_review_all_partial_fakeclient_get_dialogs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L84",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_fakeclient",
+      "target": "backend_test_review_all_partial_fakeclient_get_entity",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L77",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_fakeclient",
+      "target": "backend_test_review_all_partial_fakeclient_init",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L89",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_fakeclient",
+      "target": "backend_test_review_all_partial_fakeclient_iter_messages",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L75",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_rationale_75",
+      "target": "backend_test_review_all_partial_fakeclient",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L118",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_testar_get_topic_stats",
+      "target": "backend_test_review_all_partial_fakeclient",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L105",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_barescraper",
+      "target": "backend_test_review_all_partial_barescraper_init",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L100",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_rationale_100",
+      "target": "backend_test_review_all_partial_barescraper",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L118",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_testar_get_topic_stats",
+      "target": "backend_test_review_all_partial_barescraper",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L329",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_main_async",
+      "target": "backend_test_review_all_partial_testar_get_topic_stats",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L119",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_testar_get_topic_stats",
+      "target": "backend_test_review_all_partial_fakescraper_get_topic_stats",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L174",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_fakescraper",
+      "target": "backend_test_review_all_partial_fakescraper_get_topic_stats",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L170",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_fakescraper",
+      "target": "backend_test_review_all_partial_fakescraper_init",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L231",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_instalar_scraper_falso",
+      "target": "backend_test_review_all_partial_fakescraper",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L168",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_rationale_168",
+      "target": "backend_test_review_all_partial_fakescraper",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L204",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_rationale_204",
+      "target": "backend_test_review_all_partial_preparar_banco",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L298",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_testar_falha_de_persistencia",
+      "target": "backend_test_review_all_partial_preparar_banco",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L245",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_testar_partial_success",
+      "target": "backend_test_review_all_partial_preparar_banco",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L300",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_testar_falha_de_persistencia",
+      "target": "backend_test_review_all_partial_ler_banco",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L282",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_testar_partial_success",
+      "target": "backend_test_review_all_partial_ler_banco",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L299",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_testar_falha_de_persistencia",
+      "target": "backend_test_review_all_partial_instalar_scraper_falso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L246",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_testar_partial_success",
+      "target": "backend_test_review_all_partial_instalar_scraper_falso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L330",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_main_async",
+      "target": "backend_test_review_all_partial_testar_partial_success",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/test_review_all_partial.py",
+      "source_location": "L331",
+      "weight": 1.0,
+      "source": "backend_test_review_all_partial_main_async",
+      "target": "backend_test_review_all_partial_testar_falha_de_persistencia",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -20090,5 +21300,5 @@
       "source_file": ".claude/skills/graphify/references/query.md"
     }
   ],
-  "built_at_commit": "9e125e69c12987af0d0ae68c903d7d67b8051346"
+  "built_at_commit": "8367cc2ebe429a25c9dcd9337359863d79108a71"
 }
