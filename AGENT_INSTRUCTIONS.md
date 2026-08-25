@@ -75,6 +75,46 @@ O projeto Manhwa Tracker é composto por três partes principais:
   - Testes: `backend/test_review_all_partial.py` (roda sem pytest e sem Telegram, num SQLite temporário —
     nunca no banco real) cobre a classificação de erros, o partial success com 5 manhwas (1 falhando de
     propósito, os outros 4 conferidos por `SELECT`) e a falha de escrita.
+- **⚡ Performance do `review-all`: o gargalo é o NÚMERO de requisições, não a concorrência.**
+  `REVIEW_PARALLELISM` (env, padrão **4**, limitado a 1–16) controla o `asyncio.Semaphore` das leituras de
+  tópico. Medido em 2026-08-25 com 25 tópicos reais (`backend/bench_review_parallelism.py`, só leitura):
+
+  | paralelismo | tempo de parede | soma dos tempos | flood waits |
+  |---|---|---|---|
+  | 1 | 65,7s | 65,7s | 0 |
+  | 2 | 75,2s | 149,9s | 0 |
+  | 4 | 62,4s | 244,4s | 0 |
+  | 8 | 87,1s | 581,0s | 0 |
+
+  **Subir o semáforo quase não mexe no tempo de parede.** A soma dos tempos cresce proporcional ao
+  paralelismo (3,9x em N=4), ou seja: as requisições ficam na fila e cada uma demora N vezes mais. A conta
+  é limitada a **~1 requisição/segundo**, independente de quantas você dispara — não houve flood wait em
+  nenhum nível, o Telegram só enfileira. N=8 chegou a piorar. Ficamos em N=4 porque foi o melhor medido e
+  não custa nada; não espere ganho grande dele.
+  - **O que realmente acelerou** foi cortar requisição: `_get_topic_stats()` chamava `get_dialogs()`
+    (a lista INTEIRA de conversas, ~0,3s) a cada tópico — ~1400 downloads da mesma lista por revisão.
+    Agora `_resolve_entity()` resolve e cacheia o chat uma vez por processo, com cache negativo para
+    chat morto. Ganho medido: 78,7s → 65,7s nos mesmos 25 tópicos (**~17%**), e menos risco de flood.
+  - **Modelo de custo:** `tempo ≈ nº de requisições × ~0,9s`. Cada tópico custa `teto(capítulos/100)`
+    páginas de `iter_messages` (medido: ~1,1s para ≤100 mensagens, ~2,2s para ~145). Uma revisão completa
+    dos 1395 manhwas dá **~55–60 min** — e nenhum ajuste de semáforo muda isso.
+  - **Próximo lever real (não implementado):** `get_messages(..., filter=InputMessagesFilterDocument,
+    limit=0).total` devolve a contagem exata em **1** requisição (~0,18s) em vez de paginar o tópico todo.
+    Dá para usar isso como detector de "mudou?" e só reler o tópico inteiro (para recalcular
+    `medium_reaction`) quando a contagem mudar — estimado ~55min → ~20min em regime. Não foi feito porque
+    **muda a semântica**: a média de reações deixaria de ser atualizada em tópicos sem capítulo novo.
+    Decisão do dono do projeto, não do agente.
+  - Em flood wait, o freio é **compartilhado** (`_wait_flood_gate` / `_open_flood_gate_in`): todas as
+    leituras concorrentes recuam pelo tempo que o Telegram pediu, em vez de cada corrotina levar o seu.
+    Por isso subir `REVIEW_PARALLELISM` degrada suave em vez de virar uma cascata de 429.
+  - O log final imprime tempo, tópicos/s e o speedup **medido** (soma dos tempos ÷ tempo de parede), e a
+    resposta traz o mesmo em `performance`. É medição, não estimativa fixa no código.
+  - `limit=N` (query param) revisa só os N primeiros — serve para validar a rota sem esperar a revisão
+    inteira. Depende do `ORDER BY id` explícito no `select()`: **sem ele o Postgres devolve ordem
+    arbitrária**, que muda a cada UPDATE, e o subconjunto revisado variava entre execuções.
+  - `backend/e2e_review_real.py [N]` faz o teste manual de ponta a ponta (Telegram + Neon reais):
+    snapshot antes, roda o endpoint, `SELECT` depois e confere se o nº de linhas alteradas bate com o
+    `total_updated` reportado. Escreve no banco real — é a função normal do endpoint.
   - `get_db()` engole o erro do commit final **apenas** quando a sessão não tem alterações pendentes
     (só houve leitura, ou o endpoint já persistiu por conta própria) — nesse caso não há nada a perder e
     deixar o erro subir viraria um 500 confuso. Se houver escrita pendente, o erro sobe normalmente.

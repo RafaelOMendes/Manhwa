@@ -751,7 +751,10 @@ async def review_all_manhwas(limit: Optional[int] = None, db: AsyncSession = Dep
     print("=" * 60)
 
     print("\n🔍 Buscando manhwas no banco de dados...")
-    result = await db.execute(select(ManhwaModel))
+    # ORDER BY explícito: sem ele o Postgres devolve as linhas em ordem arbitrária,
+    # que muda depois de cada UPDATE (linhas atualizadas migram no heap). Isso tornava
+    # o `limit` não-determinístico — cada execução revisava um subconjunto diferente.
+    result = await db.execute(select(ManhwaModel).order_by(ManhwaModel.id))
     all_manhwas = result.scalars().all()
     print(f"   Total de manhwas no banco: {len(all_manhwas)}")
 
@@ -760,6 +763,10 @@ async def review_all_manhwas(limit: Optional[int] = None, db: AsyncSession = Dep
 
     print(f"   Com link do Telegram: {len(manhwas_to_review)}")
     print(f"   Sem link (pulados):   {skipped_count}")
+
+    if limit is not None and limit > 0:
+        manhwas_to_review = manhwas_to_review[:limit]
+        print(f"   ✂️  limit={limit} — revisando só os {len(manhwas_to_review)} primeiros.")
 
     if not manhwas_to_review:
         print("⚠️  Nenhum manhwa elegível para revisão.")

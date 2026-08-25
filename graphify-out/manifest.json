@@ -25,8 +25,8 @@
     "semantic_hash": "7ef9f5edc693e896e11c7238d0f973ce"
   },
   "backend/main.py": {
-    "mtime": 1787667490.6694076,
-    "ast_hash": "7290408d7e7e28829210fb9583c32e75",
+    "mtime": 1787679334.2047563,
+    "ast_hash": "6dae8bebe9c43c83d8619bda0a48bd95",
     "semantic_hash": ""
   },
   "backend/models.py": {
@@ -35,8 +35,8 @@
     "semantic_hash": "cdeb052ee6524fa62d15cd87bd7dfb9b"
   },
   "backend/telegram_scraper.py": {
-    "mtime": 1787667392.4359803,
-    "ast_hash": "aa16acf2b932f9045363970ee5dc63e9",
+    "mtime": 1787679152.5761788,
+    "ast_hash": "4004218bd5c8d7c81c4c704feabe3f69",
     "semantic_hash": ""
   },
   "frontend/.eslintrc.json": {
@@ -320,8 +320,8 @@
     "semantic_hash": ""
   },
   "AGENT_INSTRUCTIONS.md": {
-    "mtime": 1787667669.1420002,
-    "ast_hash": "22c6ed5d8b2b23bd8c6be4f977be1c8d",
+    "mtime": 1787679438.6253092,
+    "ast_hash": "85994afc74bbe37073942a42690a2c43",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -535,8 +535,18 @@
     "semantic_hash": ""
   },
   "backend/test_review_all_partial.py": {
-    "mtime": 1787667624.632126,
-    "ast_hash": "a79f4e955c785069aefd1f8b1432e41c",
+    "mtime": 1787679152.5761788,
+    "ast_hash": "0cc12e9d260c01897288c0c501c34d48",
+    "semantic_hash": ""
+  },
+  "backend/bench_review_parallelism.py": {
+    "mtime": 1787679152.573259,
+    "ast_hash": "219a19f9ee2a1260d0ef0ec2f7e1369c",
+    "semantic_hash": ""
+  },
+  "backend/e2e_review_real.py": {
+    "mtime": 1787679194.0690026,
+    "ast_hash": "614e1bcc618eb32e568ca01cb49574db",
     "semantic_hash": ""
   }
 }
