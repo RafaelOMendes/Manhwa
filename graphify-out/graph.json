@@ -1520,7 +1520,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_main",
-      "community": 81,
+      "community": 79,
       "norm_label": "main.py"
     },
     {
@@ -1530,7 +1530,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "backend_main_env_int",
-      "community": 81,
+      "community": 79,
       "norm_label": "_env_int()"
     },
     {
@@ -1560,7 +1560,7 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "backend_main_lifespan",
-      "community": 81,
+      "community": 79,
       "norm_label": "lifespan()"
     },
     {
@@ -1570,7 +1570,7 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "fastapi",
-      "community": 81,
+      "community": 79,
       "norm_label": "fastapi"
     },
     {
@@ -1600,7 +1600,7 @@
       "source_location": "L109",
       "_origin": "ast",
       "id": "backend_main_manhwabase",
-      "community": 81,
+      "community": 1,
       "norm_label": "manhwabase"
     },
     {
@@ -1610,7 +1610,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "basemodel",
-      "community": 1,
+      "community": 55,
       "norm_label": "basemodel"
     },
     {
@@ -1620,7 +1620,7 @@
       "source_location": "L121",
       "_origin": "ast",
       "id": "backend_main_manhwacreate",
-      "community": 81,
+      "community": 1,
       "norm_label": "manhwacreate"
     },
     {
@@ -1630,7 +1630,7 @@
       "source_location": "L124",
       "_origin": "ast",
       "id": "backend_main_manhwaupdate",
-      "community": 81,
+      "community": 1,
       "norm_label": "manhwaupdate"
     },
     {
@@ -1640,7 +1640,7 @@
       "source_location": "L127",
       "_origin": "ast",
       "id": "backend_main_manhwa",
-      "community": 81,
+      "community": 1,
       "norm_label": "manhwa"
     },
     {
@@ -1650,7 +1650,7 @@
       "source_location": "L134",
       "_origin": "ast",
       "id": "backend_main_telegramimportrequest",
-      "community": 1,
+      "community": 81,
       "norm_label": "telegramimportrequest"
     },
     {
@@ -1660,7 +1660,7 @@
       "source_location": "L139",
       "_origin": "ast",
       "id": "backend_main_syncresponse",
-      "community": 1,
+      "community": 55,
       "norm_label": "syncresponse"
     },
     {
@@ -1670,7 +1670,7 @@
       "source_location": "L157",
       "_origin": "ast",
       "id": "backend_main_get_telegram_scraper",
-      "community": 14,
+      "community": 81,
       "norm_label": "get_telegram_scraper()"
     },
     {
@@ -1680,7 +1680,7 @@
       "source_location": "L183",
       "_origin": "ast",
       "id": "backend_main_root",
-      "community": 81,
+      "community": 79,
       "norm_label": "root()"
     },
     {
@@ -1720,7 +1720,7 @@
       "source_location": "L210",
       "_origin": "ast",
       "id": "backend_main_create_manhwa",
-      "community": 81,
+      "community": 79,
       "norm_label": "create_manhwa()"
     },
     {
@@ -1730,7 +1730,7 @@
       "source_location": "L221",
       "_origin": "ast",
       "id": "backend_main_update_manhwa",
-      "community": 81,
+      "community": 79,
       "norm_label": "update_manhwa()"
     },
     {
@@ -1760,7 +1760,7 @@
       "source_location": "L297",
       "_origin": "ast",
       "id": "backend_main_updatecurrentchapter",
-      "community": 1,
+      "community": 55,
       "norm_label": "updatecurrentchapter"
     },
     {
@@ -1770,7 +1770,7 @@
       "source_location": "L301",
       "_origin": "ast",
       "id": "backend_main_update_current_chapter",
-      "community": 1,
+      "community": 55,
       "norm_label": "update_current_chapter()"
     },
     {
@@ -1780,7 +1780,7 @@
       "source_location": "L325",
       "_origin": "ast",
       "id": "backend_main_scrollupdate",
-      "community": 1,
+      "community": 55,
       "norm_label": "scrollupdate"
     },
     {
@@ -1790,7 +1790,7 @@
       "source_location": "L329",
       "_origin": "ast",
       "id": "backend_main_update_scroll",
-      "community": 1,
+      "community": 55,
       "norm_label": "update_scroll()"
     },
     {
@@ -1870,7 +1870,7 @@
       "source_location": "L1080",
       "_origin": "ast",
       "id": "backend_main_import_from_telegram",
-      "community": 1,
+      "community": 81,
       "norm_label": "import_from_telegram()"
     },
     {
@@ -1880,7 +1880,7 @@
       "source_location": "L1221",
       "_origin": "ast",
       "id": "backend_main_test_telegram_config",
-      "community": 81,
+      "community": 79,
       "norm_label": "test_telegram_config()"
     },
     {
@@ -1890,7 +1890,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "backend_main_rationale_29",
-      "community": 81,
+      "community": 79,
       "norm_label": "le um int do ambiente, com limites \u2014 valor invalido cai no padrao."
     },
     {
@@ -1910,7 +1910,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "backend_main_rationale_65",
-      "community": 81,
+      "community": 79,
       "norm_label": "gerencia o ciclo de vida da aplicacao"
     },
     {
@@ -1930,7 +1930,7 @@
       "source_location": "L140",
       "_origin": "ast",
       "id": "backend_main_rationale_140",
-      "community": 1,
+      "community": 55,
       "norm_label": "formato de resposta unico do /api/manhwas/download-all \u2014 sucesso, falha     par"
     },
     {
@@ -1940,7 +1940,7 @@
       "source_location": "L158",
       "_origin": "ast",
       "id": "backend_main_rationale_158",
-      "community": 14,
+      "community": 81,
       "norm_label": "retorna uma instancia unica e conectada do scraper do telegram para evitar erro"
     },
     {
@@ -1970,7 +1970,7 @@
       "source_location": "L222",
       "_origin": "ast",
       "id": "backend_main_rationale_222",
-      "community": 81,
+      "community": 79,
       "norm_label": "atualiza um manhwa existente"
     },
     {
@@ -1990,7 +1990,7 @@
       "source_location": "L302",
       "_origin": "ast",
       "id": "backend_main_rationale_302",
-      "community": 1,
+      "community": 55,
       "norm_label": "atualiza o current_chapter de um manhwa (chamado ao terminar de ler um capitulo)"
     },
     {
@@ -2000,7 +2000,7 @@
       "source_location": "L330",
       "_origin": "ast",
       "id": "backend_main_rationale_330",
-      "community": 1,
+      "community": 55,
       "norm_label": "salva a posicao de rolagem de um capitulo especifico"
     },
     {
@@ -2080,7 +2080,7 @@
       "source_location": "L1081",
       "_origin": "ast",
       "id": "backend_main_rationale_1081",
-      "community": 1,
+      "community": 81,
       "norm_label": "importa manhwas de um canal do telegram          requer configuracao previa da"
     },
     {
@@ -2090,7 +2090,7 @@
       "source_location": "L1222",
       "_origin": "ast",
       "id": "backend_main_rationale_1222",
-      "community": 81,
+      "community": 79,
       "norm_label": "testa se as configuracoes do telegram estao corretas"
     },
     {
@@ -2430,7 +2430,7 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "backend_test_review_all_partial_fakefilenameattr",
-      "community": 77,
+      "community": 1,
       "norm_label": "fakefilenameattr"
     },
     {
@@ -2440,7 +2440,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "backend_test_review_all_partial_fakefilenameattr_init",
-      "community": 77,
+      "community": 1,
       "norm_label": ".__init__()"
     },
     {
@@ -2660,7 +2660,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "backend_test_review_all_partial_rationale_54",
-      "community": 77,
+      "community": 1,
       "norm_label": "imita documentattributefilename (o isinstance real e checado no scraper)."
     },
     {
@@ -3884,36 +3884,6 @@
       "norm_label": "babel.config.js"
     },
     {
-      "label": "eslint.config.js",
-      "file_type": "code",
-      "source_file": "mobile/eslint.config.js",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "mobile_eslint_config",
-      "community": 86,
-      "norm_label": "eslint.config.js"
-    },
-    {
-      "label": "{ defineConfig }",
-      "file_type": "code",
-      "source_file": "mobile/eslint.config.js",
-      "source_location": "L2",
-      "_origin": "ast",
-      "id": "mobile_eslint_config_defineconfig",
-      "community": 86,
-      "norm_label": "{ defineconfig }"
-    },
-    {
-      "label": "expoConfig",
-      "file_type": "code",
-      "source_file": "mobile/eslint.config.js",
-      "source_location": "L3",
-      "_origin": "ast",
-      "id": "mobile_eslint_config_expoconfig",
-      "community": 86,
-      "norm_label": "expoconfig"
-    },
-    {
       "label": "expo-env.d.ts",
       "file_type": "code",
       "source_file": "mobile/expo-env.d.ts",
@@ -4410,7 +4380,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "mobile_package_devdependencies",
-      "community": 85,
+      "community": 11,
       "norm_label": "devdependencies"
     },
     {
@@ -4420,7 +4390,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "mobile_package_devdependencies_expo_ngrok",
-      "community": 85,
+      "community": 11,
       "norm_label": "@expo/ngrok"
     },
     {
@@ -4430,44 +4400,24 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "mobile_package_devdependencies_types_react",
-      "community": 85,
+      "community": 11,
       "norm_label": "@types/react"
-    },
-    {
-      "label": "eslint",
-      "file_type": "code",
-      "source_file": "mobile/package.json",
-      "source_location": "L54",
-      "_origin": "ast",
-      "id": "mobile_package_devdependencies_eslint",
-      "community": 85,
-      "norm_label": "eslint"
-    },
-    {
-      "label": "eslint-config-expo",
-      "file_type": "code",
-      "source_file": "mobile/package.json",
-      "source_location": "L55",
-      "_origin": "ast",
-      "id": "mobile_package_devdependencies_eslint_config_expo",
-      "community": 85,
-      "norm_label": "eslint-config-expo"
     },
     {
       "label": "typescript",
       "file_type": "code",
       "source_file": "mobile/package.json",
-      "source_location": "L56",
+      "source_location": "L54",
       "_origin": "ast",
       "id": "mobile_package_devdependencies_typescript",
-      "community": 85,
+      "community": 11,
       "norm_label": "typescript"
     },
     {
       "label": "private",
       "file_type": "code",
       "source_file": "mobile/package.json",
-      "source_location": "L58",
+      "source_location": "L56",
       "_origin": "ast",
       "id": "mobile_package_private",
       "community": 11,
@@ -4687,7 +4637,7 @@
       "label": "FILTERS",
       "file_type": "code",
       "source_file": "mobile/src/app/index.tsx",
-      "source_location": "L19",
+      "source_location": "L20",
       "_origin": "ast",
       "id": "app_index_filters",
       "community": 53,
@@ -4697,7 +4647,7 @@
       "label": "FilterId",
       "file_type": "code",
       "source_file": "mobile/src/app/index.tsx",
-      "source_location": "L27",
+      "source_location": "L28",
       "_origin": "ast",
       "id": "app_index_filterid",
       "community": 53,
@@ -4707,7 +4657,7 @@
       "label": "Checkbox",
       "file_type": "code",
       "source_file": "mobile/src/app/index.tsx",
-      "source_location": "L33",
+      "source_location": "L34",
       "_origin": "ast",
       "id": "app_index_checkbox",
       "community": 53,
@@ -4717,7 +4667,7 @@
       "label": "Home()",
       "file_type": "code",
       "source_file": "mobile/src/app/index.tsx",
-      "source_location": "L55",
+      "source_location": "L56",
       "_origin": "ast",
       "id": "app_index_home",
       "community": 53,
@@ -4727,7 +4677,7 @@
       "label": "styles",
       "file_type": "code",
       "source_file": "mobile/src/app/index.tsx",
-      "source_location": "L459",
+      "source_location": "L464",
       "_origin": "ast",
       "id": "app_index_styles",
       "community": 53,
@@ -5070,7 +5020,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "lib_background_download_setupdownloadnotificationpress",
-      "community": 6,
+      "community": 48,
       "norm_label": "setupdownloadnotificationpress()"
     },
     {
@@ -5250,7 +5200,7 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "lib_cache_loadindex",
-      "community": 48,
+      "community": 45,
       "norm_label": "loadindex()"
     },
     {
@@ -5300,7 +5250,7 @@
       "source_location": "L114",
       "_origin": "ast",
       "id": "lib_cache_getlocalchapter",
-      "community": 48,
+      "community": 9,
       "norm_label": "getlocalchapter()"
     },
     {
@@ -5550,7 +5500,7 @@
       "source_location": "L572",
       "_origin": "ast",
       "id": "lib_cache_removemanhwalocal",
-      "community": 0,
+      "community": 45,
       "norm_label": "removemanhwalocal()"
     },
     {
@@ -5580,7 +5530,7 @@
       "source_location": "L605",
       "_origin": "ast",
       "id": "lib_cache_loadmanhwalist",
-      "community": 45,
+      "community": 53,
       "norm_label": "loadmanhwalist()"
     },
     {
@@ -5640,7 +5590,7 @@
       "source_location": "L673",
       "_origin": "ast",
       "id": "lib_cache_getmanhwaswithlocaldata",
-      "community": 48,
+      "community": 45,
       "norm_label": "getmanhwaswithlocaldata()"
     },
     {
@@ -6490,7 +6440,7 @@
       "source_location": "L646",
       "_origin": "ast",
       "id": "graphify_skill_honesty_rules",
-      "community": 2,
+      "community": 43,
       "norm_label": "honesty rules"
     },
     {
@@ -7010,7 +6960,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "readme",
-      "community": 57,
+      "community": 5,
       "norm_label": "readme.md"
     },
     {
@@ -7020,148 +6970,78 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "readme_manhwa_tracker",
-      "community": 57,
+      "community": 5,
       "norm_label": "\ud83d\udcda manhwa tracker"
     },
     {
-      "label": "\ud83d\ude80 Tecnologias",
+      "label": "Tecnologias",
       "file_type": "document",
       "source_file": "README.md",
       "source_location": "L5",
       "_origin": "ast",
       "id": "readme_tecnologias",
-      "community": 64,
-      "norm_label": "\ud83d\ude80 tecnologias"
+      "community": 5,
+      "norm_label": "tecnologias"
     },
     {
-      "label": "Frontend (web)",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": "L7",
-      "_origin": "ast",
-      "id": "readme_frontend_web",
-      "community": 64,
-      "norm_label": "frontend (web)"
-    },
-    {
-      "label": "Backend",
+      "label": "Funcionalidades",
       "file_type": "document",
       "source_file": "README.md",
       "source_location": "L13",
       "_origin": "ast",
-      "id": "readme_backend",
-      "community": 64,
-      "norm_label": "backend"
-    },
-    {
-      "label": "Mobile",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": "L19",
-      "_origin": "ast",
-      "id": "readme_mobile",
-      "community": 64,
-      "norm_label": "mobile"
-    },
-    {
-      "label": "\ud83d\udccb Funcionalidades",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": "L24",
-      "_origin": "ast",
       "id": "readme_funcionalidades",
-      "community": 57,
-      "norm_label": "\ud83d\udccb funcionalidades"
+      "community": 5,
+      "norm_label": "funcionalidades"
     },
     {
-      "label": "\ud83d\udee0\ufe0f Instala\u00e7\u00e3o e Execu\u00e7\u00e3o",
+      "label": "Setup",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L37",
+      "source_location": "L21",
       "_origin": "ast",
-      "id": "readme_instala\u00e7\u00e3o_e_execu\u00e7\u00e3o",
-      "community": 65,
-      "norm_label": "\ud83d\udee0\ufe0f instalacao e execucao"
+      "id": "readme_setup",
+      "community": 5,
+      "norm_label": "setup"
     },
     {
-      "label": "Backend (FastAPI + PostgreSQL)",
+      "label": "Estrutura do Projeto",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L39",
-      "_origin": "ast",
-      "id": "readme_backend_fastapi_postgresql",
-      "community": 65,
-      "norm_label": "backend (fastapi + postgresql)"
-    },
-    {
-      "label": "Frontend (Next.js)",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": "L81",
-      "_origin": "ast",
-      "id": "readme_frontend_next_js",
-      "community": 65,
-      "norm_label": "frontend (next.js)"
-    },
-    {
-      "label": "Mobile (Expo)",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": "L91",
-      "_origin": "ast",
-      "id": "readme_mobile_expo",
-      "community": 65,
-      "norm_label": "mobile (expo)"
-    },
-    {
-      "label": "\ud83d\udcc1 Estrutura do Projeto",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": "L105",
+      "source_location": "L31",
       "_origin": "ast",
       "id": "readme_estrutura_do_projeto",
-      "community": 57,
-      "norm_label": "\ud83d\udcc1 estrutura do projeto"
+      "community": 5,
+      "norm_label": "estrutura do projeto"
     },
     {
-      "label": "\ud83d\udd27 Pr\u00f3ximas Melhorias",
+      "label": "API (resumo)",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L135",
+      "source_location": "L44",
       "_origin": "ast",
-      "id": "readme_pr\u00f3ximas_melhorias",
-      "community": 57,
-      "norm_label": "\ud83d\udd27 proximas melhorias"
+      "id": "readme_api_resumo",
+      "community": 5,
+      "norm_label": "api (resumo)"
     },
     {
-      "label": "\ud83d\udcdd API Endpoints (resumido)",
+      "label": "Licen\u00e7a",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L146",
-      "_origin": "ast",
-      "id": "readme_api_endpoints_resumido",
-      "community": 57,
-      "norm_label": "\ud83d\udcdd api endpoints (resumido)"
-    },
-    {
-      "label": "\ud83d\udcc4 Licen\u00e7a",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": "L170",
+      "source_location": "L48",
       "_origin": "ast",
       "id": "readme_licen\u00e7a",
-      "community": 57,
-      "norm_label": "\ud83d\udcc4 licenca"
+      "community": 5,
+      "norm_label": "licenca"
     },
     {
-      "label": "\ud83d\udc64 Autor",
+      "label": "Autor",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L174",
+      "source_location": "L52",
       "_origin": "ast",
       "id": "readme_autor",
-      "community": 57,
-      "norm_label": "\ud83d\udc64 autor"
+      "community": 5,
+      "norm_label": "autor"
     },
     {
       "label": "SETUP.md",
@@ -7284,404 +7164,124 @@
       "norm_label": "readme.md"
     },
     {
-      "label": "\ud83d\udcd1 \u00cdndice",
+      "label": "Manhwa Tracker \u2014 Backend",
+      "file_type": "document",
+      "source_file": "backend/README.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "backend_readme_manhwa_tracker_backend",
+      "community": 41,
+      "norm_label": "manhwa tracker \u2014 backend"
+    },
+    {
+      "label": "Instala\u00e7\u00e3o R\u00e1pida",
       "file_type": "document",
       "source_file": "backend/README.md",
       "source_location": "L5",
       "_origin": "ast",
-      "id": "backend_readme_\u00edndice",
-      "community": 41,
-      "norm_label": "\ud83d\udcd1 indice"
-    },
-    {
-      "label": "\ud83d\ude80 Instala\u00e7\u00e3o R\u00e1pida",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L17",
-      "_origin": "ast",
       "id": "backend_readme_instala\u00e7\u00e3o_r\u00e1pida",
       "community": 41,
-      "norm_label": "\ud83d\ude80 instalacao rapida"
+      "norm_label": "instalacao rapida"
     },
     {
-      "label": "Pr\u00e9-requisitos",
+      "label": "Estrutura do Projeto",
       "file_type": "document",
       "source_file": "backend/README.md",
-      "source_location": "L19",
+      "source_location": "L35",
       "_origin": "ast",
-      "id": "backend_readme_pr\u00e9_requisitos",
+      "id": "backend_readme_estrutura_do_projeto",
       "community": 41,
-      "norm_label": "pre-requisitos"
+      "norm_label": "estrutura do projeto"
     },
     {
-      "label": "Passo a Passo",
+      "label": "Endpoints",
       "file_type": "document",
       "source_file": "backend/README.md",
-      "source_location": "L24",
+      "source_location": "L49",
       "_origin": "ast",
-      "id": "backend_readme_passo_a_passo",
+      "id": "backend_readme_endpoints",
       "community": 41,
-      "norm_label": "passo a passo"
-    },
-    {
-      "label": "1\ufe0f\u20e3 Instalar PostgreSQL",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L26",
-      "_origin": "ast",
-      "id": "backend_readme_1_instalar_postgresql",
-      "community": 41,
-      "norm_label": "1\ufe0f\u20e3 instalar postgresql"
-    },
-    {
-      "label": "2\ufe0f\u20e3 Criar o Banco de Dados",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L46",
-      "_origin": "ast",
-      "id": "backend_readme_2_criar_o_banco_de_dados",
-      "community": 41,
-      "norm_label": "2\ufe0f\u20e3 criar o banco de dados"
-    },
-    {
-      "label": "3\ufe0f\u20e3 Configurar o Projeto",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L72",
-      "_origin": "ast",
-      "id": "backend_readme_3_configurar_o_projeto",
-      "community": 41,
-      "norm_label": "3\ufe0f\u20e3 configurar o projeto"
-    },
-    {
-      "label": "4\ufe0f\u20e3 Inicializar o Banco de Dados",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L111",
-      "_origin": "ast",
-      "id": "backend_readme_4_inicializar_o_banco_de_dados",
-      "community": 41,
-      "norm_label": "4\ufe0f\u20e3 inicializar o banco de dados"
-    },
-    {
-      "label": "5\ufe0f\u20e3 Iniciar a Aplica\u00e7\u00e3o",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L124",
-      "_origin": "ast",
-      "id": "backend_readme_5_iniciar_a_aplica\u00e7\u00e3o",
-      "community": 41,
-      "norm_label": "5\ufe0f\u20e3 iniciar a aplicacao"
-    },
-    {
-      "label": "6\ufe0f\u20e3 Testar",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L137",
-      "_origin": "ast",
-      "id": "backend_readme_6_testar",
-      "community": 41,
-      "norm_label": "6\ufe0f\u20e3 testar"
-    },
-    {
-      "label": "\ud83d\udc18 Configura\u00e7\u00e3o do PostgreSQL",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L143",
-      "_origin": "ast",
-      "id": "backend_readme_configura\u00e7\u00e3o_do_postgresql",
-      "community": 41,
-      "norm_label": "\ud83d\udc18 configuracao do postgresql"
-    },
-    {
-      "label": "Estrutura do Banco de Dados",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L145",
-      "_origin": "ast",
-      "id": "backend_readme_estrutura_do_banco_de_dados",
-      "community": 41,
-      "norm_label": "estrutura do banco de dados"
-    },
-    {
-      "label": "Tabela: manhwas",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L147",
-      "_origin": "ast",
-      "id": "backend_readme_tabela_manhwas",
-      "community": 41,
-      "norm_label": "tabela: manhwas"
-    },
-    {
-      "label": "Comandos \u00dateis do PostgreSQL",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L164",
-      "_origin": "ast",
-      "id": "backend_readme_comandos_\u00fateis_do_postgresql",
-      "community": 41,
-      "norm_label": "comandos uteis do postgresql"
-    },
-    {
-      "label": "Backup e Restore",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L186",
-      "_origin": "ast",
-      "id": "backend_readme_backup_e_restore",
-      "community": 41,
-      "norm_label": "backup e restore"
-    },
-    {
-      "label": "Migra\u00e7\u00e3o de Dados do JSON",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L198",
-      "_origin": "ast",
-      "id": "backend_readme_migra\u00e7\u00e3o_de_dados_do_json",
-      "community": 41,
-      "norm_label": "migracao de dados do json"
-    },
-    {
-      "label": "\ud83d\udcf1 Integra\u00e7\u00e3o com Telegram",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L208",
-      "_origin": "ast",
-      "id": "backend_readme_integra\u00e7\u00e3o_com_telegram",
-      "community": 41,
-      "norm_label": "\ud83d\udcf1 integracao com telegram"
-    },
-    {
-      "label": "\ud83d\udd11 Obter Credenciais do Telegram",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L210",
-      "_origin": "ast",
-      "id": "backend_readme_obter_credenciais_do_telegram",
-      "community": 41,
-      "norm_label": "\ud83d\udd11 obter credenciais do telegram"
-    },
-    {
-      "label": "\u2699\ufe0f Configurar Telegram",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L222",
-      "_origin": "ast",
-      "id": "backend_readme_configurar_telegram",
-      "community": 41,
-      "norm_label": "\u2699\ufe0f configurar telegram"
-    },
-    {
-      "label": "\ud83d\ude80 Testar Integra\u00e7\u00e3o",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L233",
-      "_origin": "ast",
-      "id": "backend_readme_testar_integra\u00e7\u00e3o",
-      "community": 41,
-      "norm_label": "\ud83d\ude80 testar integracao"
-    },
-    {
-      "label": "\ud83d\udcdd Como Funciona",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L255",
-      "_origin": "ast",
-      "id": "backend_readme_como_funciona",
-      "community": 41,
-      "norm_label": "\ud83d\udcdd como funciona"
-    },
-    {
-      "label": "\ud83d\udcda Endpoints da API",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L265",
-      "_origin": "ast",
-      "id": "backend_readme_endpoints_da_api",
-      "community": 41,
-      "norm_label": "\ud83d\udcda endpoints da api"
-    },
-    {
-      "label": "Manhwas",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L267",
-      "_origin": "ast",
-      "id": "backend_readme_manhwas",
-      "community": 41,
-      "norm_label": "manhwas"
+      "norm_label": "endpoints"
     },
     {
       "label": "Telegram",
       "file_type": "document",
       "source_file": "backend/README.md",
-      "source_location": "L293",
+      "source_location": "L70",
       "_origin": "ast",
       "id": "backend_readme_telegram",
       "community": 41,
       "norm_label": "telegram"
     },
     {
-      "label": "\ud83c\udfd7\ufe0f Estrutura do Projeto",
+      "label": "Troubleshooting",
       "file_type": "document",
       "source_file": "backend/README.md",
-      "source_location": "L332",
-      "_origin": "ast",
-      "id": "backend_readme_estrutura_do_projeto",
-      "community": 41,
-      "norm_label": "\ud83c\udfd7\ufe0f estrutura do projeto"
-    },
-    {
-      "label": "\ud83d\udee0\ufe0f Tecnologias",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L351",
-      "_origin": "ast",
-      "id": "backend_readme_tecnologias",
-      "community": 41,
-      "norm_label": "\ud83d\udee0\ufe0f tecnologias"
-    },
-    {
-      "label": "\ud83d\udd27 Troubleshooting",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L363",
+      "source_location": "L78",
       "_origin": "ast",
       "id": "backend_readme_troubleshooting",
       "community": 41,
-      "norm_label": "\ud83d\udd27 troubleshooting"
+      "norm_label": "troubleshooting"
     },
     {
-      "label": "Erro: \"could not connect to server\"",
+      "label": "Detalhes t\u00e9cnicos",
       "file_type": "document",
       "source_file": "backend/README.md",
-      "source_location": "L365",
+      "source_location": "L85",
       "_origin": "ast",
-      "id": "backend_readme_erro_could_not_connect_to_server",
+      "id": "backend_readme_detalhes_t\u00e9cnicos",
       "community": 41,
-      "norm_label": "erro: \"could not connect to server\""
+      "norm_label": "detalhes tecnicos"
     },
     {
-      "label": "Erro: \"password authentication failed\"",
+      "label": "README.md",
       "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L370",
+      "source_file": "frontend/README.md",
+      "source_location": "L1",
       "_origin": "ast",
-      "id": "backend_readme_erro_password_authentication_failed",
-      "community": 41,
-      "norm_label": "erro: \"password authentication failed\""
+      "id": "frontend_readme",
+      "community": 56,
+      "norm_label": "readme.md"
     },
     {
-      "label": "Erro: \"database does not exist\"",
+      "label": "Manhwa Tracker \u2014 Frontend",
       "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L374",
+      "source_file": "frontend/README.md",
+      "source_location": "L1",
       "_origin": "ast",
-      "id": "backend_readme_erro_database_does_not_exist",
-      "community": 41,
-      "norm_label": "erro: \"database does not exist\""
+      "id": "frontend_readme_manhwa_tracker_frontend",
+      "community": 56,
+      "norm_label": "manhwa tracker \u2014 frontend"
     },
     {
-      "label": "Erro: \"permiss\u00e3o negada para esquema public\"",
+      "label": "Setup",
       "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L378",
+      "source_file": "frontend/README.md",
+      "source_location": "L5",
       "_origin": "ast",
-      "id": "backend_readme_erro_permiss\u00e3o_negada_para_esquema_public",
-      "community": 41,
-      "norm_label": "erro: \"permissao negada para esquema public\""
+      "id": "frontend_readme_setup",
+      "community": 56,
+      "norm_label": "setup"
     },
     {
-      "label": "Erro: \"No module named 'asyncpg'\"",
+      "label": "Funcionalidades",
       "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L386",
+      "source_file": "frontend/README.md",
+      "source_location": "L15",
       "_origin": "ast",
-      "id": "backend_readme_erro_no_module_named_asyncpg",
-      "community": 41,
-      "norm_label": "erro: \"no module named 'asyncpg'\""
+      "id": "frontend_readme_funcionalidades",
+      "community": 56,
+      "norm_label": "funcionalidades"
     },
     {
-      "label": "Erro ao importar do Telegram",
+      "label": "Estrutura",
       "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L392",
+      "source_file": "frontend/README.md",
+      "source_location": "L22",
       "_origin": "ast",
-      "id": "backend_readme_erro_ao_importar_do_telegram",
-      "community": 41,
-      "norm_label": "erro ao importar do telegram"
-    },
-    {
-      "label": "API n\u00e3o est\u00e1 aceitando conex\u00f5es",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L398",
-      "_origin": "ast",
-      "id": "backend_readme_api_n\u00e3o_est\u00e1_aceitando_conex\u00f5es",
-      "community": 41,
-      "norm_label": "api nao esta aceitando conexoes"
-    },
-    {
-      "label": "\ud83d\udd12 Seguran\u00e7a",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L405",
-      "_origin": "ast",
-      "id": "backend_readme_seguran\u00e7a",
-      "community": 41,
-      "norm_label": "\ud83d\udd12 seguranca"
-    },
-    {
-      "label": "\ud83d\udcdd Notas Importantes",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L415",
-      "_origin": "ast",
-      "id": "backend_readme_notas_importantes",
-      "community": 41,
-      "norm_label": "\ud83d\udcdd notas importantes"
-    },
-    {
-      "label": "\ud83d\udcda Recursos Adicionais",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L425",
-      "_origin": "ast",
-      "id": "backend_readme_recursos_adicionais",
-      "community": 41,
-      "norm_label": "\ud83d\udcda recursos adicionais"
-    },
-    {
-      "label": "\ud83c\udfaf Checklist de Instala\u00e7\u00e3o",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L435",
-      "_origin": "ast",
-      "id": "backend_readme_checklist_de_instala\u00e7\u00e3o",
-      "community": 41,
-      "norm_label": "\ud83c\udfaf checklist de instalacao"
-    },
-    {
-      "label": "\ud83e\udd1d Contribuindo",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L450",
-      "_origin": "ast",
-      "id": "backend_readme_contribuindo",
-      "community": 41,
-      "norm_label": "\ud83e\udd1d contribuindo"
-    },
-    {
-      "label": "\ud83d\udcc4 Licen\u00e7a",
-      "file_type": "document",
-      "source_file": "backend/README.md",
-      "source_location": "L460",
-      "_origin": "ast",
-      "id": "backend_readme_licen\u00e7a",
-      "community": 41,
-      "norm_label": "\ud83d\udcc4 licenca"
+      "id": "frontend_readme_estrutura",
+      "community": 56,
+      "norm_label": "estrutura"
     },
     {
       "label": "README.md",
@@ -7820,7 +7420,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "mobile_changelog",
-      "community": 56,
+      "community": 5,
       "norm_label": "changelog.md"
     },
     {
@@ -7830,7 +7430,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "mobile_changelog_changelog_mobile",
-      "community": 56,
+      "community": 5,
       "norm_label": "changelog (mobile)"
     },
     {
@@ -7840,7 +7440,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_2",
-      "community": 56,
+      "community": 5,
       "norm_label": "1.2.2"
     },
     {
@@ -7850,7 +7450,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_1",
-      "community": 56,
+      "community": 5,
       "norm_label": "1.2.1"
     },
     {
@@ -7860,7 +7460,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_0",
-      "community": 56,
+      "community": 5,
       "norm_label": "1.2.0"
     },
     {
@@ -7870,7 +7470,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "mobile_changelog_1_1_12",
-      "community": 56,
+      "community": 5,
       "norm_label": "1.1.12"
     },
     {
@@ -7880,7 +7480,7 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "mobile_changelog_1_1_11",
-      "community": 56,
+      "community": 5,
       "norm_label": "1.1.11"
     },
     {
@@ -7890,7 +7490,7 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "mobile_changelog_1_1_10",
-      "community": 56,
+      "community": 5,
       "norm_label": "1.1.10"
     },
     {
@@ -7914,64 +7514,64 @@
       "norm_label": "readme.md"
     },
     {
-      "label": "Welcome to your Expo app \ud83d\udc4b",
+      "label": "Manhwa Tracker \u2014 Mobile",
       "file_type": "document",
       "source_file": "mobile/README.md",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "mobile_readme_welcome_to_your_expo_app",
+      "id": "mobile_readme_manhwa_tracker_mobile",
       "community": 61,
-      "norm_label": "welcome to your expo app \ud83d\udc4b"
+      "norm_label": "manhwa tracker \u2014 mobile"
     },
     {
-      "label": "Get started",
+      "label": "Setup",
       "file_type": "document",
       "source_file": "mobile/README.md",
       "source_location": "L5",
       "_origin": "ast",
-      "id": "mobile_readme_get_started",
+      "id": "mobile_readme_setup",
       "community": 61,
-      "norm_label": "get started"
+      "norm_label": "setup"
     },
     {
-      "label": "Get a fresh project",
+      "label": "Funcionalidades",
       "file_type": "document",
       "source_file": "mobile/README.md",
-      "source_location": "L28",
+      "source_location": "L19",
       "_origin": "ast",
-      "id": "mobile_readme_get_a_fresh_project",
+      "id": "mobile_readme_funcionalidades",
       "community": 61,
-      "norm_label": "get a fresh project"
+      "norm_label": "funcionalidades"
     },
     {
-      "label": "Other setup steps",
+      "label": "Estrutura",
+      "file_type": "document",
+      "source_file": "mobile/README.md",
+      "source_location": "L26",
+      "_origin": "ast",
+      "id": "mobile_readme_estrutura",
+      "community": 61,
+      "norm_label": "estrutura"
+    },
+    {
+      "label": "Rotas",
       "file_type": "document",
       "source_file": "mobile/README.md",
       "source_location": "L38",
       "_origin": "ast",
-      "id": "mobile_readme_other_setup_steps",
+      "id": "mobile_readme_rotas",
       "community": 61,
-      "norm_label": "other setup steps"
+      "norm_label": "rotas"
     },
     {
-      "label": "Learn more",
+      "label": "Rodando em dev",
       "file_type": "document",
       "source_file": "mobile/README.md",
       "source_location": "L44",
       "_origin": "ast",
-      "id": "mobile_readme_learn_more",
+      "id": "mobile_readme_rodando_em_dev",
       "community": 61,
-      "norm_label": "learn more"
-    },
-    {
-      "label": "Join the community",
-      "file_type": "document",
-      "source_file": "mobile/README.md",
-      "source_location": "L51",
-      "_origin": "ast",
-      "id": "mobile_readme_join_the_community",
-      "community": 61,
-      "norm_label": "join the community"
+      "norm_label": "rodando em dev"
     },
     {
       "label": "subscribeStore",
@@ -8002,7 +7602,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 63,
+      "community": 5,
       "norm_label": "manhwa tracker architecture overview",
       "id": "agent_instructions_overview"
     },
@@ -8015,7 +7615,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 63,
+      "community": 5,
       "norm_label": "backend (fastapi / python)",
       "id": "agent_instructions_backend"
     },
@@ -8028,7 +7628,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 63,
+      "community": 5,
       "norm_label": "frontend (next.js / react web)",
       "id": "agent_instructions_frontend"
     },
@@ -8041,7 +7641,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 62,
+      "community": 5,
       "norm_label": "mobile (expo / react native)",
       "id": "agent_instructions_mobile"
     },
@@ -8054,7 +7654,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 62,
+      "community": 5,
       "norm_label": "modo tela cheia (imersivo) no leitor cbz",
       "id": "agent_instructions_immersive_mode"
     },
@@ -8067,7 +7667,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 62,
+      "community": 5,
       "norm_label": "persistencia de progresso de leitura (scroll por capitulo)",
       "id": "agent_instructions_scroll_persistence"
     },
@@ -8080,7 +7680,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 63,
+      "community": 5,
       "norm_label": "sincronizacao manual de tipagens (backend/frontend/mobile)",
       "id": "agent_instructions_type_sync"
     },
@@ -8093,7 +7693,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 57,
+      "community": 5,
       "norm_label": "api endpoints (resumido)",
       "id": "readme_api_endpoints"
     },
@@ -8119,7 +7719,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 62,
+      "community": 5,
       "norm_label": "leitor .cbz integrado (web e mobile)",
       "id": "readme_cbz_reader_feature"
     },
@@ -8197,7 +7797,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 63,
+      "community": 5,
       "norm_label": "fastapi==0.109.0",
       "id": "backend_requirements_fastapi"
     },
@@ -8275,7 +7875,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 55,
+      "community": 5,
       "norm_label": "expo sdk 54 (mobile)",
       "id": "mobile_agents_sdk54"
     },
@@ -8288,7 +7888,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 55,
+      "community": 5,
       "norm_label": "versionamento do app + ota (app_version vs fingerprint)",
       "id": "mobile_agents_versioning_ota"
     },
@@ -8301,7 +7901,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 55,
+      "community": 5,
       "norm_label": "arquitetura do app mobile (leitura offline)",
       "id": "mobile_agents_architecture"
     },
@@ -8314,7 +7914,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 62,
+      "community": 5,
       "norm_label": "leitor (cbzreader + reader-store + readerhost)",
       "id": "mobile_agents_reader"
     },
@@ -8327,7 +7927,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 55,
+      "community": 5,
       "norm_label": "cache local / leitura cumulativa",
       "id": "mobile_agents_cache"
     },
@@ -8340,7 +7940,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 55,
+      "community": 5,
       "norm_label": "download (download-manager + background-download)",
       "id": "mobile_agents_download"
     },
@@ -8353,7 +7953,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 62,
+      "community": 5,
       "norm_label": "fila offline (sync-queue)",
       "id": "mobile_agents_sync_queue"
     },
@@ -8366,7 +7966,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 55,
+      "community": 5,
       "norm_label": "nativo / build (notifee, eas build vs update)",
       "id": "mobile_agents_native_build"
     },
@@ -8379,7 +7979,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 55,
+      "community": 5,
       "norm_label": "entrega via eas update (procedimento)",
       "id": "mobile_agents_eas_update_delivery"
     },
@@ -8392,7 +7992,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 56,
+      "community": 5,
       "norm_label": "pre-calculo de layout do leitor (1.2.0-1.2.2)",
       "id": "mobile_changelog_layout_precompute"
     },
@@ -8405,7 +8005,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 55,
+      "community": 5,
       "norm_label": "mobile/claude.md (aponta para agents.md)",
       "id": "mobile_claude_agents_pointer"
     },
@@ -8418,7 +8018,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 55,
+      "community": 5,
       "norm_label": "welcome to your expo app (readme starter)",
       "id": "mobile_readme_expo_starter"
     },
@@ -8522,7 +8122,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 43,
       "norm_label": "audit trail (extracted/inferred/ambiguous)",
       "id": "graphify_skill_audit_trail"
     },
@@ -8548,7 +8148,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 52,
+      "community": 60,
       "norm_label": "ast structural extraction (part a)",
       "id": "graphify_skill_ast_extraction"
     },
@@ -8756,7 +8356,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 60,
+      "community": 54,
       "norm_label": "/graphify add (url ingestion)",
       "id": "add_watch_graphify_add"
     },
@@ -8769,7 +8369,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 52,
+      "community": 54,
       "norm_label": "--watch folder watcher",
       "id": "add_watch_watch_mode"
     },
@@ -8782,7 +8382,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 52,
+      "community": 54,
       "norm_label": "debounce mechanism",
       "id": "add_watch_debounce"
     },
@@ -8795,7 +8395,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 60,
+      "community": 54,
       "norm_label": "graphify.ingest.ingest",
       "id": "add_watch_ingest"
     },
@@ -8912,7 +8512,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 43,
       "norm_label": "confidence score rubric",
       "id": "extraction_spec_confidence_rubric"
     },
@@ -8925,7 +8525,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 60,
       "norm_label": "node id format rule",
       "id": "extraction_spec_node_id_format"
     },
@@ -9003,7 +8603,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 54,
+      "community": 57,
       "norm_label": "github repo clone (step 0)",
       "id": "github_and_merge_clone"
     },
@@ -9016,7 +8616,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 54,
+      "community": 57,
       "norm_label": "cross-repo merge",
       "id": "github_and_merge_cross_repo"
     },
@@ -9029,7 +8629,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 54,
+      "community": 57,
       "norm_label": "graphify merge-graphs",
       "id": "github_and_merge_graphs"
     },
@@ -15441,26 +15041,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "mobile/eslint.config.js",
-      "source_location": "L2",
-      "weight": 1.0,
-      "source": "mobile_eslint_config",
-      "target": "mobile_eslint_config_defineconfig",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "mobile/eslint.config.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "source": "mobile_eslint_config",
-      "target": "mobile_eslint_config_expoconfig",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "mobile/package.json",
       "source_location": "L13",
       "weight": 1.0,
@@ -15947,26 +15527,6 @@
       "confidence_score": 1.0,
       "source": "mobile_package_dependencies",
       "target": "mobile_package_dependencies_tailwindcss"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "mobile/package.json",
-      "source_location": "L54",
-      "weight": 1.0,
-      "source": "mobile_package_devdependencies",
-      "target": "mobile_package_devdependencies_eslint",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "mobile/package.json",
-      "source_location": "L55",
-      "weight": 1.0,
-      "source": "mobile_package_devdependencies",
-      "target": "mobile_package_devdependencies_eslint_config_expo",
-      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -19959,11 +19519,11 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L146",
+      "source_location": "L44",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "readme_manhwa_tracker",
-      "target": "readme_api_endpoints_resumido"
+      "target": "readme_api_resumo",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -20009,16 +19569,6 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L37",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "readme_manhwa_tracker",
-      "target": "readme_instala\u00e7\u00e3o_e_execu\u00e7\u00e3o"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "README.md",
       "source_location": "L170",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -20029,11 +19579,11 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L135",
+      "source_location": "L21",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "readme_manhwa_tracker",
-      "target": "readme_pr\u00f3ximas_melhorias"
+      "target": "readme_setup",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -20054,66 +19604,6 @@
       "weight": 1.0,
       "source": "readme_manhwa_tracker",
       "target": "readme_telegram_integration"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "README.md",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "readme_tecnologias",
-      "target": "readme_backend"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "README.md",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "readme_tecnologias",
-      "target": "readme_frontend_web"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "README.md",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "readme_tecnologias",
-      "target": "readme_mobile"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "README.md",
-      "source_location": "L39",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "readme_instala\u00e7\u00e3o_e_execu\u00e7\u00e3o",
-      "target": "readme_backend_fastapi_postgresql"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "README.md",
-      "source_location": "L81",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "readme_instala\u00e7\u00e3o_e_execu\u00e7\u00e3o",
-      "target": "readme_frontend_next_js"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "README.md",
-      "source_location": "L91",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "readme_instala\u00e7\u00e3o_e_execu\u00e7\u00e3o",
-      "target": "readme_mobile_expo"
     },
     {
       "relation": "contains",
@@ -20219,46 +19709,6 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/README.md",
-      "source_location": "L435",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme",
-      "target": "backend_readme_checklist_de_instala\u00e7\u00e3o"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L143",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme",
-      "target": "backend_readme_configura\u00e7\u00e3o_do_postgresql"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L450",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme",
-      "target": "backend_readme_contribuindo"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L265",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme",
-      "target": "backend_readme_endpoints_da_api"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
       "source_location": "L332",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -20279,61 +19729,11 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/README.md",
-      "source_location": "L208",
+      "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme",
-      "target": "backend_readme_integra\u00e7\u00e3o_com_telegram"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L460",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme",
-      "target": "backend_readme_licen\u00e7a"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L415",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme",
-      "target": "backend_readme_notas_importantes"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L425",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme",
-      "target": "backend_readme_recursos_adicionais"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L405",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme",
-      "target": "backend_readme_seguran\u00e7a"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L351",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme",
-      "target": "backend_readme_tecnologias"
+      "target": "backend_readme_manhwa_tracker_backend",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -20349,271 +19749,101 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/README.md",
+      "source_location": "L85",
+      "weight": 1.0,
+      "source": "backend_readme_manhwa_tracker_backend",
+      "target": "backend_readme_detalhes_t\u00e9cnicos",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/README.md",
+      "source_location": "L49",
+      "weight": 1.0,
+      "source": "backend_readme_manhwa_tracker_backend",
+      "target": "backend_readme_endpoints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/README.md",
+      "source_location": "L35",
+      "weight": 1.0,
+      "source": "backend_readme_manhwa_tracker_backend",
+      "target": "backend_readme_estrutura_do_projeto",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/README.md",
       "source_location": "L5",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme",
-      "target": "backend_readme_\u00edndice"
+      "source": "backend_readme_manhwa_tracker_backend",
+      "target": "backend_readme_instala\u00e7\u00e3o_r\u00e1pida",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/README.md",
-      "source_location": "L24",
+      "source_location": "L70",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_instala\u00e7\u00e3o_r\u00e1pida",
-      "target": "backend_readme_passo_a_passo"
+      "source": "backend_readme_manhwa_tracker_backend",
+      "target": "backend_readme_telegram",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/README.md",
-      "source_location": "L19",
+      "source_location": "L78",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_instala\u00e7\u00e3o_r\u00e1pida",
-      "target": "backend_readme_pr\u00e9_requisitos"
+      "source": "backend_readme_manhwa_tracker_backend",
+      "target": "backend_readme_troubleshooting",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L26",
+      "source_file": "frontend/README.md",
+      "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_passo_a_passo",
-      "target": "backend_readme_1_instalar_postgresql"
+      "source": "frontend_readme",
+      "target": "frontend_readme_manhwa_tracker_frontend",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L46",
+      "source_file": "frontend/README.md",
+      "source_location": "L22",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_passo_a_passo",
-      "target": "backend_readme_2_criar_o_banco_de_dados"
+      "source": "frontend_readme_manhwa_tracker_frontend",
+      "target": "frontend_readme_estrutura",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L72",
+      "source_file": "frontend/README.md",
+      "source_location": "L15",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_passo_a_passo",
-      "target": "backend_readme_3_configurar_o_projeto"
+      "source": "frontend_readme_manhwa_tracker_frontend",
+      "target": "frontend_readme_funcionalidades",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L111",
+      "source_file": "frontend/README.md",
+      "source_location": "L5",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_passo_a_passo",
-      "target": "backend_readme_4_inicializar_o_banco_de_dados"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L124",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_passo_a_passo",
-      "target": "backend_readme_5_iniciar_a_aplica\u00e7\u00e3o"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L137",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_passo_a_passo",
-      "target": "backend_readme_6_testar"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L186",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_configura\u00e7\u00e3o_do_postgresql",
-      "target": "backend_readme_backup_e_restore"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L164",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_configura\u00e7\u00e3o_do_postgresql",
-      "target": "backend_readme_comandos_\u00fateis_do_postgresql"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L145",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_configura\u00e7\u00e3o_do_postgresql",
-      "target": "backend_readme_estrutura_do_banco_de_dados"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L198",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_configura\u00e7\u00e3o_do_postgresql",
-      "target": "backend_readme_migra\u00e7\u00e3o_de_dados_do_json"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L147",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_estrutura_do_banco_de_dados",
-      "target": "backend_readme_tabela_manhwas"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L255",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_integra\u00e7\u00e3o_com_telegram",
-      "target": "backend_readme_como_funciona"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L222",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_integra\u00e7\u00e3o_com_telegram",
-      "target": "backend_readme_configurar_telegram"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L210",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_integra\u00e7\u00e3o_com_telegram",
-      "target": "backend_readme_obter_credenciais_do_telegram"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L233",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_integra\u00e7\u00e3o_com_telegram",
-      "target": "backend_readme_testar_integra\u00e7\u00e3o"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L267",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_endpoints_da_api",
-      "target": "backend_readme_manhwas"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L293",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_endpoints_da_api",
-      "target": "backend_readme_telegram"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L398",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_troubleshooting",
-      "target": "backend_readme_api_n\u00e3o_est\u00e1_aceitando_conex\u00f5es"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L392",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_troubleshooting",
-      "target": "backend_readme_erro_ao_importar_do_telegram"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L365",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_troubleshooting",
-      "target": "backend_readme_erro_could_not_connect_to_server"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L374",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_troubleshooting",
-      "target": "backend_readme_erro_database_does_not_exist"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L386",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_troubleshooting",
-      "target": "backend_readme_erro_no_module_named_asyncpg"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L370",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_troubleshooting",
-      "target": "backend_readme_erro_password_authentication_failed"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/README.md",
-      "source_location": "L378",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "backend_readme_troubleshooting",
-      "target": "backend_readme_erro_permiss\u00e3o_negada_para_esquema_public"
+      "source": "frontend_readme_manhwa_tracker_frontend",
+      "target": "frontend_readme_setup",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -20821,39 +20051,29 @@
       "source_file": "mobile/README.md",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_readme",
-      "target": "mobile_readme_welcome_to_your_expo_app"
+      "target": "mobile_readme_manhwa_tracker_mobile",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "mobile/README.md",
-      "source_location": "L28",
+      "source_location": "L26",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "mobile_readme_welcome_to_your_expo_app",
-      "target": "mobile_readme_get_a_fresh_project"
+      "source": "mobile_readme_manhwa_tracker_mobile",
+      "target": "mobile_readme_estrutura",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "mobile/README.md",
-      "source_location": "L5",
+      "source_location": "L19",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "mobile_readme_welcome_to_your_expo_app",
-      "target": "mobile_readme_get_started"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "mobile/README.md",
-      "source_location": "L51",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "mobile_readme_welcome_to_your_expo_app",
-      "target": "mobile_readme_join_the_community"
+      "source": "mobile_readme_manhwa_tracker_mobile",
+      "target": "mobile_readme_funcionalidades",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -20861,9 +20081,9 @@
       "source_file": "mobile/README.md",
       "source_location": "L44",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "mobile_readme_welcome_to_your_expo_app",
-      "target": "mobile_readme_learn_more"
+      "source": "mobile_readme_manhwa_tracker_mobile",
+      "target": "mobile_readme_rodando_em_dev",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -20871,9 +20091,19 @@
       "source_file": "mobile/README.md",
       "source_location": "L38",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "mobile_readme_get_a_fresh_project",
-      "target": "mobile_readme_other_setup_steps"
+      "source": "mobile_readme_manhwa_tracker_mobile",
+      "target": "mobile_readme_rotas",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "mobile/README.md",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "mobile_readme_manhwa_tracker_mobile",
+      "target": "mobile_readme_setup",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -22185,5 +21415,5 @@
       "source_file": ".claude/skills/graphify/references/query.md"
     }
   ],
-  "built_at_commit": "713449d32847c2aac0663d6c067959b783ad139a"
+  "built_at_commit": "ff71df13fd0a03fb78c7d06231d8bdd50fd4394f"
 }

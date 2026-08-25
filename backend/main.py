@@ -21,6 +21,7 @@ from database import (
     safe_rollback,
 )
 from models import Manhwa as ManhwaModel, ChapterProgress
+from error_logger import log_error
 
 DOWNLOAD_DIR = os.environ.get("DOWNLOAD_DIR", r"D:\Manhwas")
 
@@ -100,6 +101,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
     FastAPI), só o que sobrar.
     """
     print(f"❌ ERRO NÃO TRATADO em {request.url.path}: {exc}")
+    log_error(exc, context=f"ERRO NÃO TRATADO em {request.url.path}")
     return JSONResponse(
         status_code=500,
         content={"success": False, "message": f"Erro interno do servidor: {str(exc)}"},
@@ -716,6 +718,7 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
         })
     except Exception as e:
         print(f"❌ ERRO CRÍTICO na sincronização: {str(e)}")
+        log_error(e, context="ERRO CRÍTICO na sincronização (/api/manhwas/download-all)")
         return JSONResponse(status_code=500, content={
             "success": False,
             "message": f"Erro na sincronização: {str(e)}",
@@ -1074,6 +1077,7 @@ async def review_all_manhwas(limit: Optional[int] = None, db: AsyncSession = Dep
         raise HTTPException(status_code=500, detail="Módulo telegram_scraper não encontrado.")
     except Exception as e:
         print(f"❌ ERRO CRÍTICO na revisão: {str(e)}")
+        log_error(e, context="ERRO CRÍTICO na revisão (/api/manhwas/review-all)")
         raise HTTPException(status_code=500, detail=f"Erro na revisão: {str(e)}")
 
 @app.post("/api/telegram/import")

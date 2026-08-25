@@ -50,8 +50,8 @@
     "semantic_hash": "cfb292fbd2234285df820f223d791904"
   },
   "frontend/app/page.tsx": {
-    "mtime": 1787687103.6343136,
-    "ast_hash": "aa0471fbdf76ed8fba42d8fbbdf18f93",
+    "mtime": 1787667241.2282774,
+    "ast_hash": "2ef5abd1503f866da76a9468a009082d",
     "semantic_hash": ""
   },
   "frontend/components/AddManhwaModal.tsx": {
@@ -145,9 +145,9 @@
     "semantic_hash": "0dd9dccdb4b08595bc83df70d6a154d3"
   },
   "mobile/package.json": {
-    "mtime": 1787687128.3527644,
-    "ast_hash": "15ef91ae70f047962c72bc31cdf0a285",
-    "semantic_hash": ""
+    "mtime": 1779371142.7689614,
+    "ast_hash": "05365110273e1221bfb35a787414a373",
+    "semantic_hash": "05365110273e1221bfb35a787414a373"
   },
   "mobile/plugins/withNotifeeForegroundServiceType.js": {
     "mtime": 1779371142.7709613,
@@ -170,9 +170,9 @@
     "semantic_hash": "43e79d98675f7c8df85c6be62ce90d3c"
   },
   "mobile/src/app/index.tsx": {
-    "mtime": 1787687042.9133472,
-    "ast_hash": "011a0cacb3425f3f091e73747dd173af",
-    "semantic_hash": ""
+    "mtime": 1787279313.2191625,
+    "ast_hash": "b03a6cbe22f58a1f2c22c0e2965bf515",
+    "semantic_hash": "b03a6cbe22f58a1f2c22c0e2965bf515"
   },
   "mobile/src/components/AddManhwaModal.tsx": {
     "mtime": 1779278804.7761898,
@@ -330,14 +330,14 @@
     "semantic_hash": "8a6643a420fdad6bfb583523bc6cef16"
   },
   "README.md": {
-    "mtime": 1787686974.809664,
-    "ast_hash": "91814ae1b84034b9a859cd9b35674f2a",
+    "mtime": 1787686892.1808019,
+    "ast_hash": "3e934bc96dadbc14903dc3e19bcd9fa2",
     "semantic_hash": ""
   },
   "backend/README.md": {
-    "mtime": 1787686974.8106637,
-    "ast_hash": "fb697931b93d96cf8cc9eedf490b60af",
-    "semantic_hash": "fb697931b93d96cf8cc9eedf490b60af"
+    "mtime": 1787686908.8502238,
+    "ast_hash": "8928ac5f5865d22fa747b88da02b9c4b",
+    "semantic_hash": ""
   },
   "backend/requirements.txt": {
     "mtime": 1770657011.3634615,
@@ -365,9 +365,9 @@
     "semantic_hash": "771faa62feb60b7de901a397aebb29b0"
   },
   "mobile/README.md": {
-    "mtime": 1787686974.825178,
-    "ast_hash": "d1f58d9e70143584d1e1af79b79b17f3",
-    "semantic_hash": "d1f58d9e70143584d1e1af79b79b17f3"
+    "mtime": 1787686920.8210464,
+    "ast_hash": "c7071068e00eb64c2efd3cc452279efb",
+    "semantic_hash": ""
   },
   "mobile/.expo/web/cache/production/images/favicon/favicon-a4e030697a7571b3e95d31860e4da55d2f98e5e861e2b55e414f45a8556828ba-contain-transparent/favicon-48.png": {
     "mtime": 1779299493.9028203,
@@ -549,9 +549,9 @@
     "ast_hash": "51425c6e20fcbf8d7c19d1fef29925d3",
     "semantic_hash": ""
   },
-  "mobile/eslint.config.js": {
-    "mtime": 1787687146.6919658,
-    "ast_hash": "b713dd66aa3ad59ed5098d7b9f8dc202",
+  "frontend/README.md": {
+    "mtime": 1787686930.805212,
+    "ast_hash": "1fef2189602dae76a64baae10cd09e44",
     "semantic_hash": ""
   }
 }
