@@ -11,7 +11,6 @@ import {
     saveManhwaList,
     loadManhwaList,
     getLocalChaptersSet,
-    getManhwasWithLocalData,
     getLastReadMap,
 } from '../lib/cache';
 import { drainQueue } from '../lib/sync-queue';
@@ -59,14 +58,12 @@ export default function Home() {
     const [menuOpen, setMenuOpen] = useState(false);
     const [menuMounted, setMenuMounted] = useState(false);
     const menuAnim = useRef(new Animated.Value(0)).current;
-    // Ids dos manhwas com capítulos REALMENTE baixados no aparelho (pro filtro).
-    const [localDownloadedIds, setLocalDownloadedIds] = useState<Set<number>>(new Set());
     // Mapa id→ISO da última leitura local (ordena a home na hora, mesmo offline).
     const [lastReadMap, setLastReadMap] = useState<Record<string, string>>({});
     const [filter, setFilter] = useState<FilterId>('all');
     const [showOnlyNew, setShowOnlyNew] = useState(false);
     const [showOnlyUnreadTop30, setShowOnlyUnreadTop30] = useState(false);
-    const [showOnlyDownloaded, setShowOnlyDownloaded] = useState(false);
+    const [showOnlyMoreThan80Chapters, setShowOnlyMoreThan80Chapters] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
     const [syncResult, setSyncResult] = useState<{ success: boolean; message: string } | null>(null);
@@ -74,19 +71,17 @@ export default function Home() {
     const [isOffline, setIsOffline] = useState(false);
     const [isReconnecting, setIsReconnecting] = useState(false);
 
-    const refreshLocalDownloaded = useCallback(() => {
-        getManhwasWithLocalData().then(setLocalDownloadedIds).catch(() => {});
+    const refreshLastRead = useCallback(() => {
         getLastReadMap().then(setLastReadMap).catch(() => {});
     }, []);
 
     useEffect(() => {
         fetchManhwas();
-        refreshLocalDownloaded();
-    }, [refreshLocalDownloaded]);
+        refreshLastRead();
+    }, [refreshLastRead]);
 
-    // Ao voltar pra home (ex.: depois de baixar na tela de Downloads), reavalia
-    // o que está baixado localmente pro filtro "Apenas baixados".
-    useFocusEffect(refreshLocalDownloaded);
+    // Ao voltar pra home (ex.: depois de ler um capítulo), reavalia a última leitura local.
+    useFocusEffect(refreshLastRead);
 
     // Anima abertura/fechamento do menu de download (fade + slide).
     useEffect(() => {
@@ -143,8 +138,8 @@ export default function Home() {
     // (re-ordena a home na hora, mesmo offline).
     const handleCardUpdate = useCallback(() => {
         fetchManhwas();
-        refreshLocalDownloaded();
-    }, [fetchManhwas, refreshLocalDownloaded]);
+        refreshLastRead();
+    }, [fetchManhwas, refreshLastRead]);
 
     const tryReconnect = async () => {
         if (isReconnecting) return;
@@ -203,15 +198,12 @@ export default function Home() {
     const filteredManhwas = (() => {
         let result = [...manhwas];
 
-        if (showOnlyDownloaded) {
-            // "Apenas baixados" = o que está REALMENTE baixado no aparelho
-            // (capítulos locais), não a flag de sincronizar (m.download).
-            result = result.filter(m => localDownloadedIds.has(m.id));
-        }
-
         if (filter === 'top30') {
             if (showOnlyUnreadTop30) {
                 result = result.filter(m => m.status !== 'reading' && m.status !== 'completed');
+            }
+            if (showOnlyMoreThan80Chapters) {
+                result = result.filter(m => (m.total_chapters ?? 0) > 80);
             }
             return result
                 .sort((a, b) => (b.medium_reaction ?? 0) - (a.medium_reaction ?? 0))
@@ -314,11 +306,6 @@ export default function Home() {
 
             {/* Checkboxes */}
             <View className="flex-row flex-wrap gap-2 mb-2">
-                <Checkbox
-                    value={showOnlyDownloaded}
-                    onChange={setShowOnlyDownloaded}
-                    label="Apenas baixados"
-                />
                 {filter === 'reading' && (
                     <Checkbox
                         value={showOnlyNew}
@@ -327,12 +314,20 @@ export default function Home() {
                     />
                 )}
                 {filter === 'top30' && (
-                    <Checkbox
-                        value={showOnlyUnreadTop30}
-                        onChange={setShowOnlyUnreadTop30}
-                        label="Apenas os que não li nenhum capítulo"
-                        accentClass="bg-rose-500 border-rose-500"
-                    />
+                    <>
+                        <Checkbox
+                            value={showOnlyUnreadTop30}
+                            onChange={setShowOnlyUnreadTop30}
+                            label="Apenas os que não li nenhum capítulo"
+                            accentClass="bg-rose-500 border-rose-500"
+                        />
+                        <Checkbox
+                            value={showOnlyMoreThan80Chapters}
+                            onChange={setShowOnlyMoreThan80Chapters}
+                            label="Mais de 80 capítulos"
+                            accentClass="bg-rose-500 border-rose-500"
+                        />
+                    </>
                 )}
             </View>
         </View>
