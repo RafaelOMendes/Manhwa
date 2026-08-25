@@ -200,11 +200,13 @@ estado atual do board.
    quando faltar detalhe, já que ninguém vai responder perguntas de esclarecimento no
    meio do processo).
 2. Arraste para **Em Andamento**.
-3. Espere (até ~30s de poll + o tempo dessa primeira chamada ao Claude Code - testado
-   ao vivo entre ~40s e ~4min, varia bastante porque essa etapa agora também dá uma
-   olhada na estrutura real do repositório e decide o modelo/effort da execução, não
-   só reescreve o texto) até ele aparecer em **Em Desenvolvimento**, com o prompt
-   gerado comentado no card (junto com o modelo e o effort escolhidos).
+3. Espere (até ~30s de poll + o tempo dessa etapa de rascunho, que agora são DUAS
+   chamadas ao Claude Code: uma bem rápida só pra escolher modelo/effort - testado ao
+   vivo em ~8-12s - e outra pra escrever o prompt em si, que explora o repositório e
+   pode levar de ~40s a alguns minutos) até ele aparecer em **Em Desenvolvimento**,
+   com o prompt gerado comentado no card (junto com o modelo e o effort escolhidos -
+   se por algum motivo a escolha falhar, o comentário mostra "padrão" em vez de travar
+   o card).
 4. Mais um poll (~30s) até o watcher notar que o card chegou em Em Desenvolvimento e
    começar a etapa de verdade: cria a branch e o Claude Code roda sozinho (modelo
    principal, liberado pra editar arquivos e rodar comandos). **Sem tempo fixo** -
