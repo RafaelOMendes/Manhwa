@@ -224,9 +224,15 @@ estado atual do board.
    branch manualmente no meio do caminho).
    - **Deu certo:** arraste o card pra **Concluído**. A branch é mergeada na
      `BASE_BRANCH` e apagada.
-   - **Precisa ajustar:** comente no card o que está errado e arraste de volta pra
-     **Em Desenvolvimento** — o Claude Code retoma o mesmo contexto (mesma sessão)
-     com esse feedback, sem perder o que já fez.
+   - **Precisa ajustar:** duas formas, escolha a que preferir:
+     - **Só comente** no card o que está errado, sem arrastar nada. O watcher detecta
+       o comentário sozinho (dentro de ~30s), manda o card de volta pra **Em
+       Andamento**, redesenha o prompt do zero já considerando esse comentário
+       (`📝`/`🚀` no Telegram nesse meio-tempo), e executa de novo - retomando a
+       mesma sessão do Claude Code, então não perde o que já foi feito.
+     - **Ou** comente e arraste você mesmo de volta pra **Em Desenvolvimento** — pula
+       direto pra execução com o comentário como feedback cru (mais rápido, sem
+       redesenhar o prompt), retomando a mesma sessão.
 7. Quando não sobrar nenhum card ativo (Em Andamento / Em Desenvolvimento / Teste
    vazios) e pelo menos um card tiver sido concluído desde o último build, o watcher
    dispara automaticamente `eas build` (perfil `preview`, gera `.apk`) e manda o link
