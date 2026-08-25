@@ -12,16 +12,16 @@ Tracker praticamente sozinho, do jeito que foi combinado:
    │                            card e comenta no próprio card
    ▼
 [Em Desenvolvimento] ────────► Claude Code (modelo principal) roda sozinho (sem
-   │                            pedir permissão), numa branch git só do card, e
-   │                            commita o resultado
+   │                            pedir permissão), DIRETO na BASE_BRANCH (sem branch
+   │                            por card), commita e dá push
    ▼
 [Teste] ──────────────────────► avisa no Telegram "pode testar"
    │
-   ├─ ruim → arraste de volta pra "Em Desenvolvimento" e comente o que corrigir
-   │          (o Claude Code retoma a MESMA sessão, com esse feedback)
+   ├─ ruim → comente no card (o watcher reprocessa sozinho) ou arraste de volta pra
+   │          "Em Desenvolvimento" e comente (o Claude Code retoma a MESMA sessão)
    │
-   └─ bom → arraste pra "Concluído" → a branch do card é mergeada na branch
-             principal automaticamente
+   └─ bom → arraste pra "Concluído" (não faz nada de git - o código já está na
+             BASE_BRANCH desde a etapa anterior, só marca o card como concluído)
 
 Quando não sobra nada em Em Andamento / Em Desenvolvimento / Teste e existe pelo
 menos uma task recém-concluída, o watcher builda o app mobile (EAS) e manda o
@@ -54,7 +54,7 @@ trabalho está com **~74 arquivos "modificados"**, mas o diff parece ser só tro
 fim de linha (CRLF ↔ LF) — por exemplo o `README.md` inteiro aparece como
 "179 linhas removidas / 179 adicionadas" sem nenhuma mudança de conteúdo real. Isso
 não tem nada a ver com a automação, mas **é importante resolver antes**, porque o
-watcher se recusa de propósito a criar uma branch nova para um card se a árvore de
+watcher se recusa de propósito a deixar o Claude Code trabalhar se a árvore de
 trabalho não estiver limpa (é a proteção contra misturar mudanças suas não commitadas
 com o que o Claude Code vai gerar).
 
@@ -97,7 +97,8 @@ criar novas:
 3. **Em Desenvolvimento** — automação move pra cá sozinha; é aqui que o Claude Code
    trabalha.
 4. **Teste** — automação move pra cá quando termina; é aqui que você valida.
-5. **Concluído** — você arrasta pra cá quando aprovar; dispara o merge da branch.
+5. **Concluído** — você arrasta pra cá quando aprovar; só marca o card (o código já
+   foi pra `BASE_BRANCH` na etapa anterior, não tem branch pra mergear).
 
 Os nomes exatos vão no `.env` (passo 3) — se preferir outros nomes, é só usar os
 mesmos ali.
@@ -141,15 +142,11 @@ Preencha tudo que ficou pendente nos passos 1–3. Confira principalmente:
 - `TRELLO_LIST_DOING`, `TRELLO_LIST_DEV`, `TRELLO_LIST_TEST`, `TRELLO_LIST_DONE` —
   têm que bater exatamente com os nomes das colunas no seu board (o watcher avisa
   claramente no log se algum nome não for encontrado).
-- `BASE_BRANCH` — a branch a partir da qual cada card vai criar sua branch, e pra
-  onde ela volta quando aprovada. Hoje seu repo está em `fix_mobile`; se quiser usar
-  ela como base por enquanto, mude `BASE_BRANCH=fix_mobile`.
-- `PUSH_TO_REMOTE=false` — controla só o `git push` do `BASE_BRANCH` depois de um
-  merge (quando você aprova um card em "Concluído"). Deixe `false` até se sentir
-  confortável. **Não afeta** o push da branch do próprio card: assim que o Claude Code
-  termina de mexer (sucesso ou falha), a branch do card sempre sobe pro remoto sozinha
-  - é assim que dá pra continuar corrigindo ela de fora (ex: manualmente, ou abrindo um
-  PR) sem depender do watcher.
+- `BASE_BRANCH` — a branch em que o Claude Code trabalha **direto** (sem branch por
+  card): checkout, `git pull --ff-only`, executa, commita e dá push nela, sempre, sem
+  flag pra desligar. Se dois cards forem processados em sequência, cada um parte do
+  estado que o anterior deixou - é assim que dá pra continuar mexendo de fora (ex:
+  manualmente, ou abrindo um PR a partir dela) sem depender do watcher.
 - `CLAUDE_PROMPT_MODEL=haiku` — modelo usado só pra reescrever o card num prompt
   (etapa rápida/barata). Aceita alias (`sonnet`, `opus`, `haiku`, `fable`) ou nome
   completo de modelo. **Essa mesma etapa também escolhe** com qual modelo (`sonnet`
@@ -208,22 +205,22 @@ estado atual do board.
    se por algum motivo a escolha falhar, o comentário mostra "padrão" em vez de travar
    o card).
 4. Mais um poll (~30s) até o watcher notar que o card chegou em Em Desenvolvimento e
-   começar a etapa de verdade: cria a branch e o Claude Code roda sozinho (modelo
-   principal, liberado pra editar arquivos e rodar comandos). **Sem tempo fixo** -
-   pode ser bem rápido pra uma task pequena ou levar bem mais pra algo grande (timeout
-   máximo: 45 min, ajustável em `CLAUDE_RUN_TIMEOUT_SECONDS`). A janela do terminal
-   fica muda enquanto isso roda (é uma chamada bloqueante), mas imprime um heartbeat a
-   cada 1 minuto ("...Claude Code ainda rodando (Xmin decorridos...)") pra você
-   distinguir "trabalhando" de "travado".
-5. Quando terminar, o card vai pra **Teste** e você recebe o aviso no Telegram com o
-   nome da branch (ex: `card-a1b2c3-adicionar-filtro`) e as áreas alteradas (Back,
-   Front e/ou Mobile). O repositório fica checked out nessa branch (o watcher não
-   volta pro `BASE_BRANCH` sozinho) e ela já sobe pro remoto sozinha - se algo der
-   errado, dá pra continuar mexendo nela na hora, sem esperar o watcher.
+   começar a etapa de verdade: checkout + `git pull --ff-only` na `BASE_BRANCH` (sem
+   branch por card) e o Claude Code roda sozinho ali mesmo (modelo principal, liberado
+   pra editar arquivos e rodar comandos). **Sem tempo fixo** - pode ser bem rápido pra
+   uma task pequena ou levar bem mais pra algo grande (timeout máximo: 45 min,
+   ajustável em `CLAUDE_RUN_TIMEOUT_SECONDS`). A janela do terminal fica muda enquanto
+   isso roda (é uma chamada bloqueante), mas imprime um heartbeat a cada 1 minuto
+   ("...Claude Code ainda rodando (Xmin decorridos...)") pra você distinguir
+   "trabalhando" de "travado".
+5. Quando terminar, o commit já foi direto pra `BASE_BRANCH` e empurrado pro remoto -
+   o card vai pra **Teste** e você recebe o aviso no Telegram com as áreas alteradas
+   (Back, Front e/ou Mobile). Se algo der errado, já está tudo lá pra você mexer na
+   hora, sem esperar o watcher.
 6. Teste localmente: já vai estar na branch certa (a menos que você tenha trocado de
    branch manualmente no meio do caminho).
-   - **Deu certo:** arraste o card pra **Concluído**. A branch é mergeada na
-     `BASE_BRANCH` e apagada.
+   - **Deu certo:** arraste o card pra **Concluído**. Não faz nada de git - o código
+     já estava na `BASE_BRANCH` desde o passo anterior, só marca o card.
    - **Precisa ajustar:** duas formas, escolha a que preferir:
      - **Só comente** no card o que está errado, sem arrastar nada. O watcher detecta
        o comentário sozinho (dentro de ~30s), manda o card de volta pra **Em
@@ -251,14 +248,19 @@ estado atual do board.
 
 ## 7. Limitações conhecidas (v1)
 
-- **Uma task de cada vez funciona melhor.** Cada card ganha sua própria branch a
-  partir da `BASE_BRANCH`, mas branches de cards diferentes não se enxergam entre si
-  até serem mergeadas. Se duas tasks mexerem no mesmo arquivo ao mesmo tempo, pode
-  dar conflito no merge (o watcher aborta o merge automaticamente e te avisa — nunca
-  força um merge quebrado).
-- **Conflito de merge não é resolvido sozinho** — o watcher avisa no Telegram e no
-  card, e você resolve na mão (`git checkout <BASE_BRANCH>`, `git merge <branch>`,
-  resolve, commit).
+- **Sem branch por card, sem isolamento.** O Claude Code trabalha DIRETO na
+  `BASE_BRANCH` e a automação já dá push automaticamente - não tem uma etapa de
+  revisão/merge separada antes do código ir pro remoto (era assim, mas na prática
+  ninguém testava antes de aprovar, então virou só fricção). Isso significa que um
+  commit ruim de uma task vai direto pra `BASE_BRANCH` - se acontecer, corrija na mão
+  (`git revert`/`git reset` + push) ou comente no card pra pedir a correção (ver seção
+  6). Cards são processados um de cada vez, nunca em paralelo, mas cada um já parte de
+  cima do que o anterior deixou.
+- **`git pull --ff-only` pode travar um card.** Antes de cada execução, a automação
+  atualiza a `BASE_BRANCH` local com o remoto - se você (ou outra coisa) commitou
+  direto na `BASE_BRANCH` sem passar por aqui e isso diverge do que está local, o
+  pull falha e o card fica bloqueado (avisa no Telegram) até você resolver
+  manualmente (`git pull`/`git merge`/`git rebase` na mão).
 - **Custo:** cada card consome DUAS sessões do Claude Code — uma rápida/barata (modelo
   leve) pra rascunhar o prompt, e uma completa (modelo principal) pra executar —
   cobradas normalmente pela sua assinatura/API. Builds do EAS também consomem sua

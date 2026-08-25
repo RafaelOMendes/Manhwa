@@ -1,6 +1,11 @@
 """
-Operações git usadas pelo watcher: checar se a árvore está limpa, criar uma branch
-por card, e dar merge na branch base quando o card é aprovado (movido pra "Concluído").
+Operações git usadas pelo watcher.
+
+Fluxo atual (sem branch por card): `prepare_base_branch()` garante árvore limpa,
+checkout e atualização da BASE_BRANCH antes do Claude Code trabalhar direto nela;
+`changed_areas_since()`/`push()` medem e sobem o resultado depois. `start_card_branch()`/
+`merge_branch()`/`changed_areas()`/`delete_branch()` continuam existindo só por
+compatibilidade com cards que já tinham uma branch própria de antes dessa mudança.
 
 Tudo via subprocess chamando o `git` de verdade instalado na sua máquina - nada de
 lib externa, pra evitar surpresa de comportamento.
@@ -56,6 +61,34 @@ def current_branch(repo_dir: Path) -> str:
 def branch_exists(repo_dir: Path, branch: str) -> bool:
     res = _run(repo_dir, "rev-parse", "--verify", "--quiet", branch)
     return res.ok
+
+
+def current_commit(repo_dir: Path) -> str:
+    res = _run(repo_dir, "rev-parse", "HEAD")
+    return res.output.strip() if res.ok else ""
+
+
+def prepare_base_branch(repo_dir: Path, base_branch: str) -> None:
+    """Prepara pra trabalhar DIRETO em `base_branch` (sem branch por card). Garante
+    árvore limpa, faz checkout em `base_branch` e atualiza com `origin` (--ff-only) -
+    importante já que o Claude Code vai commitar e a automação vai dar push direto
+    nela em seguida; sem atualizar antes, um commit feito enquanto a task rodava (por
+    você, ou por outra execução) faria esse push falhar por non-fast-forward.
+    Lança GitError se a árvore estiver suja ou se não conseguir atualizar."""
+    if not is_clean(repo_dir):
+        raise GitError(
+            f"A árvore de trabalho tem mudanças não commitadas. Não vou mexer em "
+            f"'{base_branch}' pra não misturar coisas. Rode `git status` em {repo_dir} "
+            f"e resolva (commit, stash ou descarte) antes de deixar a automação continuar."
+        )
+
+    checkout = _run(repo_dir, "checkout", base_branch)
+    if not checkout.ok:
+        raise GitError(f"Não consegui fazer checkout de '{base_branch}': {checkout.output}")
+
+    pull = _run(repo_dir, "pull", "--ff-only", "origin", base_branch)
+    if not pull.ok:
+        raise GitError(f"Não consegui atualizar '{base_branch}' com o remoto: {pull.output}")
 
 
 def automation_version(repo_dir: Path) -> str:
@@ -131,6 +164,20 @@ def changed_areas(repo_dir: Path, base_branch: str, branch: str) -> list[str]:
     Usa `git diff` por nome de arquivo - funciona não importa em qual branch o
     repositório está checked out no momento."""
     res = _run(repo_dir, "diff", "--name-only", f"{base_branch}...{branch}")
+    if not res.ok:
+        return []
+    touched_dirs = {line.split("/", 1)[0] for line in res.output.splitlines() if line.strip()}
+    return [label for prefix, label in AREA_LABELS.items() if prefix in touched_dirs]
+
+
+def changed_areas_since(repo_dir: Path, before_commit: str) -> list[str]:
+    """Como changed_areas(), mas compara contra um commit específico em vez de duas
+    branches - usado no fluxo direto-na-base-branch (sem branch por card), onde não
+    tem uma branch separada pra comparar. `before_commit` é o HEAD capturado logo
+    antes do Claude Code começar a mexer."""
+    if not before_commit:
+        return []
+    res = _run(repo_dir, "diff", "--name-only", before_commit, "HEAD")
     if not res.ok:
         return []
     touched_dirs = {line.split("/", 1)[0] for line in res.output.splitlines() if line.strip()}
