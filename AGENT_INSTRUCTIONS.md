@@ -252,6 +252,11 @@ A posição de scroll dentro de um capítulo é salva tanto **local** (`AsyncSto
   regra deste arquivo, seção "graphify" no topo. Ao adicionar uma nova chamada ao
   Claude Code nesse fluxo que tenha acesso a Read/Glob/Bash, inclua o mesmo lembrete
   (`GRAPHIFY_REMINDER`, exportado de `claude_runner.py`).
+- **A execução também recebe um lembrete (`MOBILE_EAS_UPDATE_REMINDER`, mesmo arquivo)
+  reforçando o procedimento de `mobile/AGENTS.md` ("Entregar via `eas update`") sempre
+  que a task tocar `mobile/` com mudança só JS/TS - bumpar `APP_VERSION`, atualizar o
+  `CHANGELOG.md` e rodar `eas update --branch preview` automaticamente. Se
+  `mobile/AGENTS.md` mudar esse procedimento, atualize o texto do lembrete junto.
 - **Arquivos principais:** `watcher.py` (loop principal), `trello_client.py` (API do
   Trello, com retry automático), `claude_prompt.py`, `claude_runner.py` (chama o CLI
   `claude`, com retry/espera automática em limite de uso), `git_ops.py`,

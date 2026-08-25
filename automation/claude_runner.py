@@ -104,6 +104,29 @@ GRAPHIFY_REMINDER = (
     "vale mesmo que o prompt abaixo não mencione o graphify explicitamente."
 )
 
+# Mesmo padrão do GRAPHIFY_REMINDER acima: garante que a execução autônoma segue essa
+# regra mesmo que o prompt gerado não a mencione explicitamente. Texto reflete
+# fielmente o procedimento documentado em mobile/AGENTS.md, seção "Entregar via `eas
+# update`" - se esse arquivo mudar, atualize aqui também.
+MOBILE_EAS_UPDATE_REMINDER = (
+    "Se esta task alterar QUALQUER arquivo dentro de mobile/ que seja só JS/TS/JSX/TSX "
+    "(componentes, telas, lógica, estilos), depois de commitar siga o procedimento de "
+    "entrega documentado em mobile/AGENTS.md, seção \"Entregar via `eas update`\" - "
+    "você já está autorizado a rodar isso sem pedir confirmação:\n"
+    "1) Incremente APP_VERSION em mobile/src/lib/version.ts (patch pra fix, minor pra "
+    "feature). NÃO mexa em expo.version no app.json - isso é o fingerprint, mexer nele "
+    "quebra o update.\n"
+    "2) Documente a mudança no topo de mobile/CHANGELOG.md, na nova versão.\n"
+    "3) Rode, de dentro de mobile/: `eas update --branch preview --message \"vX.Y.Z: "
+    "<resumo curto>\"`.\n"
+    "4) Inclua a URL/ID do update devolvido no seu resumo final.\n"
+    "NÃO rode `eas update` (em vez disso, deixe isso explícito no seu resumo final "
+    "pedindo confirmação) se a mudança envolveu dependência nativa, plugin, qualquer "
+    "campo do app.json, permissões, splash, ícones, ou qualquer arquivo em "
+    "mobile/android/ ou mobile/ios/ - isso exige `eas build`, não `eas update`. Se a "
+    "task não tocou em mobile/ nenhum, ignore esse lembrete por completo."
+)
+
 
 @dataclass
 class ClaudeRunResult:

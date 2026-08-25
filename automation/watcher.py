@@ -53,7 +53,7 @@ load_dotenv(AUTOMATION_DIR / ".env")
 import state as state_mod  # noqa: E402
 from trello_client import TrelloClient, resolve_list_ids  # noqa: E402
 from claude_prompt import build_prompt  # noqa: E402
-from claude_runner import run_claude_code, GRAPHIFY_REMINDER  # noqa: E402
+from claude_runner import run_claude_code, GRAPHIFY_REMINDER, MOBILE_EAS_UPDATE_REMINDER  # noqa: E402
 from telegram_notify import send_telegram_message  # noqa: E402
 from mobile_build import run_mobile_build  # noqa: E402
 import git_ops  # noqa: E402
@@ -245,7 +245,7 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
         resume_session_id=card_state.get("session_id") if is_fix_round else None,
         model=model_choice or os.environ.get("CLAUDE_EXEC_MODEL") or None,
         effort=effort_choice or os.environ.get("CLAUDE_EXEC_EFFORT") or None,
-        append_system_prompt=GRAPHIFY_REMINDER,
+        append_system_prompt=f"{GRAPHIFY_REMINDER}\n\n{MOBILE_EAS_UPDATE_REMINDER}",
     )
 
     # rede de segurança: garante que nada ficou sem commit
