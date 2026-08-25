@@ -34,7 +34,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from claude_runner import run_claude_code
+from claude_runner import GRAPHIFY_REMINDER, run_claude_code
 
 DRAFT_ALLOWED_TOOLS = "Read,Glob,Grep"
 
@@ -179,6 +179,10 @@ def build_prompt(repo_dir: Path, title: str, description: str, comments: list[st
         allowed_tools=DRAFT_ALLOWED_TOOLS,
         permission_mode=None,
         timeout_seconds=timeout,
+        # Essa etapa explora o repo com Read/Glob/Grep (ver META_PROMPT_TEMPLATE) -
+        # mesmo lembrete de usar o graphify que a execução de verdade recebe (ver
+        # claude_runner.py), pra não fazer grep cru quando dá pra usar o grafo.
+        append_system_prompt=GRAPHIFY_REMINDER,
     )
     if not result.ok:
         raise RuntimeError(f"Claude Code (rascunho do prompt) falhou: {result.result_text}")
