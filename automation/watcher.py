@@ -71,9 +71,13 @@ def handle_doing(client: TrelloClient, card: dict, state: dict, list_ids: dict) 
     log(f"Card '{card['name']}' entrou em Em Andamento -> gerando prompt (Claude Code)...")
 
     comments = [c["data"]["text"] for c in client.get_comments(card_id) if c.get("data", {}).get("text")]
-    prompt = build_prompt(REPO_DIR, card["name"], card.get("desc", ""), comments)
+    draft = build_prompt(REPO_DIR, card["name"], card.get("desc", ""), comments)
 
-    client.comment_card(card_id, f"🤖 Prompt gerado automaticamente para o Claude Code:\n\n{prompt}")
+    client.comment_card(
+        card_id,
+        f"🤖 Prompt gerado automaticamente para o Claude Code (modelo: {draft.model or 'padrão'}, "
+        f"effort: {draft.effort or 'padrão'}):\n\n{draft.prompt}",
+    )
     client.move_card(card_id, list_ids["DEV"])
 
     # Propositalmente NÃO atualiza last_list_id aqui: o card já foi movido pra DEV de
@@ -85,7 +89,9 @@ def handle_doing(client: TrelloClient, card: dict, state: dict, list_ids: dict) 
         state,
         card_id,
         stage="prompted",
-        prompt=prompt,
+        prompt=draft.prompt,
+        model=draft.model,
+        effort=draft.effort,
         blocked_notified=False,
     )
     log(f"Card '{card['name']}' movido para Em Desenvolvimento.")
@@ -103,7 +109,10 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
     branch = card_state.get("branch") or git_ops.branch_name_for_card(card_id, card["name"])
 
     try:
-        git_ops.start_card_branch(REPO_DIR, BASE_BRANCH, branch)
+        # fresh=True só na rodada inicial: garante uma branch nova mesmo que tenha
+        # sobrado uma com o mesmo nome de uma execução anterior interrompida. Numa
+        # rodada de correção (is_fix_round) reaproveita a mesma branch de propósito.
+        git_ops.start_card_branch(REPO_DIR, BASE_BRANCH, branch, fresh=not is_fix_round)
     except git_ops.GitError as exc:
         if not card_state.get("blocked_notified"):
             send_telegram_message(f"⚠️ Card '{card['name']}' travado: {exc}")
@@ -127,30 +136,59 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
             "Ajuste o código de acordo com esse feedback nesta mesma branch e faça commit "
             "das mudanças ao final."
         )
+        # Rodada de correção: mantém o mesmo modelo/effort escolhidos na rodada
+        # original (não passa pela etapa de rascunho de novo).
+        model_choice = card_state.get("model")
+        effort_choice = card_state.get("effort")
         log(f"Card '{card['name']}' voltou para correção (retomando sessão {card_state['session_id']}).")
     else:
         prompt = card_state.get("prompt")
+        model_choice = card_state.get("model")
+        effort_choice = card_state.get("effort")
         if not prompt:
             # Card pulou direto pra 'Em Desenvolvimento' sem passar por 'Em Andamento'.
             log(f"Card '{card['name']}' não tinha prompt gerado ainda - gerando agora (Claude Code).")
             comments = [c["data"]["text"] for c in client.get_comments(card_id) if c.get("data", {}).get("text")]
-            prompt = build_prompt(REPO_DIR, card["name"], card.get("desc", ""), comments)
-            client.comment_card(card_id, f"🤖 Prompt gerado automaticamente para o Claude Code:\n\n{prompt}")
+            draft = build_prompt(REPO_DIR, card["name"], card.get("desc", ""), comments)
+            prompt = draft.prompt
+            model_choice = draft.model
+            effort_choice = draft.effort
+            client.comment_card(
+                card_id,
+                f"🤖 Prompt gerado automaticamente para o Claude Code (modelo: {draft.model or 'padrão'}, "
+                f"effort: {draft.effort or 'padrão'}):\n\n{draft.prompt}",
+            )
 
     # Chamada bloqueante e sem tempo fixo: pode levar de segundos a quase o limite de
     # CLAUDE_RUN_TIMEOUT_SECONDS (padrão 45min) dependendo do tamanho da task. Fica
     # nesta linha até o Claude Code terminar de verdade - run_claude_code() já loga um
-    # heartbeat a cada 1min pra você acompanhar que ainda está rodando.
+    # heartbeat a cada 1min pra você acompanhar que ainda está rodando. Modelo/effort
+    # vêm da escolha feita pela etapa de rascunho do prompt (claude_prompt.py),
+    # proporcional à complexidade da task; CLAUDE_EXEC_MODEL/CLAUDE_EXEC_EFFORT no
+    # .env só entram como fallback se essa escolha não veio ou não foi válida.
     result = run_claude_code(
         REPO_DIR,
         prompt,
         resume_session_id=card_state.get("session_id") if is_fix_round else None,
-        model=os.environ.get("CLAUDE_EXEC_MODEL") or None,
+        model=model_choice or os.environ.get("CLAUDE_EXEC_MODEL") or None,
+        effort=effort_choice or os.environ.get("CLAUDE_EXEC_EFFORT") or None,
         append_system_prompt=GRAPHIFY_REMINDER,
     )
 
     # rede de segurança: garante que nada ficou sem commit
     git_ops.commit_all_if_dirty(REPO_DIR, f"WIP automático: {card['name']}")
+
+    areas = git_ops.changed_areas(REPO_DIR, BASE_BRANCH, branch)
+    areas_text = ", ".join(areas) if areas else "nenhuma área identificada (backend/frontend/mobile)"
+
+    # Sobe a branch do card pro remoto assim que tudo está commitado (sucesso ou
+    # falha) - fica disponível pra você continuar mexendo nela de fora se precisar.
+    # Propositalmente NÃO volta pro BASE_BRANCH depois: o repositório fica checked out
+    # na própria branch do card, pra qualquer correção manual/nova rodada continuar no
+    # mesmo lugar.
+    push_res = git_ops.push(REPO_DIR, branch)
+    if not push_res.ok:
+        log(f"AVISO: não consegui dar push da branch '{branch}': {push_res.output[:200]}")
 
     if not result.ok:
         if not card_state.get("blocked_notified"):
@@ -159,11 +197,15 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
                 card_id,
                 f"⚠️ Execução falhou:\n{result.result_text}\n\nLog:\n{result.raw_output[-2000:]}",
             )
-            state_mod.set_card(state, card_id, blocked_notified=True, branch=branch)
+            state_mod.set_card(state, card_id, blocked_notified=True, branch=branch, model=model_choice, effort=effort_choice)
         log(f"FALHA ({card['name']}): {result.result_text[:200]}")
         return  # tenta de novo no próximo poll
 
-    client.comment_card(card_id, f"✅ Claude Code terminou (branch `{branch}`):\n\n{result.result_text}")
+    client.comment_card(
+        card_id,
+        f"✅ Claude Code terminou (branch `{branch}`, modelo: {model_choice or 'padrão'}, "
+        f"effort: {effort_choice or 'padrão'}) - áreas alteradas: {areas_text}\n\n{result.result_text}",
+    )
     client.move_card(card_id, list_ids["TEST"])
 
     state_mod.set_card(
@@ -172,12 +214,18 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
         last_list_id=list_ids["TEST"],
         stage="dev_done",
         branch=branch,
+        model=model_choice,
+        effort=effort_choice,
         session_id=result.session_id,
         last_comment_date=now_iso(),
         blocked_notified=False,
     )
 
-    send_telegram_message(f"🧪 Pronto pra testar: '{card['name']}'\nBranch: {branch}\nCard: {card_url(card)}")
+    send_telegram_message(
+        f"🧪 Pronto pra testar: '{card['name']}'\nÁreas alteradas: {areas_text}\n"
+        f"Modelo: {model_choice or 'padrão'} (effort: {effort_choice or 'padrão'})\n"
+        f"Branch: {branch}\nCard: {card_url(card)}"
+    )
     log(f"Card '{card['name']}' movido para Teste.")
 
 
@@ -293,13 +341,21 @@ def main() -> None:
     log(f"Listas do Trello resolvidas: {list_ids}")
     send_telegram_message("🤖 Automação Trello ↔ Claude Code iniciada. De olho no board!")
 
+    # Só notifica a PRIMEIRA falha de uma sequência (ex: Trello fora do ar por
+    # alguns minutos) - sem isso, cada poll (a cada POLL_INTERVAL_SECONDS) durante
+    # uma instabilidade manda outro alerta no Telegram, o que vira spam rápido.
+    loop_error_notified = False
+
     while True:
         try:
             tick(client, list_ids)
+            loop_error_notified = False
         except Exception:
             err = traceback.format_exc()
             log(f"ERRO no loop principal:\n{err}")
-            send_telegram_message(f"❌ Erro no watcher: {err.splitlines()[-1][:300]}")
+            if not loop_error_notified:
+                send_telegram_message(f"❌ Erro no watcher: {err.splitlines()[-1][:300]}")
+                loop_error_notified = True
         time.sleep(POLL_INTERVAL_SECONDS)
 
 

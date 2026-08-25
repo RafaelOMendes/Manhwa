@@ -144,14 +144,22 @@ Preencha tudo que ficou pendente nos passos 1–3. Confira principalmente:
 - `BASE_BRANCH` — a branch a partir da qual cada card vai criar sua branch, e pra
   onde ela volta quando aprovada. Hoje seu repo está em `fix_mobile`; se quiser usar
   ela como base por enquanto, mude `BASE_BRANCH=fix_mobile`.
-- `PUSH_TO_REMOTE=false` — deixe assim no início. Os merges ficam só localmente até
-  você se sentir confortável, aí muda pra `true` pra também dar `git push` depois de
-  cada merge.
+- `PUSH_TO_REMOTE=false` — controla só o `git push` do `BASE_BRANCH` depois de um
+  merge (quando você aprova um card em "Concluído"). Deixe `false` até se sentir
+  confortável. **Não afeta** o push da branch do próprio card: assim que o Claude Code
+  termina de mexer (sucesso ou falha), a branch do card sempre sobe pro remoto sozinha
+  - é assim que dá pra continuar corrigindo ela de fora (ex: manualmente, ou abrindo um
+  PR) sem depender do watcher.
 - `CLAUDE_PROMPT_MODEL=haiku` — modelo usado só pra reescrever o card num prompt
   (etapa rápida/barata). Aceita alias (`sonnet`, `opus`, `haiku`, `fable`) ou nome
-  completo de modelo.
-- `CLAUDE_EXEC_MODEL` — deixe em branco pra usar o modelo padrão da sua conta na
-  execução de verdade, ou defina um alias/nome se quiser forçar um modelo específico.
+  completo de modelo. **Essa mesma etapa também escolhe** com qual modelo (`sonnet`
+  ou `opus`) e com qual nível de esforço (`--effort`: `low`/`medium`/`high`/`xhigh`/
+  `max`) a execução de verdade deve rodar, proporcional à complexidade real de cada
+  card - fica registrado no comentário do card e na mensagem do Telegram quando a
+  task termina.
+- `CLAUDE_EXEC_MODEL=opus` / `CLAUDE_EXEC_EFFORT=` — só servem de **fallback**: entram
+  em jogo apenas se a escolha da etapa de rascunho não vier ou não for válida. Deixe
+  ambos em branco pra cair no modelo/effort padrão da sua conta/assinatura nesse caso.
 
 Não precisa de nenhuma chave de API extra (Trello e Telegram à parte) — as duas
 etapas de IA usam o `claude` CLI já autenticado na sua máquina.
@@ -192,9 +200,11 @@ estado atual do board.
    quando faltar detalhe, já que ninguém vai responder perguntas de esclarecimento no
    meio do processo).
 2. Arraste para **Em Andamento**.
-3. Espere (até ~30s de poll + o tempo dessa primeira chamada ao Claude Code - na
-   prática ~30-90s, testado ao vivo em ~40s) até ele aparecer em **Em
-   Desenvolvimento**, com o prompt gerado comentado no card.
+3. Espere (até ~30s de poll + o tempo dessa primeira chamada ao Claude Code - testado
+   ao vivo entre ~40s e ~4min, varia bastante porque essa etapa agora também dá uma
+   olhada na estrutura real do repositório e decide o modelo/effort da execução, não
+   só reescreve o texto) até ele aparecer em **Em Desenvolvimento**, com o prompt
+   gerado comentado no card (junto com o modelo e o effort escolhidos).
 4. Mais um poll (~30s) até o watcher notar que o card chegou em Em Desenvolvimento e
    começar a etapa de verdade: cria a branch e o Claude Code roda sozinho (modelo
    principal, liberado pra editar arquivos e rodar comandos). **Sem tempo fixo** -
@@ -204,9 +214,12 @@ estado atual do board.
    cada 1 minuto ("...Claude Code ainda rodando (Xmin decorridos...)") pra você
    distinguir "trabalhando" de "travado".
 5. Quando terminar, o card vai pra **Teste** e você recebe o aviso no Telegram com o
-   nome da branch (ex: `card-a1b2c3-adicionar-filtro`).
-6. Teste localmente: `git checkout <branch>` nos serviços relevantes (ou já vai estar
-   ali se você não trocou de branch no meio do caminho).
+   nome da branch (ex: `card-a1b2c3-adicionar-filtro`) e as áreas alteradas (Back,
+   Front e/ou Mobile). O repositório fica checked out nessa branch (o watcher não
+   volta pro `BASE_BRANCH` sozinho) e ela já sobe pro remoto sozinha - se algo der
+   errado, dá pra continuar mexendo nela na hora, sem esperar o watcher.
+6. Teste localmente: já vai estar na branch certa (a menos que você tenha trocado de
+   branch manualmente no meio do caminho).
    - **Deu certo:** arraste o card pra **Concluído**. A branch é mergeada na
      `BASE_BRANCH` e apagada.
    - **Precisa ajustar:** comente no card o que está errado e arraste de volta pra
@@ -250,6 +263,7 @@ estado atual do board.
 | Card fica travado em "Em Desenvolvimento" e não sai | Olhe a janela do terminal / o log; provavelmente `git status` não está limpo na `BASE_BRANCH`, ou o Claude Code deu timeout |
 | Não chega aviso no Telegram | Confira se você mandou `/start` pro bot e se `TELEGRAM_CHAT_ID` está certo |
 | `eas build` falha | Rode `eas build --platform android --profile preview` manualmente uma vez pra ver o erro completo (login, credenciais Android etc) |
+| `❌ Erro no watcher: requests.exceptions.ReadTimeout` (ou `ConnectionError`) da API do Trello, depois de rodar muito tempo | Normal em execuções longas - a API do Trello ocasionalmente demora/oscila. O watcher já se recupera sozinho no próximo poll (não trava, só pula um ciclo), e `trello_client.py` já tenta de novo automaticamente (retry com backoff) antes de chegar a dar erro. Se aparecer só uma vez de vez em quando, ignore; se for constante, é a API do Trello (ou sua rede) fora do ar mesmo - confira status.atlassian.com |
 | `OSError: [WinError 87] O parâmetro está incorreto` ao chamar o Claude Code/EAS/git | **Causa real (confirmada):** não é o shim `.CMD`/`.PS1` do npm — `automation/proc_utils.py` já resolvia isso certinho. O bug era `os.environ.get("CLAUDE_CLI_PATH", "claude")` em `claude_runner.py`: como `CLAUDE_CLI_PATH=` fica **presente mas vazio** no `.env` (intencional, ver passo 4), `os.environ.get(chave, default)` devolve `""` em vez do default — o default só entra quando a chave não existe. `resolve_command("")` não acha nada e caía num fallback `[""]`; `subprocess.run([""...])` manda um argv[0] vazio pro `CreateProcess`, que devolve exatamente `WinError 87`. Corrigido: `claude_runner.py`/`mobile_build.py` agora usam `os.environ.get("X") or default` (trata string vazia como "não setado"), e `proc_utils.resolve_command()` levanta um `ValueError` claro se receber um nome vazio, em vez de deixar o erro aparecer disfarçado de `WinError 87` lá na frente. `git` nunca teve esse problema (`GIT_CMD` vem do literal `"git"`, não de env var), e `eas` só não quebrou porque `EAS_CLI_PATH=eas` já vinha preenchido no `.env.example`. Se reaparecer, rode `python -c "import proc_utils; print(proc_utils.resolve_command('claude'))"` de dentro de `automation/` (com o venv ativado) e confira se bate com `Get-Command claude` no PowerShell |
 
 ---

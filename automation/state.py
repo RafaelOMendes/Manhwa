@@ -1,5 +1,5 @@
 """
-Persistência local do estado da automação Trello -> Gemini -> Claude Code -> Telegram.
+Persistência local do estado da automação Trello -> Claude Code -> Telegram.
 
 Guarda, por card do Trello, em que lista ele foi visto da última vez que processamos
 e alguns metadados (branch git criada, session_id do Claude Code, prompt gerado etc).
@@ -63,6 +63,8 @@ def get_card(state: dict[str, Any], card_id: str) -> dict[str, Any]:
             "session_id": None,
             "stage": None,  # None | "prompting" | "dev" | "test" | "done" | "blocked"
             "prompt": None,
+            "model": None,  # "sonnet" | "opus" | None - escolhido pela etapa de rascunho do prompt
+            "effort": None,  # "low" | "medium" | "high" | "xhigh" | "max" | None
         },
     )
 

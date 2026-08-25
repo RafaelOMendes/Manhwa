@@ -164,12 +164,22 @@ A posição de scroll dentro de um capítulo é salva tanto **local** (`AsyncSto
 
 Sempre que você for iniciar uma nova tarefa neste projeto, siga este fluxo:
 
-1. **Leia este arquivo** (`AGENT_INSTRUCTIONS.md`) para entender o panorama do projeto.
-2. **Leia o `README.md` principal** na raiz do repositório para detalhes de instalação e endpoints.
-3. **Leia os `README.md` e `AGENTS.md` locais:**
+1. **Nunca trabalhe direto em cima da `main`.** Antes de qualquer alteração, rode
+   `git branch --show-current`:
+   - Se estiver em `main`, crie e faça checkout numa branch nova com **nome
+     genérico, sem relação com a task** (ex: `agent-work`) antes de tocar em
+     qualquer arquivo - evita commitar direto em `main` e ter que resolver
+     conflito depois com outra branch em andamento (ex: uma branch de card da
+     automação Trello, seção 4 abaixo).
+   - Se já estiver em outra branch (de card da automação, ou uma branch genérica
+     de uma sessão anterior como `agent-work`), **não crie outra** - continue
+     trabalhando nela.
+2. **Leia este arquivo** (`AGENT_INSTRUCTIONS.md`) para entender o panorama do projeto.
+3. **Leia o `README.md` principal** na raiz do repositório para detalhes de instalação e endpoints.
+4. **Leia os `README.md` e `AGENTS.md` locais:**
    - Se for trabalhar no mobile, **LEIA obrigatoriamente** o `/mobile/AGENTS.md` e o `/mobile/README.md`.
-4. **Respeite a comunicação:** Modificações no modelo de dados do Backend (`/backend/models.py`) devem ser refletidas nos tipos do Frontend (`/frontend/types/manhwa.ts`) e do Mobile.
-5. **Utilize o Terminal com Sabedoria:** Para iniciar os serviços, utilize os arquivos `.bat` na raiz (ex: `iniciaBack.bat` e `iniciaFront.bat`) caso já estejam configurados.
+5. **Respeite a comunicação:** Modificações no modelo de dados do Backend (`/backend/models.py`) devem ser refletidas nos tipos do Frontend (`/frontend/types/manhwa.ts`) e do Mobile.
+6. **Utilize o Terminal com Sabedoria:** Para iniciar os serviços, utilize os arquivos `.bat` na raiz (ex: `iniciaBack.bat` e `iniciaFront.bat`) caso já estejam configurados.
 
 ## 🎯 Próximos Passos (Para a IA)
 Ao receber um prompt do usuário pedindo uma alteração, analise se a alteração afeta:

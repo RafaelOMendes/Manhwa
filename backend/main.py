@@ -695,6 +695,191 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
             "manhwas_processed": 0,
         })
 
+@app.post("/api/manhwas/review-all")
+async def review_all_manhwas(db: AsyncSession = Depends(get_db)):
+    """
+    Revisita todos os manhwas com link do Telegram e recalcula os metadados do tópico:
+    `total_chapters` (quantidade de .cbz) e `medium_reaction` (média de reações por capítulo).
+
+    Diferente do `/api/manhwas/download-all`, nada é baixado — só a leitura das estatísticas
+    do tópico. Manhwas sem link do Telegram nas `notes` são pulados silenciosamente.
+
+    Atomicidade: se qualquer manhwa falhar, TODAS as alterações desta revisão são revertidas.
+    """
+    review_start = time.time()
+    print("\n" + "=" * 60)
+    print("🔎 REVISÃO DE MANHWAS INICIADA")
+    print(f"⏰ Horário: {datetime.now().strftime('%H:%M:%S')}")
+    print("=" * 60)
+
+    print("\n🔍 Buscando manhwas no banco de dados...")
+    result = await db.execute(select(ManhwaModel))
+    all_manhwas = result.scalars().all()
+    print(f"   Total de manhwas no banco: {len(all_manhwas)}")
+
+    manhwas_to_review = [m for m in all_manhwas if m.notes and 't.me' in m.notes]
+    skipped_count = len(all_manhwas) - len(manhwas_to_review)
+
+    print(f"   Com link do Telegram: {len(manhwas_to_review)}")
+    print(f"   Sem link (pulados):   {skipped_count}")
+
+    if not manhwas_to_review:
+        print("⚠️  Nenhum manhwa elegível para revisão.")
+        print("=" * 60 + "\n")
+        return {
+            "success": True,
+            "message": "Nenhum manhwa com link do Telegram encontrado.",
+            "total_processed": 0,
+            "total_updated": 0,
+            "total_errors": 0,
+            "results": [],
+        }
+
+    print("\n📋 Fila de revisão:")
+    for i, m in enumerate(manhwas_to_review, 1):
+        print(f"   {i}. {m.title}")
+
+    try:
+        print("\n🔌 Conectando ao Telegram...")
+        scraper = await get_telegram_scraper()
+        print("   ✅ Conexão com Telegram estabelecida.")
+
+        # Semáforo de 1: conservador, evita Flood 429 do Telegram (mesmo critério do download-all)
+        manhwa_sem = asyncio.Semaphore(1)
+        processed_count = 0
+
+        async def review_one_manhwa(manhwa):
+            nonlocal processed_count
+            async with manhwa_sem:
+                processed_count += 1
+                manhwa_start = time.time()
+                print(f"\n{'─' * 50}")
+                print(f"🔎 [{processed_count}/{len(manhwas_to_review)}] Revisando: {manhwa.title}")
+                print(f"   Link: {manhwa.notes}")
+
+                old_chapters = manhwa.total_chapters
+                old_reaction = manhwa.medium_reaction
+
+                try:
+                    stats = await scraper._get_topic_stats(manhwa.notes)
+                    cbz_count = stats.get("cbz_count", 0)
+                    avg_reactions = stats.get("avg_reactions", 0)
+                    elapsed = time.time() - manhwa_start
+
+                    # _get_topic_stats() captura os próprios erros e devolve 0/0. Sem esse
+                    # guarda, uma falha de rede gravaria total_chapters = 0 por cima de um
+                    # valor válido. Tratamos 0 CBZs como falha para não corromper o banco.
+                    if cbz_count == 0:
+                        print(f"   ⚠️  Nenhum CBZ retornado — stats provavelmente falharam.")
+                        print(f"   ⏱️  Tempo: {elapsed:.1f}s")
+                        return {
+                            "manhwa_id": manhwa.id,
+                            "manhwa_title": manhwa.title,
+                            "success": False,
+                            "message": "Tópico retornou 0 CBZs (link inválido ou erro ao ler o tópico).",
+                            "updated": False,
+                        }
+
+                    print(f"   📊 Resultado: {cbz_count} CBZs | reação média: {avg_reactions}")
+                    print(f"   ⏱️  Tempo: {elapsed:.1f}s")
+
+                    updated = False
+                    if manhwa.total_chapters != cbz_count:
+                        print(f"   🔄 Atualizando total de capítulos: {old_chapters} → {cbz_count}")
+                        manhwa.total_chapters = cbz_count
+                        updated = True
+                    if manhwa.medium_reaction != avg_reactions:
+                        print(f"   ❤️  Atualizando reação média: {old_reaction} → {avg_reactions}")
+                        manhwa.medium_reaction = avg_reactions
+                        updated = True
+
+                    if updated:
+                        db.add(manhwa)
+                    else:
+                        print("   ✔️  Já estava atualizado — nada a alterar.")
+
+                    return {
+                        "manhwa_id": manhwa.id,
+                        "manhwa_title": manhwa.title,
+                        "success": True,
+                        "updated": updated,
+                        "old_total_chapters": old_chapters,
+                        "total_chapters": cbz_count,
+                        "old_medium_reaction": old_reaction,
+                        "medium_reaction": avg_reactions,
+                        "elapsed": round(elapsed, 1),
+                    }
+                except Exception as e:
+                    elapsed = time.time() - manhwa_start
+                    print(f"   ❌ ERRO após {elapsed:.1f}s: {str(e)}")
+                    return {
+                        "manhwa_id": manhwa.id,
+                        "manhwa_title": manhwa.title,
+                        "success": False,
+                        "message": str(e),
+                        "updated": False,
+                    }
+
+        tasks = [review_one_manhwa(m) for m in manhwas_to_review]
+        results_list = await asyncio.gather(*tasks)
+
+        total_updated = sum(1 for r in results_list if r.get("updated"))
+        failed_manhwas = [r.get("manhwa_title", "?") for r in results_list if not r.get("success")]
+        total_errors = len(failed_manhwas)
+
+        if failed_manhwas:
+            # Atomicidade: mesma regra do download-all — se QUALQUER manhwa falhou,
+            # desfaz TODAS as alterações desta revisão para não deixar o banco num
+            # estado intermediário.
+            print(f"\n🔄 ROLLBACK: {total_errors} manhwa(s) falharam — revertendo TODAS as alterações desta revisão.")
+            print(f"   Manhwas com falha: {', '.join(failed_manhwas)}")
+            await db.rollback()
+            print("   ↩️  Rollback concluído — nenhuma alteração foi salva no banco.")
+
+            total_elapsed = time.time() - review_start
+            print(f"\n{'=' * 60}")
+            print(f"❌ REVISÃO FALHOU (revertida)")
+            print(f"   Manhwas processados: {len(manhwas_to_review)}")
+            print(f"   Manhwas com erro:    {total_errors}")
+            print(f"   Tempo total:         {total_elapsed:.1f}s")
+            print(f"{'=' * 60}\n")
+
+            return {
+                "success": False,
+                "message": f"Revisão falhou em {total_errors} manhwa(s) ({', '.join(failed_manhwas)}). Nenhuma alteração foi salva — tente novamente.",
+                "total_processed": len(manhwas_to_review),
+                "total_updated": 0,
+                "total_errors": total_errors,
+                "results": results_list,
+            }
+
+        # Todos com sucesso: o commit da transação é feito pelo get_db() ao final.
+        total_elapsed = time.time() - review_start
+        print(f"\n{'=' * 60}")
+        print(f"✅ REVISÃO CONCLUÍDA")
+        print(f"   Manhwas processados: {len(manhwas_to_review)}")
+        print(f"   Manhwas atualizados: {total_updated}")
+        print(f"   Sem link (pulados):  {skipped_count}")
+        print(f"   Erros:               {total_errors}")
+        print(f"   Tempo total:         {total_elapsed:.1f}s")
+        print(f"{'=' * 60}\n")
+
+        return {
+            "success": True,
+            "message": f"Revisão concluída! {len(manhwas_to_review)} processados, {total_updated} atualizados, {total_errors} erros.",
+            "total_processed": len(manhwas_to_review),
+            "total_updated": total_updated,
+            "total_errors": total_errors,
+            "results": results_list,
+        }
+
+    except ImportError:
+        print("❌ ERRO CRÍTICO: Módulo telegram_scraper não encontrado.")
+        raise HTTPException(status_code=500, detail="Módulo telegram_scraper não encontrado.")
+    except Exception as e:
+        print(f"❌ ERRO CRÍTICO na revisão: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro na revisão: {str(e)}")
+
 @app.post("/api/telegram/import")
 async def import_from_telegram(request: TelegramImportRequest, db: AsyncSession = Depends(get_db)):
     """
