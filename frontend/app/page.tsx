@@ -12,7 +12,7 @@ export default function Home() {
     const [filter, setFilter] = useState<'all' | 'reading' | 'completed' | 'plan_to_read' | 'top30'>('all')
     const [showOnlyNew, setShowOnlyNew] = useState(false)
     const [showOnlyUnreadTop30, setShowOnlyUnreadTop30] = useState(false)
-    const [showOnlyDownloaded, setShowOnlyDownloaded] = useState(false)
+    const [showOnlyMoreThan80Chapters, setShowOnlyMoreThan80Chapters] = useState(false)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isSyncing, setIsSyncing] = useState(false)
     const [syncResult, setSyncResult] = useState<{ success: boolean; message: string } | null>(null)
@@ -64,13 +64,12 @@ export default function Home() {
     const filteredManhwas = (() => {
         let result = [...manhwas]
 
-        if (showOnlyDownloaded) {
-            result = result.filter(m => m.download === true)
-        }
-
         if (filter === 'top30') {
             if (showOnlyUnreadTop30) {
                 result = result.filter(m => m.status !== 'reading' && m.status !== 'completed')
+            }
+            if (showOnlyMoreThan80Chapters) {
+                result = result.filter(m => (m.total_chapters ?? 0) > 80)
             }
             return result
                 .sort((a, b) => (b.medium_reaction ?? 0) - (a.medium_reaction ?? 0))
@@ -179,16 +178,6 @@ export default function Home() {
                     </div>
 
                     <div className="mt-4 flex flex-wrap items-center gap-3">
-                        <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer hover:text-white transition bg-background-darker/50 px-3 py-2 rounded-lg border border-gray-800/50">
-                            <input
-                                type="checkbox"
-                                checked={showOnlyDownloaded}
-                                onChange={(e) => setShowOnlyDownloaded(e.target.checked)}
-                                className="w-4 h-4 rounded border-gray-600 bg-background-dark text-blue-500 focus:ring-blue-500 focus:ring-offset-background-dark"
-                            />
-                            <span>Apenas baixados</span>
-                        </label>
-
                         {filter === 'reading' && (
                             <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer hover:text-white transition bg-background-darker/50 px-3 py-2 rounded-lg border border-gray-800/50">
                                 <input
@@ -202,15 +191,26 @@ export default function Home() {
                         )}
 
                         {filter === 'top30' && (
-                            <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer hover:text-white transition bg-background-darker/50 px-3 py-2 rounded-lg border border-rose-900/30">
-                                <input
-                                    type="checkbox"
-                                    checked={showOnlyUnreadTop30}
-                                    onChange={(e) => setShowOnlyUnreadTop30(e.target.checked)}
-                                    className="w-4 h-4 rounded border-gray-600 bg-background-dark text-rose-500 focus:ring-rose-500 focus:ring-offset-background-dark"
-                                />
-                                <span>Apenas os que não li nenhum capítulo</span>
-                            </label>
+                            <>
+                                <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer hover:text-white transition bg-background-darker/50 px-3 py-2 rounded-lg border border-rose-900/30">
+                                    <input
+                                        type="checkbox"
+                                        checked={showOnlyUnreadTop30}
+                                        onChange={(e) => setShowOnlyUnreadTop30(e.target.checked)}
+                                        className="w-4 h-4 rounded border-gray-600 bg-background-dark text-rose-500 focus:ring-rose-500 focus:ring-offset-background-dark"
+                                    />
+                                    <span>Apenas os que não li nenhum capítulo</span>
+                                </label>
+                                <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer hover:text-white transition bg-background-darker/50 px-3 py-2 rounded-lg border border-rose-900/30">
+                                    <input
+                                        type="checkbox"
+                                        checked={showOnlyMoreThan80Chapters}
+                                        onChange={(e) => setShowOnlyMoreThan80Chapters(e.target.checked)}
+                                        className="w-4 h-4 rounded border-gray-600 bg-background-dark text-rose-500 focus:ring-rose-500 focus:ring-offset-background-dark"
+                                    />
+                                    <span>Mais de 80 capítulos</span>
+                                </label>
+                            </>
                         )}
                     </div>
                 </header>
