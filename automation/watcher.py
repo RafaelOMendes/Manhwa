@@ -23,6 +23,7 @@ Pare com Ctrl+C.
 from __future__ import annotations
 
 import os
+import re
 import sys
 import time
 import traceback
@@ -64,11 +65,40 @@ def now_iso() -> str:
     return time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime())
 
 
+def _short_summary(text: str, max_len: int = 180) -> str:
+    """Resumo de uma linha pras notificações do Telegram - pega só o primeiro
+    parágrafo/linha e corta se for muito longo. Não é resumo "de verdade" (não chama
+    IA pra isso, seria caro/lento demais só pra uma notificação) - só o suficiente pra
+    dar uma ideia rápida do que está rolando sem lotar o celular de texto."""
+    text = (text or "").strip()
+    if not text:
+        return "(sem descrição)"
+    first_par = text.split("\n\n")[0].replace("\n", " ").strip()
+    if len(first_par) > max_len:
+        return first_par[:max_len].rstrip() + "…"
+    return first_par
+
+
+def _extract_objective(prompt_text: str) -> str:
+    """O prompt gerado (META_PROMPT_TEMPLATE em claude_prompt.py) sempre começa com
+    "1. Objetivo: <frase>" - pega só essa frase pra notificação, em vez do prompt
+    inteiro. Se não achar esse padrão (ex: prompt de correção/feedback, que tem outro
+    formato), cai pro resumo genérico do texto todo."""
+    match = re.search(r"(?im)^\s*1\.\s*Objetivo:\s*(.+)$", prompt_text)
+    if match:
+        return _short_summary(match.group(1))
+    return _short_summary(prompt_text)
+
+
 def handle_doing(client: TrelloClient, card: dict, state: dict, list_ids: dict) -> None:
     """Card acabou de entrar em 'Em Andamento': gera o prompt com o Claude Code (modelo
     leve) e move pra 'Em Desenvolvimento'."""
     card_id = card["id"]
     log(f"Card '{card['name']}' entrou em Em Andamento -> gerando prompt (Claude Code)...")
+    send_telegram_message(
+        f"📝 '{card['name']}' entrou em Em Andamento, gerando o prompt - é pra fazer: "
+        f"{_short_summary(card.get('desc') or card['name'])}"
+    )
 
     comments = [c["data"]["text"] for c in client.get_comments(card_id) if c.get("data", {}).get("text")]
     draft = build_prompt(REPO_DIR, card["name"], card.get("desc", ""), comments)
@@ -148,6 +178,10 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
         if not prompt:
             # Card pulou direto pra 'Em Desenvolvimento' sem passar por 'Em Andamento'.
             log(f"Card '{card['name']}' não tinha prompt gerado ainda - gerando agora (Claude Code).")
+            send_telegram_message(
+                f"📝 '{card['name']}' entrou direto em Em Desenvolvimento, gerando o prompt - é pra fazer: "
+                f"{_short_summary(card.get('desc') or card['name'])}"
+            )
             comments = [c["data"]["text"] for c in client.get_comments(card_id) if c.get("data", {}).get("text")]
             draft = build_prompt(REPO_DIR, card["name"], card.get("desc", ""), comments)
             prompt = draft.prompt
@@ -158,6 +192,11 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
                 f"🤖 Prompt gerado automaticamente para o Claude Code (modelo: {draft.model or 'padrão'}, "
                 f"effort: {draft.effort or 'padrão'}):\n\n{draft.prompt}",
             )
+
+    send_telegram_message(
+        f"🚀 '{card['name']}' está sendo executado (modelo: {model_choice or 'padrão'}, "
+        f"effort: {effort_choice or 'padrão'}) - vou: {_extract_objective(prompt)}"
+    )
 
     # Chamada bloqueante e sem tempo fixo: pode levar de segundos a quase o limite de
     # CLAUDE_RUN_TIMEOUT_SECONDS (padrão 45min) dependendo do tamanho da task. Fica
@@ -192,7 +231,7 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
 
     if not result.ok:
         if not card_state.get("blocked_notified"):
-            send_telegram_message(f"⚠️ Claude Code falhou no card '{card['name']}': {result.result_text[:300]}")
+            send_telegram_message(f"⚠️ Claude Code falhou no card '{card['name']}': {_short_summary(result.result_text, 280)}")
             client.comment_card(
                 card_id,
                 f"⚠️ Execução falhou:\n{result.result_text}\n\nLog:\n{result.raw_output[-2000:]}",
@@ -222,7 +261,8 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
     )
 
     send_telegram_message(
-        f"🧪 Pronto pra testar: '{card['name']}'\nÁreas alteradas: {areas_text}\n"
+        f"🧪 Pronto pra testar: '{card['name']}'\nFiz: {_short_summary(result.result_text)}\n"
+        f"Áreas alteradas: {areas_text}\n"
         f"Modelo: {model_choice or 'padrão'} (effort: {effort_choice or 'padrão'})\n"
         f"Branch: {branch}\nCard: {card_url(card)}"
     )
