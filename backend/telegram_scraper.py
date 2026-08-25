@@ -1,3 +1,4 @@
+import asyncio
 import os
 import re
 import html
@@ -5,6 +6,93 @@ import time
 from telethon import TelegramClient
 from telethon.tl.types import MessageService, MessageActionTopicCreate, Message, DocumentAttributeFilename
 from telethon.tl.functions.channels import GetForumTopicsByIDRequest
+from telethon.errors import (
+    ChannelInvalidError,
+    ChannelPrivateError,
+    ChatAdminRequiredError,
+    ChatForbiddenError,
+    FloodWaitError,
+    RPCError,
+)
+
+# ---------------------------------------------------------------------------
+# Tipos de erro de `_get_topic_stats()`
+#
+# O caller (ex.: /api/manhwas/review-all) precisa distinguir "esse tópico está
+# legitimamente vazio" de "não consegui ler o tópico" — antes tudo virava
+# `cbz_count = 0` sem contexto e o endpoint tratava os dois casos como falha.
+# ---------------------------------------------------------------------------
+ERROR_INVALID_LINK = "invalid_link"        # link malformado, nem dá pra extrair chat_id/topic_id
+ERROR_ENTITY_NOT_FOUND = "entity_not_found"  # chat/tópico não existe (ou foi apagado)
+ERROR_PRIVATE_TOPIC = "private_topic"      # existe, mas a conta não tem acesso
+ERROR_FLOOD_WAIT = "flood_wait"            # Telegram pediu pra esperar (429)
+ERROR_TIMEOUT = "timeout"                  # estourou o tempo lendo as mensagens
+ERROR_NETWORK = "network"                  # queda de conexão com o Telegram
+ERROR_UNKNOWN = "unknown"                  # não classificado — tratado como temporário
+EMPTY_TOPIC = "empty"                      # leitura OK, mas o tópico não tem nenhum .cbz
+
+# Não adianta repetir: o problema é do link/permissão, não do momento.
+DEFINITIVE_ERROR_TYPES = frozenset({
+    ERROR_INVALID_LINK,
+    ERROR_ENTITY_NOT_FOUND,
+    ERROR_PRIVATE_TOPIC,
+})
+
+# Vale um retry: provavelmente funciona daqui a pouco.
+TEMPORARY_ERROR_TYPES = frozenset({
+    ERROR_FLOOD_WAIT,
+    ERROR_TIMEOUT,
+    ERROR_NETWORK,
+    ERROR_UNKNOWN,
+})
+
+
+def classify_telegram_error(exc: BaseException) -> tuple:
+    """Traduz uma exceção do Telethon num `(error_type, error_message, retry_after)`.
+
+    Existe para o caller poder decidir o que fazer com a falha (registrar e
+    seguir em frente vs. tentar de novo) sem ter que inspecionar exceções do
+    Telethon por conta própria. `retry_after` é o tempo em segundos que o
+    Telegram mandou esperar (só em flood wait); `0` quando não se aplica.
+    """
+    if isinstance(exc, (ChannelPrivateError, ChatAdminRequiredError, ChatForbiddenError)):
+        return ERROR_PRIVATE_TOPIC, f"Sem permissão para ler o tópico: {exc}", 0
+
+    if isinstance(exc, ChannelInvalidError):
+        return ERROR_ENTITY_NOT_FOUND, f"Canal/tópico inválido ou inexistente: {exc}", 0
+
+    if isinstance(exc, FloodWaitError):
+        segundos = getattr(exc, "seconds", 0) or 0
+        return ERROR_FLOOD_WAIT, f"Telegram pediu para aguardar {segundos}s (flood wait).", segundos
+
+    if isinstance(exc, (asyncio.TimeoutError, TimeoutError)):
+        return ERROR_TIMEOUT, f"Timeout ao ler o tópico: {exc}", 0
+
+    if isinstance(exc, ValueError):
+        # get_entity() levanta ValueError puro quando não acha o peer.
+        texto = str(exc).lower()
+        if "entity" in texto or "peer" in texto or "not found" in texto:
+            return ERROR_ENTITY_NOT_FOUND, f"Entidade não encontrada: {exc}", 0
+        return ERROR_UNKNOWN, f"Erro inesperado: {exc}", 0
+
+    if isinstance(exc, (ConnectionError, OSError)):
+        return ERROR_NETWORK, f"Falha de conexão com o Telegram: {exc}", 0
+
+    if isinstance(exc, RPCError):
+        texto = str(exc).upper()
+        if "NOT_FOUND" in texto or "INVALID" in texto or "EMPTY" in texto:
+            return ERROR_ENTITY_NOT_FOUND, f"Telegram respondeu que o alvo não existe: {exc}", 0
+        if "FORBIDDEN" in texto or "PRIVATE" in texto or "ADMIN_REQUIRED" in texto:
+            return ERROR_PRIVATE_TOPIC, f"Acesso negado pelo Telegram: {exc}", 0
+        return ERROR_UNKNOWN, f"Erro RPC do Telegram: {exc}", 0
+
+    return ERROR_UNKNOWN, f"{type(exc).__name__}: {exc}", 0
+
+
+# Erros que condenam o CHAT inteiro, não só um tópico: vale guardar em cache
+# negativo para não repetir a resolução (e o get_dialogs) a cada tópico morto.
+_ENTITY_FATAL_ERRORS = (ERROR_ENTITY_NOT_FOUND, ERROR_PRIVATE_TOPIC)
+
 
 class TelegramManhwaScraper:
     def __init__(self):
@@ -18,6 +106,88 @@ class TelegramManhwaScraper:
             
         session_name = "manhwa_session"
         self.client = TelegramClient(session_name, self.api_id, self.api_hash)
+
+        # Cache de entidades resolvidas (ver _resolve_entity). Guarda tanto o
+        # sucesso quanto a falha definitiva, porque os ~1400 manhwas se
+        # concentram em pouquíssimos canais.
+        self._entity_cache = {}
+        self._entity_lock = asyncio.Lock()
+        self._dialogs_loaded = False
+        self._dialogs_refreshed = False
+
+        # Freio compartilhado de flood wait: quando o Telegram manda esperar,
+        # TODAS as leituras concorrentes param até esse instante (time.monotonic()).
+        # Sem isso, rodar em paralelo transformaria um flood wait em vários.
+        self._flood_until = 0.0
+
+    async def _wait_flood_gate(self):
+        """Segura a requisição enquanto durar um flood wait pedido pelo Telegram."""
+        espera = self._flood_until - time.monotonic()
+        if espera > 0:
+            print(f"      🚦 Flood wait ativo — aguardando {espera:.0f}s antes de continuar...")
+            await asyncio.sleep(espera)
+
+    def _open_flood_gate_in(self, segundos: int):
+        """Registra um flood wait para que todas as leituras paralelas recuem juntas."""
+        if segundos > 0:
+            self._flood_until = max(self._flood_until, time.monotonic() + segundos)
+
+    async def _fetch_entity(self, chat_id_or_username):
+        precisa_dialogs = isinstance(chat_id_or_username, int)
+
+        # get_dialogs() popula o cache de peers do Telethon, necessário para
+        # resolver IDs `-100...`. Uma vez por processo basta.
+        if precisa_dialogs and not self._dialogs_loaded:
+            await self.client.get_dialogs()
+            self._dialogs_loaded = True
+
+        try:
+            return await self.client.get_entity(chat_id_or_username)
+        except (ValueError, ChannelInvalidError):
+            # Pode ser um canal em que entramos depois do get_dialogs inicial.
+            # Recarrega a lista UMA vez por processo e tenta de novo.
+            if not precisa_dialogs or self._dialogs_refreshed:
+                raise
+            print("      🔄 Entidade não encontrada no cache — recarregando a lista de conversas...")
+            self._dialogs_refreshed = True
+            await self.client.get_dialogs()
+            return await self.client.get_entity(chat_id_or_username)
+
+    async def _resolve_entity(self, chat_id_or_username):
+        """Resolve (e memoriza) o chat de um link.
+
+        Antes, CADA leitura de tópico chamava `get_dialogs()` — que baixa a lista
+        inteira de conversas (~0.3s) — e só então `get_entity()`. Com ~1400 manhwas
+        espalhados por meia dúzia de canais, isso era a mesma lista baixada ~1400
+        vezes: minutos de espera pura e um belo convite a flood wait. Agora a
+        resolução acontece uma vez por chat e o resultado fica em cache.
+        """
+        if chat_id_or_username in self._entity_cache:
+            resultado = self._entity_cache[chat_id_or_username]
+            if isinstance(resultado, BaseException):
+                raise resultado
+            return resultado
+
+        async with self._entity_lock:
+            # Outra corrotina pode ter resolvido enquanto esperávamos o lock.
+            if chat_id_or_username in self._entity_cache:
+                resultado = self._entity_cache[chat_id_or_username]
+                if isinstance(resultado, BaseException):
+                    raise resultado
+                return resultado
+
+            try:
+                entidade = await self._fetch_entity(chat_id_or_username)
+            except Exception as exc:
+                error_type, _, _ = classify_telegram_error(exc)
+                # Só cacheia falha definitiva do chat. Timeout/rede/flood são
+                # temporários: cacheá-los condenaria o canal pelo resto do run.
+                if error_type in _ENTITY_FATAL_ERRORS:
+                    self._entity_cache[chat_id_or_username] = exc
+                raise
+
+            self._entity_cache[chat_id_or_username] = entidade
+            return entidade
 
     async def connect(self):
         await self.client.start(phone=lambda: self.phone)
@@ -47,18 +217,33 @@ class TelegramManhwaScraper:
         Entra em um tópico do Telegram e retorna:
         - cbz_count: quantos arquivos .cbz existem
         - avg_reactions: média de reações por capítulo
+        - error_type: `None` se leu com sucesso; `EMPTY_TOPIC` se o tópico existe mas
+          não tem nenhum .cbz; ou um dos `ERROR_*` se a leitura falhou
+        - error_message: descrição legível quando `error_type` não é `None`
+        - retry_after: segundos que o Telegram mandou esperar (só em flood wait)
+
+        `cbz_count = 0` sozinho é ambíguo (tópico vazio? link morto? rede caiu?), então
+        o caller deve olhar `error_type` antes de gravar qualquer coisa no banco.
+
+        Seguro para chamar em paralelo: a resolução do chat é cacheada e serializada
+        por lock, e um flood wait pausa todas as leituras concorrentes.
         """
         chat_id_or_username, topic_id = self._parse_telegram_link(topic_link)
         if not chat_id_or_username or not topic_id:
-            print(f"      ⚠️  Link inválido para stats: {topic_link}")
-            return {"cbz_count": 0, "avg_reactions": 0}
-        
+            msg = f"Link malformado: não foi possível extrair chat_id/topic_id de {topic_link!r}"
+            print(f"      ⚠️  [{ERROR_INVALID_LINK}] {msg}")
+            return {
+                "cbz_count": 0,
+                "avg_reactions": 0,
+                "error_type": ERROR_INVALID_LINK,
+                "error_message": msg,
+                "retry_after": 0,
+            }
+
         try:
-            if isinstance(chat_id_or_username, int):
-                await self.client.get_dialogs()
-            
-            chat = await self.client.get_entity(chat_id_or_username)
-            
+            await self._wait_flood_gate()
+            chat = await self._resolve_entity(chat_id_or_username)
+
             cbz_count = 0
             total_reactions = 0
             
@@ -83,13 +268,44 @@ class TelegramManhwaScraper:
                     msg_reactions = sum(r.count for r in msg.reactions.results)
                     total_reactions += msg_reactions
             
-            avg_reactions = round(total_reactions / cbz_count) if cbz_count > 0 else 0
+            if cbz_count == 0:
+                # Leitura funcionou (nenhuma exceção) — o tópico realmente não tem CBZ.
+                # Não é erro: é um tópico vazio, e o caller não deve gravar 0 por cima
+                # de um valor válido nem contabilizar isso como falha.
+                msg = "Tópico lido com sucesso, mas não contém nenhum arquivo .cbz."
+                print(f"      📭 [{EMPTY_TOPIC}] {msg}")
+                return {
+                    "cbz_count": 0,
+                    "avg_reactions": 0,
+                    "error_type": EMPTY_TOPIC,
+                    "error_message": msg,
+                    "retry_after": 0,
+                }
+
+            avg_reactions = round(total_reactions / cbz_count)
             print(f"      📊 Stats: {cbz_count} CBZs | reação média: {avg_reactions}")
-            
-            return {"cbz_count": cbz_count, "avg_reactions": avg_reactions}
+
+            return {
+                "cbz_count": cbz_count,
+                "avg_reactions": avg_reactions,
+                "error_type": None,
+                "error_message": None,
+                "retry_after": 0,
+            }
         except Exception as e:
-            print(f"      ❌ Erro ao obter stats: {e}")
-            return {"cbz_count": 0, "avg_reactions": 0}
+            error_type, error_message, retry_after = classify_telegram_error(e)
+            categoria = "definitivo" if error_type in DEFINITIVE_ERROR_TYPES else "temporário"
+            print(f"      ❌ [{error_type}/{categoria}] {error_message}")
+            print(f"         Link: {topic_link}")
+            # Freia todas as leituras paralelas, não só esta.
+            self._open_flood_gate_in(retry_after)
+            return {
+                "cbz_count": 0,
+                "avg_reactions": 0,
+                "error_type": error_type,
+                "error_message": error_message,
+                "retry_after": retry_after,
+            }
 
     async def download_cbz_from_topic(self, topic_link: str, manhwa_title: str, base_dir: str = None, max_concurrent: int = 5) -> dict:
         """

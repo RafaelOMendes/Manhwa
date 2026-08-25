@@ -15,9 +15,9 @@
     "semantic_hash": "bc3b37c5e3dc3bb3c82785fd56e0b47e"
   },
   "backend/database.py": {
-    "mtime": 1770657011.3614616,
-    "ast_hash": "37b7cbf5ea540b8a47c96db1f7777b1f",
-    "semantic_hash": "37b7cbf5ea540b8a47c96db1f7777b1f"
+    "mtime": 1787667241.2256422,
+    "ast_hash": "f62d0b360d6f2f377d1f32d191e0ec03",
+    "semantic_hash": ""
   },
   "backend/init_db.py": {
     "mtime": 1770657011.3614616,
@@ -25,8 +25,8 @@
     "semantic_hash": "7ef9f5edc693e896e11c7238d0f973ce"
   },
   "backend/main.py": {
-    "mtime": 1787313483.5976472,
-    "ast_hash": "ec5830ce4913bd19475209101e8de79b",
+    "mtime": 1787667490.6694076,
+    "ast_hash": "7290408d7e7e28829210fb9583c32e75",
     "semantic_hash": ""
   },
   "backend/models.py": {
@@ -35,9 +35,9 @@
     "semantic_hash": "cdeb052ee6524fa62d15cd87bd7dfb9b"
   },
   "backend/telegram_scraper.py": {
-    "mtime": 1779278804.687635,
-    "ast_hash": "465720174ff734ac0544182f7ca90bdb",
-    "semantic_hash": "465720174ff734ac0544182f7ca90bdb"
+    "mtime": 1787667392.4359803,
+    "ast_hash": "aa16acf2b932f9045363970ee5dc63e9",
+    "semantic_hash": ""
   },
   "frontend/.eslintrc.json": {
     "mtime": 1770657011.3644612,
@@ -50,9 +50,9 @@
     "semantic_hash": "cfb292fbd2234285df820f223d791904"
   },
   "frontend/app/page.tsx": {
-    "mtime": 1779371945.761452,
-    "ast_hash": "ce26e3a7d404698abd860aef1f00178a",
-    "semantic_hash": "ce26e3a7d404698abd860aef1f00178a"
+    "mtime": 1787667241.2282774,
+    "ast_hash": "2ef5abd1503f866da76a9468a009082d",
+    "semantic_hash": ""
   },
   "frontend/components/AddManhwaModal.tsx": {
     "mtime": 1779372019.0844767,
@@ -320,8 +320,8 @@
     "semantic_hash": ""
   },
   "AGENT_INSTRUCTIONS.md": {
-    "mtime": 1787313534.8267934,
-    "ast_hash": "798f0f4f4566ced366c97e99a7914719",
+    "mtime": 1787667669.1420002,
+    "ast_hash": "22c6ed5d8b2b23bd8c6be4f977be1c8d",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -330,7 +330,7 @@
     "semantic_hash": "8a6643a420fdad6bfb583523bc6cef16"
   },
   "README.md": {
-    "mtime": 1787313545.7239296,
+    "mtime": 1787660037.363057,
     "ast_hash": "91814ae1b84034b9a859cd9b35674f2a",
     "semantic_hash": ""
   },
@@ -480,18 +480,18 @@
     "semantic_hash": "c62d22797f3002396754d8cc55b0ae1a"
   },
   "automation/claude_prompt.py": {
-    "mtime": 1787275193.2007408,
-    "ast_hash": "31d27831a04d4a3e4983c0dd7b97ecba",
+    "mtime": 1787667241.2202878,
+    "ast_hash": "06e9df62cdfd1b484c4219075ab8e759",
     "semantic_hash": ""
   },
   "automation/claude_runner.py": {
-    "mtime": 1787279587.198548,
-    "ast_hash": "d98ad80bcab5573876d4797c8586f848",
+    "mtime": 1787667241.2219687,
+    "ast_hash": "4220877b64b6ba69caff9b233568ea6f",
     "semantic_hash": ""
   },
   "automation/git_ops.py": {
-    "mtime": 1787282096.7274077,
-    "ast_hash": "900c9e40d47122bb70a95edb9b22b8df",
+    "mtime": 1787660037.3680563,
+    "ast_hash": "b72995d70b3d0b688076057c4a96f0c7",
     "semantic_hash": ""
   },
   "automation/mobile_build.py": {
@@ -505,8 +505,8 @@
     "semantic_hash": ""
   },
   "automation/state.py": {
-    "mtime": 1787270115.5857506,
-    "ast_hash": "7570ee250478e28ba76ecd08e03f4dac",
+    "mtime": 1787667241.2230175,
+    "ast_hash": "7d790168a35052a5caf1c0d176e99505",
     "semantic_hash": ""
   },
   "automation/telegram_notify.py": {
@@ -515,23 +515,28 @@
     "semantic_hash": ""
   },
   "automation/trello_client.py": {
-    "mtime": 1787270115.5867498,
-    "ast_hash": "e6aa6d417447733b58f0669b9f3c3154",
+    "mtime": 1787667241.2235427,
+    "ast_hash": "ade0b289e69050d3664a8d793fd49aa8",
     "semantic_hash": ""
   },
   "automation/watcher.py": {
-    "mtime": 1787282088.771818,
-    "ast_hash": "f2748b129c035016bf8ba9a3a05935ef",
+    "mtime": 1787667241.224594,
+    "ast_hash": "bf9ecab40f09c0cb244c092bb275b11b",
     "semantic_hash": ""
   },
   "automation/SETUP.md": {
-    "mtime": 1787282125.985116,
-    "ast_hash": "e69f18e744dafc867822af75c4e34818",
+    "mtime": 1787667241.2202878,
+    "ast_hash": "cfe1462b239cb5e46775b3bcb49b5520",
     "semantic_hash": ""
   },
   "automation/requirements.txt": {
     "mtime": 1787275194.9327388,
     "ast_hash": "606990d8942745e94238bd63364de43f",
+    "semantic_hash": ""
+  },
+  "backend/test_review_all_partial.py": {
+    "mtime": 1787667624.632126,
+    "ast_hash": "a79f4e955c785069aefd1f8b1432e41c",
     "semantic_hash": ""
   }
 }
