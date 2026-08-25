@@ -21,9 +21,28 @@ O projeto Manhwa Tracker é composto por três partes principais:
   dentro de um endpoint** — deixe o `get_db()` cuidar disso, senão fica fácil deixar o banco com commits
   parciais (ex.: um loop que atualiza vários registros e falha no meio). Se um endpoint precisa de
   atomicidade "tudo ou nada" sobre múltiplas operações (ex.: `/api/manhwas/download-all`, que processa
-  vários manhwas e só deve persistir se TODOS derem certo), capture as falhas, chame
-  `await db.rollback()` explicitamente antes de retornar, e retorne normalmente (sem raise) com
-  `success: False` no payload — o `get_db()` faz um commit vazio depois, o que é um no-op seguro.
+  vários manhwas e só deve persistir se TODOS derem certo), capture as falhas, descarte/reverta as
+  alterações antes de retornar, e retorne normalmente (sem raise) com `success: False` no payload — o
+  `get_db()` faz um commit vazio depois, o que é um no-op seguro. Veja também a regra de requests longos
+  abaixo, que muda ONDE a escrita deve acontecer.
+- **❗ Requests longos: NÃO escreva na sessão do request depois de uma espera longa.** A sessão injetada
+  por `Depends(get_db)` segura uma conexão asyncpg aberta durante todo o request. Em endpoints que passam
+  minutos fora do banco (ex.: `/api/manhwas/download-all`, que baixa do Telegram), essa conexão fica
+  ociosa e é derrubada pelo Postgres/rede — qualquer escrita depois disso falha com
+  `InterfaceError: connection is closed`, **inclusive um commit feito imediatamente após o trabalho longo**
+  (a conexão já está morta há minutos; adiantar ou atrasar o commit não muda nada). Padrão correto:
+  1. Use a sessão do request só para as **leituras iniciais**.
+  2. Durante o trabalho longo, acumule as alterações em **estrutura na memória** (ex.: `{id: {campo: valor}}`),
+     sem `db.add()` / mutação de objetos ORM.
+  3. No fim, persista tudo numa **sessão/conexão nova** (`async_session_maker()`), numa única transação —
+     ver `_persist_sync_updates()` em `main.py`. Isso preserva a atomicidade "tudo ou nada" e roda numa
+     conexão saudável. O helper ainda tenta uma segunda vez se a conexão nova nascer inutilizável.
+  4. Persista **antes** de montar a resposta de sucesso, para que uma falha de escrita vire falha para o
+     cliente — e não um "sucesso" seguido de um 500 solto.
+  - `is_connection_closed_error()` (em `database.py`) centraliza a detecção desse tipo de erro.
+  - `get_db()` engole o erro do commit final **apenas** quando a sessão não tem alterações pendentes
+    (só houve leitura, ou o endpoint já persistiu por conta própria) — nesse caso não há nada a perder e
+    deixar o erro subir viraria um 500 confuso. Se houver escrita pendente, o erro sobe normalmente.
 - **Respostas HTTP consistentes (endpoints tipo "sync"):** qualquer endpoint que um client (frontend/mobile)
   lê como `{ success, message, ... }` deve retornar **sempre** esse shape — nunca deixar um caminho de
   erro cair no `{ detail: "..." }` padrão do FastAPI (`raise HTTPException`), pois o client não sabe ler

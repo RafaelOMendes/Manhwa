@@ -8,12 +8,12 @@ from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, update
 import os
 import re
 from contextlib import asynccontextmanager
 
-from database import get_db, create_tables
+from database import get_db, create_tables, async_session_maker, is_connection_closed_error
 from models import Manhwa as ManhwaModel, ChapterProgress
 
 DOWNLOAD_DIR = os.environ.get("DOWNLOAD_DIR", r"D:\Manhwas")
@@ -430,6 +430,55 @@ async def get_cbz_page(manhwa_id: int, filename: str, page_num: int, db: AsyncSe
             headers={"Cache-Control": "public, max-age=86400"}
         )
 
+async def _persist_sync_updates(pending_updates: dict) -> int:
+    """Persiste as alterações da sincronização numa sessão/conexão NOVA.
+
+    Motivo: a sessão do request (`db`) fica ociosa durante todo o download do
+    Telegram, que pode levar vários minutos. Nesse meio tempo o Postgres/rede
+    derruba a conexão, e qualquer escrita nela falha com
+    `InterfaceError: connection is closed` — mesmo que a escrita seja feita
+    imediatamente após o `asyncio.gather()`, porque a conexão já está morta há
+    minutos. Por isso as alterações são acumuladas como dados simples durante os
+    downloads e só aqui, no fim, aplicadas numa conexão nova e saudável.
+
+    Tudo vai numa única transação: ou todas as alterações entram, ou nenhuma.
+    Retorna a quantidade de manhwas atualizados.
+    """
+    if not pending_updates:
+        print("💾 Nenhuma alteração para persistir (nada mudou nesta sincronização).")
+        return 0
+
+    print(f"\n💾 Commitando alterações no banco... ({len(pending_updates)} manhwa(s) com mudanças)")
+
+    # Uma tentativa extra cobre o caso raro da conexão nova nascer inutilizável.
+    ultima_excecao = None
+    for tentativa in (1, 2):
+        async with async_session_maker() as write_session:
+            try:
+                for manhwa_id, changes in pending_updates.items():
+                    await write_session.execute(
+                        update(ManhwaModel)
+                        .where(ManhwaModel.id == manhwa_id)
+                        .values(**changes)
+                    )
+                await write_session.commit()
+                print(f"   ✅ Alterações commitadas com sucesso ({len(pending_updates)} manhwa(s)).")
+                return len(pending_updates)
+            except Exception as exc:
+                ultima_excecao = exc
+                try:
+                    await write_session.rollback()
+                except Exception:
+                    pass
+                if tentativa == 1 and is_connection_closed_error(exc):
+                    print(f"   ⚠️  Conexão morta na tentativa 1 ({exc}). Repetindo numa conexão nova...")
+                    continue
+                print(f"   ❌ Falha ao commitar alterações: {exc}")
+                raise
+
+    raise ultima_excecao
+
+
 @app.post("/api/manhwas/download-all", response_model=SyncResponse, status_code=200)
 async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
     """
@@ -487,6 +536,11 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
         manhwa_sem = asyncio.Semaphore(1)
         processed_count = 0
 
+        # Alterações acumuladas como dados simples ({id: {campo: valor}}), NÃO
+        # aplicadas na sessão `db` — a conexão dela morre durante os downloads
+        # longos. São persistidas no fim, numa conexão nova (_persist_sync_updates).
+        pending_updates: dict = {}
+
         async def download_one_manhwa(manhwa):
             nonlocal processed_count
             async with manhwa_sem:
@@ -508,21 +562,26 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
                     print(f"   📊 Resultado: {dl} baixados | {sk} já existiam | {rp} substituídos | {er} erros")
                     print(f"   ⏱️  Tempo: {elapsed:.1f}s")
                     
+                    # Acumular alterações (aplicadas no banco só no fim, numa
+                    # conexão nova — ver _persist_sync_updates).
+                    changes = {}
+
                     # Atualizar total de capítulos no banco de dados
                     if dl_result.get("success") and "total" in dl_result:
                         total_found = dl_result["total"]
                         if manhwa.total_chapters != total_found:
                             print(f"   🔄 Atualizando total de capítulos: {manhwa.total_chapters} → {total_found}")
-                            manhwa.total_chapters = total_found
-                            db.add(manhwa)
+                            changes["total_chapters"] = total_found
 
                     # Atualizar reação média (recalculada no mesmo loop do download)
                     if dl_result.get("success") and "medium_reaction" in dl_result:
                         new_reaction = dl_result["medium_reaction"]
                         if manhwa.medium_reaction != new_reaction:
                             print(f"   ❤️ Atualizando reação média: {manhwa.medium_reaction} → {new_reaction}")
-                            manhwa.medium_reaction = new_reaction
-                            db.add(manhwa)
+                            changes["medium_reaction"] = new_reaction
+
+                    if changes:
+                        pending_updates[manhwa.id] = changes
 
                     return dl_result
                 except Exception as e:
@@ -549,13 +608,16 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
         failed_manhwas = [r.get("manhwa_title", "?") for r in results_list if not r.get("success")]
 
         if failed_manhwas:
-            # Atomicidade: se QUALQUER manhwa falhou, desfaz TODAS as alterações
+            # Atomicidade: se QUALQUER manhwa falhou, descarta TODAS as alterações
             # desta sincronização (total_chapters/medium_reaction de quem teve sucesso
             # inclusos) para não deixar o banco em estado intermediário que só se
-            # resolve numa segunda tentativa.
-            print(f"\n🔄 ROLLBACK: {len(failed_manhwas)} manhwa(s) falharam — revertendo TODAS as alterações desta sincronização.")
+            # resolve numa segunda tentativa. Como nada foi escrito ainda (as mudanças
+            # só existem em `pending_updates`, na memória), basta descartá-las — não há
+            # transação suja pra reverter, então isso nunca toca na conexão morta.
+            print(f"\n🔄 ROLLBACK: {len(failed_manhwas)} manhwa(s) falharam — descartando TODAS as alterações desta sincronização.")
             print(f"   Manhwas com falha: {', '.join(failed_manhwas)}")
-            await db.rollback()
+            print(f"   Alterações descartadas: {len(pending_updates)} manhwa(s) que haviam tido sucesso.")
+            pending_updates.clear()
             print("   ↩️  Rollback concluído — nenhuma alteração foi salva no banco.")
 
             total_elapsed = time.time() - sync_start
@@ -578,8 +640,11 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
             print(f"❌ Retornando resposta de falha (revertida) ao frontend: {resposta['message']}")
             return resposta
 
-        # Todos os manhwas tiveram sucesso: não é preciso commit manual, a
-        # dependency get_db() faz o commit da transação inteira ao final.
+        # Todos os manhwas tiveram sucesso: persistir agora, numa conexão nova,
+        # ANTES de montar a resposta. Se isso falhar, cai no except abaixo e o
+        # frontend recebe falha — em vez de "sucesso" seguido de um 500 solto.
+        await _persist_sync_updates(pending_updates)
+
         total_elapsed = time.time() - sync_start
         print(f"\n{'=' * 60}")
         print(f"✅ SINCRONIZAÇÃO CONCLUÍDA")
