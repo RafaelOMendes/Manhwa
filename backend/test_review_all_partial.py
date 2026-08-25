@@ -13,6 +13,7 @@ Cobre:
   3. Falha de PERSISTÊNCIA: aí sim nada entra no banco (atomicidade da escrita).
 """
 import asyncio
+import time
 import os
 import sys
 
@@ -28,6 +29,7 @@ from models import Manhwa as ManhwaModel  # noqa: E402
 from telegram_scraper import (  # noqa: E402
     EMPTY_TOPIC,
     ERROR_ENTITY_NOT_FOUND,
+    ERROR_FLOOD_WAIT,
     ERROR_INVALID_LINK,
     ERROR_PRIVATE_TOPIC,
     ERROR_TIMEOUT,
@@ -77,11 +79,15 @@ class FakeClient:
     def __init__(self, messages=None, raise_on_entity=None):
         self.messages = messages or []
         self.raise_on_entity = raise_on_entity
+        self.dialogs_calls = 0
+        self.entity_calls = 0
 
     async def get_dialogs(self):
+        self.dialogs_calls += 1
         return []
 
     async def get_entity(self, _target):
+        self.entity_calls += 1
         if self.raise_on_entity:
             raise self.raise_on_entity
         return object()
@@ -97,13 +103,26 @@ class FakeClient:
 
 
 class BareScraper:
-    """Instância sem TelegramClient real — só o que `_get_topic_stats` usa."""
+    """Instância sem TelegramClient real — só o que `_get_topic_stats` usa.
+
+    Reaproveita os métodos reais (inclusive cache de entidade e freio de flood)
+    para que o teste exercite o código de verdade, não uma cópia.
+    """
 
     _parse_telegram_link = TelegramManhwaScraper._parse_telegram_link
     _get_topic_stats = TelegramManhwaScraper._get_topic_stats
+    _resolve_entity = TelegramManhwaScraper._resolve_entity
+    _fetch_entity = TelegramManhwaScraper._fetch_entity
+    _wait_flood_gate = TelegramManhwaScraper._wait_flood_gate
+    _open_flood_gate_in = TelegramManhwaScraper._open_flood_gate_in
 
     def __init__(self, client):
         self.client = client
+        self._entity_cache = {}
+        self._entity_lock = asyncio.Lock()
+        self._dialogs_loaded = False
+        self._dialogs_refreshed = False
+        self._flood_until = 0.0
 
 
 LINK_OK = "https://t.me/c/2296450302/9"
@@ -159,6 +178,45 @@ async def testar_get_topic_stats():
     print("\n[1.6] Timeout de rede")
     stats = await BareScraper(FakeClient(raise_on_entity=asyncio.TimeoutError()))._get_topic_stats(LINK_OK)
     check(stats["error_type"] == ERROR_TIMEOUT, f"error_type == timeout (veio {stats['error_type']})")
+    check(stats["retry_after"] == 0, "retry_after == 0 quando não é flood wait")
+
+    print("\n[1.7] Flood wait alimenta o freio compartilhado")
+    from telethon.errors import FloodWaitError
+
+    s = BareScraper(FakeClient(raise_on_entity=FloodWaitError(request=None, capture=30)))
+    stats = await s._get_topic_stats(LINK_OK)
+    check(stats["error_type"] == ERROR_FLOOD_WAIT, f"error_type == flood_wait (veio {stats['error_type']})")
+    check(stats["retry_after"] == 30, f"retry_after == 30 (veio {stats['retry_after']})")
+    check(s._flood_until > time.monotonic(), "freio de flood ficou armado para as leituras paralelas")
+
+    print("\n[1.8] Cache de entidade: get_dialogs() UMA vez, não uma por tópico")
+    client = FakeClient([FakeMessage("cap01.cbz", reactions=4)])
+    s = BareScraper(client)
+    for topico in range(1, 11):
+        stats = await s._get_topic_stats(f"https://t.me/c/2296450302/{topico}")
+        assert stats["cbz_count"] == 1
+    check(client.dialogs_calls == 1, f"get_dialogs chamado 1x para 10 tópicos (veio {client.dialogs_calls}x)")
+    check(client.entity_calls == 1, f"get_entity chamado 1x para 10 tópicos (veio {client.entity_calls}x)")
+
+    print("\n[1.9] Cache negativo: chat morto não refaz a resolução a cada tópico")
+    client = FakeClient(raise_on_entity=ValueError("Cannot find any entity corresponding to '-100999'"))
+    s = BareScraper(client)
+    for topico in range(1, 6):
+        stats = await s._get_topic_stats(f"https://t.me/c/999/{topico}")
+        assert stats["error_type"] == ERROR_ENTITY_NOT_FOUND
+    check(
+        client.entity_calls == 2,
+        f"get_entity chamado 2x (1 + 1 refresh) para 5 tópicos mortos (veio {client.entity_calls}x)",
+    )
+
+    print("\n[1.10] Leituras concorrentes do mesmo chat resolvem a entidade só uma vez")
+    client = FakeClient([FakeMessage("cap01.cbz", reactions=4)])
+    s = BareScraper(client)
+    await asyncio.gather(*[
+        s._get_topic_stats(f"https://t.me/c/2296450302/{i}") for i in range(1, 9)
+    ])
+    check(client.dialogs_calls == 1, f"get_dialogs 1x mesmo com 8 leituras em paralelo (veio {client.dialogs_calls}x)")
+    check(client.entity_calls == 1, f"get_entity 1x mesmo com 8 leituras em paralelo (veio {client.entity_calls}x)")
 
 
 # ---------------------------------------------------------------------------

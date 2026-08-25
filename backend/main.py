@@ -24,6 +24,20 @@ from models import Manhwa as ManhwaModel, ChapterProgress
 
 DOWNLOAD_DIR = os.environ.get("DOWNLOAD_DIR", r"D:\Manhwas")
 
+
+def _env_int(nome: str, padrao: int, minimo: int, maximo: int) -> int:
+    """Lê um int do ambiente, com limites — valor inválido cai no padrão."""
+    try:
+        valor = int(os.environ.get(nome, padrao))
+    except (TypeError, ValueError):
+        return padrao
+    return max(minimo, min(maximo, valor))
+
+
+# Quantas leituras de tópico do Telegram o /api/manhwas/review-all faz em paralelo.
+# Ver AGENT_INSTRUCTIONS.md (Backend) para o critério do limite.
+REVIEW_PARALLELISM = _env_int("REVIEW_PARALLELISM", 4, 1, 16)
+
 # Token de acesso. Se vazio (ex.: dev local), a auth fica desligada.
 # No VPS, defina API_TOKEN no ambiente para exigir o token em todas as rotas.
 API_TOKEN = os.environ.get("API_TOKEN", "").strip()
@@ -713,13 +727,17 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
         })
 
 @app.post("/api/manhwas/review-all")
-async def review_all_manhwas(db: AsyncSession = Depends(get_db)):
+async def review_all_manhwas(limit: Optional[int] = None, db: AsyncSession = Depends(get_db)):
     """
     Revisita todos os manhwas com link do Telegram e recalcula os metadados do tópico:
     `total_chapters` (quantidade de .cbz) e `medium_reaction` (média de reações por capítulo).
 
     Diferente do `/api/manhwas/download-all`, nada é baixado — só a leitura das estatísticas
     do tópico. Manhwas sem link do Telegram nas `notes` são pulados silenciosamente.
+
+    `limit` (opcional) revisa só os N primeiros manhwas. Uma revisão completa leva
+    dezenas de minutos (ver a nota de performance em AGENT_INSTRUCTIONS.md), então o
+    limite serve para validar a rota de ponta a ponta sem esperar o lote inteiro.
 
     Política: **partial success**. Uma falha de leitura no Telegram (link morto, tópico
     privado, timeout) afeta apenas o manhwa em questão — os demais são persistidos
@@ -772,40 +790,53 @@ async def review_all_manhwas(db: AsyncSession = Depends(get_db)):
         scraper = await get_telegram_scraper()
         print("   ✅ Conexão com Telegram estabelecida.")
 
-        # Semáforo de 1: conservador, evita Flood 429 do Telegram (mesmo critério do download-all)
-        manhwa_sem = asyncio.Semaphore(1)
+        # Leituras de tópico são I/O puro (espera de resposta do Telegram), então
+        # rodar em paralelo derruba o tempo total. O teto é a tolerância de flood
+        # do Telegram: acima de ~4 leituras simultâneas o risco de FloodWait 429
+        # sobe sem ganho real de throughput. Ajustável por REVIEW_PARALLELISM.
+        # Se aparecer flood wait, o scraper freia TODAS as leituras juntas
+        # (`_wait_flood_gate`), então subir esse número degrada suave em vez de quebrar.
+        manhwa_sem = asyncio.Semaphore(REVIEW_PARALLELISM)
         processed_count = 0
         RETRY_DELAY_SECONDS = 5
+        print(f"   ⚡ Paralelismo: {REVIEW_PARALLELISM} leitura(s) simultânea(s) de tópico.")
 
         # Mesmo padrão do download-all: a leitura das stats de todos os tópicos leva
         # minutos e a conexão da sessão `db` morre nesse meio tempo. As alterações
         # ficam como dados simples aqui e são aplicadas no fim, numa conexão nova.
         pending_updates: dict = {}
 
-        async def read_stats_with_retry(manhwa):
+        # Soma dos tempos individuais de leitura. Comparada com o tempo de parede no
+        # fim, dá o speedup REAL medido do paralelismo (sem chutar baseline).
+        serial_seconds = 0.0
+
+        async def read_stats_with_retry(manhwa, log):
             """Lê as stats do tópico, repetindo UMA vez em caso de erro temporário.
 
             Erro definitivo (link morto, tópico privado) não é repetido: o resultado
-            seria o mesmo e só atrasaria a revisão inteira.
+            seria o mesmo e só atrasaria a revisão inteira. Em flood wait, respeita o
+            tempo que o próprio Telegram pediu — o scraper já segurou as outras
+            leituras paralelas no mesmo instante.
             """
             stats = await scraper._get_topic_stats(manhwa.notes)
             if stats.get("error_type") in TEMPORARY_ERROR_TYPES:
-                print(
+                espera = stats.get("retry_after") or RETRY_DELAY_SECONDS
+                log.append(
                     f"   ⏳ Erro temporário ({stats.get('error_type')}) — "
-                    f"tentando de novo em {RETRY_DELAY_SECONDS}s..."
+                    f"tentando de novo em {espera}s..."
                 )
-                await asyncio.sleep(RETRY_DELAY_SECONDS)
+                await asyncio.sleep(espera)
                 stats = await scraper._get_topic_stats(manhwa.notes)
             return stats
 
         async def review_one_manhwa(manhwa):
-            nonlocal processed_count
+            nonlocal processed_count, serial_seconds
             async with manhwa_sem:
-                processed_count += 1
                 manhwa_start = time.time()
-                print(f"\n{'─' * 50}")
-                print(f"🔎 [{processed_count}/{len(manhwas_to_review)}] Revisando: {manhwa.title}")
-                print(f"   Link: {manhwa.notes}")
+
+                # Com leituras concorrentes, prints soltos de corrotinas diferentes se
+                # embaralham. Cada manhwa acumula suas linhas e solta um bloco só.
+                log = [f"   Link: {manhwa.notes}"]
 
                 old_chapters = manhwa.total_chapters
                 old_reaction = manhwa.medium_reaction
@@ -817,13 +848,26 @@ async def review_all_manhwas(db: AsyncSession = Depends(get_db)):
                     "old_medium_reaction": old_reaction,
                 }
 
+                def flush(elapsed):
+                    """Imprime o bloco deste manhwa de uma vez só."""
+                    nonlocal processed_count
+                    processed_count += 1
+                    cabecalho = (
+                        f"\n{'─' * 50}\n"
+                        f"🔎 [{processed_count}/{len(manhwas_to_review)}] {manhwa.title} "
+                        f"({elapsed:.1f}s)"
+                    )
+                    print("\n".join([cabecalho] + log))
+
                 try:
-                    stats = await read_stats_with_retry(manhwa)
+                    stats = await read_stats_with_retry(manhwa, log)
                 except Exception as e:
                     # Rede/telethon explodindo fora do tratamento do scraper. Continua
                     # sendo falha só DESTE manhwa — os outros seguem normalmente.
                     elapsed = time.time() - manhwa_start
-                    print(f"   ❌ ERRO inesperado após {elapsed:.1f}s: {e}")
+                    serial_seconds += elapsed
+                    log.append(f"   ❌ ERRO inesperado: {e}")
+                    flush(elapsed)
                     return {
                         **base_result,
                         "success": False,
@@ -839,11 +883,13 @@ async def review_all_manhwas(db: AsyncSession = Depends(get_db)):
                 error_type = stats.get("error_type")
                 error_message = stats.get("error_message")
                 elapsed = time.time() - manhwa_start
+                serial_seconds += elapsed
 
                 # Tópico existe e foi lido, só não tem CBZ. Não é erro — mas também não
                 # gravamos 0 por cima de um valor válido, então conta como "sem mudança".
                 if error_type == EMPTY_TOPIC:
-                    print(f"   📭 Tópico vazio (0 CBZs) — nada a alterar. ⏱️  {elapsed:.1f}s")
+                    log.append("   📭 Tópico vazio (0 CBZs) — nada a alterar.")
+                    flush(elapsed)
                     return {
                         **base_result,
                         "success": True,
@@ -861,7 +907,8 @@ async def review_all_manhwas(db: AsyncSession = Depends(get_db)):
                 if error_type:
                     definitivo = error_type in DEFINITIVE_ERROR_TYPES
                     rotulo = "definitivo" if definitivo else "temporário"
-                    print(f"   ❌ Falha [{error_type}/{rotulo}] após {elapsed:.1f}s: {error_message}")
+                    log.append(f"   ❌ Falha [{error_type}/{rotulo}]: {error_message}")
+                    flush(elapsed)
                     return {
                         **base_result,
                         "success": False,
@@ -873,22 +920,22 @@ async def review_all_manhwas(db: AsyncSession = Depends(get_db)):
                         "elapsed": round(elapsed, 1),
                     }
 
-                print(f"   📊 Resultado: {cbz_count} CBZs | reação média: {avg_reactions}")
-                print(f"   ⏱️  Tempo: {elapsed:.1f}s")
+                log.append(f"   📊 Resultado: {cbz_count} CBZs | reação média: {avg_reactions}")
 
                 changes = {}
                 if manhwa.total_chapters != cbz_count:
-                    print(f"   🔄 Atualizando total de capítulos: {old_chapters} → {cbz_count}")
+                    log.append(f"   🔄 Total de capítulos: {old_chapters} → {cbz_count}")
                     changes["total_chapters"] = cbz_count
                 if manhwa.medium_reaction != avg_reactions:
-                    print(f"   ❤️  Atualizando reação média: {old_reaction} → {avg_reactions}")
+                    log.append(f"   ❤️  Reação média: {old_reaction} → {avg_reactions}")
                     changes["medium_reaction"] = avg_reactions
 
                 updated = bool(changes)
                 if updated:
                     pending_updates[manhwa.id] = changes
                 else:
-                    print("   ✔️  Já estava atualizado — nada a alterar.")
+                    log.append("   ✔️  Já estava atualizado — nada a alterar.")
+                flush(elapsed)
 
                 return {
                     **base_result,
@@ -961,6 +1008,15 @@ async def review_all_manhwas(db: AsyncSession = Depends(get_db)):
         await safe_rollback(db)
 
         total_elapsed = time.time() - review_start
+
+        # Performance: `serial_seconds` é quanto essas mesmas leituras teriam custado
+        # uma atrás da outra (semáforo=1). Comparado ao tempo de parede, dá o ganho
+        # medido — não uma estimativa chutada.
+        throughput = len(manhwas_to_review) / total_elapsed if total_elapsed > 0 else 0
+        speedup = serial_seconds / total_elapsed if total_elapsed > 0 else 1.0
+        economia_pct = (1 - 1 / speedup) * 100 if speedup > 1 else 0.0
+        minutos, segundos = divmod(int(total_elapsed), 60)
+
         print(f"\n{'=' * 60}")
         print("✅ REVISÃO CONCLUÍDA" + (" (com falhas parciais)" if total_errors else ""))
         print(f"   Manhwas processados: {len(manhwas_to_review)}")
@@ -968,7 +1024,13 @@ async def review_all_manhwas(db: AsyncSession = Depends(get_db)):
         print(f"   Tópicos vazios:      {total_empty}")
         print(f"   Sem link (pulados):  {skipped_count}")
         print(f"   Erros:               {total_errors}")
-        print(f"   Tempo total:         {total_elapsed:.1f}s")
+        print(f"   Tempo total:         {minutos}m{segundos:02d}s")
+        print(
+            f"   ⏱️  {minutos}m{segundos:02d}s | {len(manhwas_to_review)} tópicos | "
+            f"{throughput:.1f} tópicos/s ({REVIEW_PARALLELISM} paralelos) | "
+            f"{speedup:.1f}x vs. sequencial (~{economia_pct:.0f}% mais rápido)"
+        )
+        print(f"   (soma dos tempos individuais: {serial_seconds:.0f}s)")
         print(f"{'=' * 60}\n")
 
         mensagem = (
@@ -990,6 +1052,13 @@ async def review_all_manhwas(db: AsyncSession = Depends(get_db)):
             "total_empty": total_empty,
             "errors_by_type": errors_by_type,
             "persisted": True,
+            "performance": {
+                "elapsed_seconds": round(total_elapsed, 1),
+                "topics_per_second": round(throughput, 2),
+                "parallelism": REVIEW_PARALLELISM,
+                "serial_seconds": round(serial_seconds, 1),
+                "speedup_vs_sequential": round(speedup, 2),
+            },
             "results": results_list,
         }
 
