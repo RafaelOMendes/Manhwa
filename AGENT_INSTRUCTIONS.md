@@ -39,6 +39,14 @@ O projeto Manhwa Tracker é composto por três partes principais:
      conexão saudável. O helper ainda tenta uma segunda vez se a conexão nova nascer inutilizável.
   4. Persista **antes** de montar a resposta de sucesso, para que uma falha de escrita vire falha para o
      cliente — e não um "sucesso" seguido de um 500 solto.
+  5. **Rollback explícito depois de persistir:** logo após `_persist_sync_updates()` (e também nos caminhos
+     de falha, antes de retornar), chame `await safe_rollback(db)`. Tudo que importava já foi gravado na
+     conexão nova e a sessão do request não tem nada em memória, então o rollback só serve para descartá-la
+     e impedir que o `get_db()` tente commitar numa conexão que sabemos estar morta. `safe_rollback()`
+     (em `database.py`) engole a exceção se a conexão já estiver inutilizável. Sem isso, dependemos do
+     tratamento defensivo do `get_db()` e o log fica poluído com `InterfaceError` / `cannot call
+     Transaction.commit()` depois que a resposta de sucesso já foi enviada. Endpoints que seguem o padrão:
+     `/api/manhwas/download-all` e `/api/manhwas/review-all`.
   - `is_connection_closed_error()` (em `database.py`) centraliza a detecção desse tipo de erro.
   - `get_db()` engole o erro do commit final **apenas** quando a sessão não tem alterações pendentes
     (só houve leitura, ou o endpoint já persistiu por conta própria) — nesse caso não há nada a perder e

@@ -104,30 +104,10 @@
       "norm_label": "claude_prompt.py"
     },
     {
-      "label": "PromptDraft",
-      "file_type": "code",
-      "source_file": "automation/claude_prompt.py",
-      "source_location": "L108",
-      "_origin": "ast",
-      "id": "automation_claude_prompt_promptdraft",
-      "community": 42,
-      "norm_label": "promptdraft"
-    },
-    {
-      "label": "_parse_draft()",
-      "file_type": "code",
-      "source_file": "automation/claude_prompt.py",
-      "source_location": "L114",
-      "_origin": "ast",
-      "id": "automation_claude_prompt_parse_draft",
-      "community": 42,
-      "norm_label": "_parse_draft()"
-    },
-    {
       "label": "build_prompt()",
       "file_type": "code",
       "source_file": "automation/claude_prompt.py",
-      "source_location": "L136",
+      "source_location": "L69",
       "_origin": "ast",
       "id": "automation_claude_prompt_build_prompt",
       "community": 42,
@@ -137,7 +117,7 @@
       "label": "Path",
       "file_type": "code",
       "source_file": "automation/claude_prompt.py",
-      "source_location": "L136",
+      "source_location": "L69",
       "_origin": "ast",
       "id": "automation_claude_prompt_py_path",
       "community": 42,
@@ -154,16 +134,6 @@
       "norm_label": "usa o proprio claude code cli (headless, -p) para transformar um card do trello"
     },
     {
-      "label": "Extrai MODELO/EFFORT/prompt da resposta do modelo leve. Se o formato n\u00e3o bater",
-      "file_type": "rationale",
-      "source_file": "automation/claude_prompt.py",
-      "source_location": "L115",
-      "_origin": "ast",
-      "id": "automation_claude_prompt_rationale_115",
-      "community": 42,
-      "norm_label": "extrai modelo/effort/prompt da resposta do modelo leve. se o formato nao bater"
-    },
-    {
       "label": "claude_runner.py",
       "file_type": "code",
       "source_file": "automation/claude_runner.py",
@@ -177,7 +147,7 @@
       "label": "_log()",
       "file_type": "code",
       "source_file": "automation/claude_runner.py",
-      "source_location": "L57",
+      "source_location": "L54",
       "_origin": "ast",
       "id": "automation_claude_runner_log",
       "community": 42,
@@ -187,7 +157,7 @@
       "label": "ClaudeRunResult",
       "file_type": "code",
       "source_file": "automation/claude_runner.py",
-      "source_location": "L77",
+      "source_location": "L74",
       "_origin": "ast",
       "id": "automation_claude_runner_clauderunresult",
       "community": 42,
@@ -197,7 +167,7 @@
       "label": "run_claude_code()",
       "file_type": "code",
       "source_file": "automation/claude_runner.py",
-      "source_location": "L85",
+      "source_location": "L82",
       "_origin": "ast",
       "id": "automation_claude_runner_run_claude_code",
       "community": 42,
@@ -207,7 +177,7 @@
       "label": "Path",
       "file_type": "code",
       "source_file": "automation/claude_runner.py",
-      "source_location": "L85",
+      "source_location": "L82",
       "_origin": "ast",
       "id": "automation_claude_runner_py_path",
       "community": 42,
@@ -617,21 +587,21 @@
       "label": "set_card()",
       "file_type": "code",
       "source_file": "automation/state.py",
-      "source_location": "L72",
+      "source_location": "L70",
       "_origin": "ast",
       "id": "automation_state_set_card",
       "community": 59,
       "norm_label": "set_card()"
     },
     {
-      "label": "Persist\u00eancia local do estado da automa\u00e7\u00e3o Trello -> Claude Code -> Telegram.",
+      "label": "Persist\u00eancia local do estado da automa\u00e7\u00e3o Trello -> Gemini -> Claude Code -> Tel",
       "file_type": "rationale",
       "source_file": "automation/state.py",
       "source_location": "L1",
       "_origin": "ast",
       "id": "automation_state_rationale_1",
       "community": 59,
-      "norm_label": "persistencia local do estado da automacao trello -> claude code -> telegram."
+      "norm_label": "persistencia local do estado da automacao trello -> gemini -> claude code -> tel"
     },
     {
       "label": "telegram_notify.py",
@@ -674,30 +644,10 @@
       "norm_label": "trello_client.py"
     },
     {
-      "label": "_build_session()",
-      "file_type": "code",
-      "source_file": "automation/trello_client.py",
-      "source_location": "L20",
-      "_origin": "ast",
-      "id": "automation_trello_client_build_session",
-      "community": 46,
-      "norm_label": "_build_session()"
-    },
-    {
-      "label": "Session",
-      "file_type": "code",
-      "source_file": "automation/trello_client.py",
-      "source_location": "L20",
-      "_origin": "ast",
-      "id": "session",
-      "community": 46,
-      "norm_label": "session"
-    },
-    {
       "label": "TrelloClient",
       "file_type": "code",
       "source_file": "automation/trello_client.py",
-      "source_location": "L40",
+      "source_location": "L17",
       "_origin": "ast",
       "id": "automation_trello_client_trelloclient",
       "community": 46,
@@ -707,7 +657,7 @@
       "label": ".__init__()",
       "file_type": "code",
       "source_file": "automation/trello_client.py",
-      "source_location": "L41",
+      "source_location": "L18",
       "_origin": "ast",
       "id": "automation_trello_client_trelloclient_init",
       "community": 46,
@@ -717,7 +667,7 @@
       "label": "._auth()",
       "file_type": "code",
       "source_file": "automation/trello_client.py",
-      "source_location": "L47",
+      "source_location": "L23",
       "_origin": "ast",
       "id": "automation_trello_client_trelloclient_auth",
       "community": 46,
@@ -727,7 +677,7 @@
       "label": "._get()",
       "file_type": "code",
       "source_file": "automation/trello_client.py",
-      "source_location": "L50",
+      "source_location": "L26",
       "_origin": "ast",
       "id": "automation_trello_client_trelloclient_get",
       "community": 46,
@@ -737,7 +687,7 @@
       "label": "Any",
       "file_type": "code",
       "source_file": "automation/trello_client.py",
-      "source_location": "L50",
+      "source_location": "L26",
       "_origin": "ast",
       "id": "automation_trello_client_py_any",
       "community": 46,
@@ -747,7 +697,7 @@
       "label": "._post()",
       "file_type": "code",
       "source_file": "automation/trello_client.py",
-      "source_location": "L55",
+      "source_location": "L31",
       "_origin": "ast",
       "id": "automation_trello_client_trelloclient_post",
       "community": 46,
@@ -757,7 +707,7 @@
       "label": "._put()",
       "file_type": "code",
       "source_file": "automation/trello_client.py",
-      "source_location": "L60",
+      "source_location": "L36",
       "_origin": "ast",
       "id": "automation_trello_client_trelloclient_put",
       "community": 46,
@@ -767,7 +717,7 @@
       "label": ".get_lists()",
       "file_type": "code",
       "source_file": "automation/trello_client.py",
-      "source_location": "L67",
+      "source_location": "L43",
       "_origin": "ast",
       "id": "automation_trello_client_trelloclient_get_lists",
       "community": 46,
@@ -777,7 +727,7 @@
       "label": ".get_cards()",
       "file_type": "code",
       "source_file": "automation/trello_client.py",
-      "source_location": "L71",
+      "source_location": "L47",
       "_origin": "ast",
       "id": "automation_trello_client_trelloclient_get_cards",
       "community": 46,
@@ -787,7 +737,7 @@
       "label": ".move_card()",
       "file_type": "code",
       "source_file": "automation/trello_client.py",
-      "source_location": "L80",
+      "source_location": "L56",
       "_origin": "ast",
       "id": "automation_trello_client_trelloclient_move_card",
       "community": 46,
@@ -797,7 +747,7 @@
       "label": ".comment_card()",
       "file_type": "code",
       "source_file": "automation/trello_client.py",
-      "source_location": "L83",
+      "source_location": "L59",
       "_origin": "ast",
       "id": "automation_trello_client_trelloclient_comment_card",
       "community": 46,
@@ -807,7 +757,7 @@
       "label": ".get_comments()",
       "file_type": "code",
       "source_file": "automation/trello_client.py",
-      "source_location": "L86",
+      "source_location": "L62",
       "_origin": "ast",
       "id": "automation_trello_client_trelloclient_get_comments",
       "community": 46,
@@ -817,7 +767,7 @@
       "label": ".add_label_name()",
       "file_type": "code",
       "source_file": "automation/trello_client.py",
-      "source_location": "L96",
+      "source_location": "L72",
       "_origin": "ast",
       "id": "automation_trello_client_trelloclient_add_label_name",
       "community": 46,
@@ -827,7 +777,7 @@
       "label": "resolve_list_ids()",
       "file_type": "code",
       "source_file": "automation/trello_client.py",
-      "source_location": "L101",
+      "source_location": "L77",
       "_origin": "ast",
       "id": "automation_trello_client_resolve_list_ids",
       "community": 46,
@@ -844,22 +794,12 @@
       "norm_label": "cliente fino para a api rest do trello (https://developer.atlassian.com/cloud/tr"
     },
     {
-      "label": "O watcher.py fica horas fazendo polling - uma lentid\u00e3o passageira da API do",
-      "file_type": "rationale",
-      "source_file": "automation/trello_client.py",
-      "source_location": "L21",
-      "_origin": "ast",
-      "id": "automation_trello_client_rationale_21",
-      "community": 46,
-      "norm_label": "o watcher.py fica horas fazendo polling - uma lentidao passageira da api do"
-    },
-    {
       "label": "Todas as listas (colunas) do board, na ordem em que aparecem.",
       "file_type": "rationale",
       "source_file": "automation/trello_client.py",
-      "source_location": "L68",
+      "source_location": "L44",
       "_origin": "ast",
-      "id": "automation_trello_client_rationale_68",
+      "id": "automation_trello_client_rationale_44",
       "community": 46,
       "norm_label": "todas as listas (colunas) do board, na ordem em que aparecem."
     },
@@ -867,9 +807,9 @@
       "label": "Todos os cards abertos do board, com o idList (coluna atual) de cada um.",
       "file_type": "rationale",
       "source_file": "automation/trello_client.py",
-      "source_location": "L72",
+      "source_location": "L48",
       "_origin": "ast",
-      "id": "automation_trello_client_rationale_72",
+      "id": "automation_trello_client_rationale_48",
       "community": 46,
       "norm_label": "todos os cards abertos do board, com o idlist (coluna atual) de cada um."
     },
@@ -877,9 +817,9 @@
       "label": "Ajuda a sinalizar erro/bloqueio visualmente no card (label vermelha 'bloqueado'",
       "file_type": "rationale",
       "source_file": "automation/trello_client.py",
-      "source_location": "L97",
+      "source_location": "L73",
       "_origin": "ast",
-      "id": "automation_trello_client_rationale_97",
+      "id": "automation_trello_client_rationale_73",
       "community": 46,
       "norm_label": "ajuda a sinalizar erro/bloqueio visualmente no card (label vermelha 'bloqueado'"
     },
@@ -887,9 +827,9 @@
       "label": "Recebe algo como {\"TODO\": \"A Fazer\", \"DOING\": \"Em Andamento\", ...} (valores vind",
       "file_type": "rationale",
       "source_file": "automation/trello_client.py",
-      "source_location": "L102",
+      "source_location": "L78",
       "_origin": "ast",
-      "id": "automation_trello_client_rationale_102",
+      "id": "automation_trello_client_rationale_78",
       "community": 46,
       "norm_label": "recebe algo como {\"todo\": \"a fazer\", \"doing\": \"em andamento\", ...} (valores vind"
     },
@@ -957,7 +897,7 @@
       "label": "handle_dev()",
       "file_type": "code",
       "source_file": "automation/watcher.py",
-      "source_location": "L100",
+      "source_location": "L94",
       "_origin": "ast",
       "id": "automation_watcher_handle_dev",
       "community": 42,
@@ -967,7 +907,7 @@
       "label": "handle_done()",
       "file_type": "code",
       "source_file": "automation/watcher.py",
-      "source_location": "L232",
+      "source_location": "L204",
       "_origin": "ast",
       "id": "automation_watcher_handle_done",
       "community": 42,
@@ -977,7 +917,7 @@
       "label": "maybe_trigger_build()",
       "file_type": "code",
       "source_file": "automation/watcher.py",
-      "source_location": "L261",
+      "source_location": "L233",
       "_origin": "ast",
       "id": "automation_watcher_maybe_trigger_build",
       "community": 42,
@@ -987,7 +927,7 @@
       "label": "tick()",
       "file_type": "code",
       "source_file": "automation/watcher.py",
-      "source_location": "L287",
+      "source_location": "L259",
       "_origin": "ast",
       "id": "automation_watcher_tick",
       "community": 42,
@@ -997,7 +937,7 @@
       "label": "main()",
       "file_type": "code",
       "source_file": "automation/watcher.py",
-      "source_location": "L321",
+      "source_location": "L293",
       "_origin": "ast",
       "id": "automation_watcher_main",
       "community": 42,
@@ -1027,9 +967,9 @@
       "label": "Card est\u00e1 em 'Em Desenvolvimento': roda o Claude Code (aut\u00f4nomo) numa branch",
       "file_type": "rationale",
       "source_file": "automation/watcher.py",
-      "source_location": "L101",
+      "source_location": "L95",
       "_origin": "ast",
-      "id": "automation_watcher_rationale_101",
+      "id": "automation_watcher_rationale_95",
       "community": 42,
       "norm_label": "card esta em 'em desenvolvimento': roda o claude code (autonomo) numa branch"
     },
@@ -1037,9 +977,9 @@
       "label": "Card foi aprovado (movido pra 'Conclu\u00eddo'): d\u00e1 merge da branch dele na branch",
       "file_type": "rationale",
       "source_file": "automation/watcher.py",
-      "source_location": "L233",
+      "source_location": "L205",
       "_origin": "ast",
-      "id": "automation_watcher_rationale_233",
+      "id": "automation_watcher_rationale_205",
       "community": 42,
       "norm_label": "card foi aprovado (movido pra 'concluido'): da merge da branch dele na branch"
     },
@@ -1074,50 +1014,10 @@
       "norm_label": "database.py"
     },
     {
-      "label": "is_connection_closed_error()",
-      "file_type": "code",
-      "source_file": "backend/database.py",
-      "source_location": "L37",
-      "_origin": "ast",
-      "id": "backend_database_is_connection_closed_error",
-      "community": 14,
-      "norm_label": "is_connection_closed_error()"
-    },
-    {
-      "label": "BaseException",
-      "file_type": "code",
-      "source_file": "backend/database.py",
-      "source_location": "L37",
-      "_origin": "ast",
-      "id": "baseexception",
-      "community": 14,
-      "norm_label": "baseexception"
-    },
-    {
-      "label": "safe_rollback()",
-      "file_type": "code",
-      "source_file": "backend/database.py",
-      "source_location": "L50",
-      "_origin": "ast",
-      "id": "backend_database_safe_rollback",
-      "community": 14,
-      "norm_label": "safe_rollback()"
-    },
-    {
-      "label": "_safe_close()",
-      "file_type": "code",
-      "source_file": "backend/database.py",
-      "source_location": "L64",
-      "_origin": "ast",
-      "id": "backend_database_safe_close",
-      "community": 14,
-      "norm_label": "_safe_close()"
-    },
-    {
       "label": "get_db()",
       "file_type": "code",
       "source_file": "backend/database.py",
-      "source_location": "L73",
+      "source_location": "L37",
       "_origin": "ast",
       "id": "backend_database_get_db",
       "community": 14,
@@ -1127,7 +1027,7 @@
       "label": "create_tables()",
       "file_type": "code",
       "source_file": "backend/database.py",
-      "source_location": "L108",
+      "source_location": "L51",
       "_origin": "ast",
       "id": "backend_database_create_tables",
       "community": 14,
@@ -1137,59 +1037,29 @@
       "label": "drop_tables()",
       "file_type": "code",
       "source_file": "backend/database.py",
-      "source_location": "L115",
+      "source_location": "L58",
       "_origin": "ast",
       "id": "backend_database_drop_tables",
       "community": 14,
       "norm_label": "drop_tables()"
     },
     {
-      "label": "Detecta o caso 'conexao morreu enquanto estava ociosa'.      Acontece em reque",
+      "label": "Dependency que fornece uma sess\ufffdo do banco de dados",
       "file_type": "rationale",
       "source_file": "backend/database.py",
       "source_location": "L38",
       "_origin": "ast",
       "id": "backend_database_rationale_38",
       "community": 14,
-      "norm_label": "detecta o caso 'conexao morreu enquanto estava ociosa'.      acontece em reque"
-    },
-    {
-      "label": "Rollback que nao explode se a conexao ja estiver morta.      Publico de propos",
-      "file_type": "rationale",
-      "source_file": "backend/database.py",
-      "source_location": "L51",
-      "_origin": "ast",
-      "id": "backend_database_rationale_51",
-      "community": 14,
-      "norm_label": "rollback que nao explode se a conexao ja estiver morta.      publico de propos"
-    },
-    {
-      "label": "Close que nao explode se a conexao ja estiver morta.",
-      "file_type": "rationale",
-      "source_file": "backend/database.py",
-      "source_location": "L65",
-      "_origin": "ast",
-      "id": "backend_database_rationale_65",
-      "community": 14,
-      "norm_label": "close que nao explode se a conexao ja estiver morta."
-    },
-    {
-      "label": "Dependency que fornece uma sess\ufffdo do banco de dados.      Faz commit automatic",
-      "file_type": "rationale",
-      "source_file": "backend/database.py",
-      "source_location": "L74",
-      "_origin": "ast",
-      "id": "backend_database_rationale_74",
-      "community": 14,
-      "norm_label": "dependency que fornece uma sess\ufffdo do banco de dados.      faz commit automatic"
+      "norm_label": "dependency que fornece uma sess\ufffdo do banco de dados"
     },
     {
       "label": "Cria todas as tabelas no banco de dados",
       "file_type": "rationale",
       "source_file": "backend/database.py",
-      "source_location": "L109",
+      "source_location": "L52",
       "_origin": "ast",
-      "id": "backend_database_rationale_109",
+      "id": "backend_database_rationale_52",
       "community": 14,
       "norm_label": "cria todas as tabelas no banco de dados"
     },
@@ -1197,9 +1067,9 @@
       "label": "Remove todas as tabelas do banco de dados",
       "file_type": "rationale",
       "source_file": "backend/database.py",
-      "source_location": "L116",
+      "source_location": "L59",
       "_origin": "ast",
-      "id": "backend_database_rationale_116",
+      "id": "backend_database_rationale_59",
       "community": 14,
       "norm_label": "remove todas as tabelas do banco de dados"
     },
@@ -1277,7 +1147,7 @@
       "label": "verify_token()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L32",
+      "source_location": "L26",
       "_origin": "ast",
       "id": "backend_main_verify_token",
       "community": 1,
@@ -1287,7 +1157,7 @@
       "label": "Request",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L32",
+      "source_location": "L26",
       "_origin": "ast",
       "id": "request",
       "community": 1,
@@ -1297,7 +1167,7 @@
       "label": "lifespan()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L50",
+      "source_location": "L44",
       "_origin": "ast",
       "id": "backend_main_lifespan",
       "community": 1,
@@ -1307,37 +1177,17 @@
       "label": "FastAPI",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L50",
+      "source_location": "L44",
       "_origin": "ast",
       "id": "fastapi",
       "community": 1,
       "norm_label": "fastapi"
     },
     {
-      "label": "unhandled_exception_handler()",
-      "file_type": "code",
-      "source_file": "backend/main.py",
-      "source_location": "L77",
-      "_origin": "ast",
-      "id": "backend_main_unhandled_exception_handler",
-      "community": 1,
-      "norm_label": "unhandled_exception_handler()"
-    },
-    {
-      "label": "Exception",
-      "file_type": "code",
-      "source_file": "backend/main.py",
-      "source_location": "L77",
-      "_origin": "ast",
-      "id": "exception",
-      "community": 1,
-      "norm_label": "exception"
-    },
-    {
       "label": "ManhwaBase",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L95",
+      "source_location": "L70",
       "_origin": "ast",
       "id": "backend_main_manhwabase",
       "community": 1,
@@ -1357,7 +1207,7 @@
       "label": "ManhwaCreate",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L107",
+      "source_location": "L82",
       "_origin": "ast",
       "id": "backend_main_manhwacreate",
       "community": 1,
@@ -1367,7 +1217,7 @@
       "label": "ManhwaUpdate",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L110",
+      "source_location": "L85",
       "_origin": "ast",
       "id": "backend_main_manhwaupdate",
       "community": 1,
@@ -1377,7 +1227,7 @@
       "label": "Manhwa",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L113",
+      "source_location": "L88",
       "_origin": "ast",
       "id": "backend_main_manhwa",
       "community": 1,
@@ -1387,27 +1237,17 @@
       "label": "TelegramImportRequest",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L120",
+      "source_location": "L95",
       "_origin": "ast",
       "id": "backend_main_telegramimportrequest",
       "community": 1,
       "norm_label": "telegramimportrequest"
     },
     {
-      "label": "SyncResponse",
-      "file_type": "code",
-      "source_file": "backend/main.py",
-      "source_location": "L125",
-      "_origin": "ast",
-      "id": "backend_main_syncresponse",
-      "community": 1,
-      "norm_label": "syncresponse"
-    },
-    {
       "label": "get_telegram_scraper()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L143",
+      "source_location": "L105",
       "_origin": "ast",
       "id": "backend_main_get_telegram_scraper",
       "community": 1,
@@ -1417,7 +1257,7 @@
       "label": "root()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L169",
+      "source_location": "L131",
       "_origin": "ast",
       "id": "backend_main_root",
       "community": 1,
@@ -1427,7 +1267,7 @@
       "label": "get_manhwas()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L173",
+      "source_location": "L135",
       "_origin": "ast",
       "id": "backend_main_get_manhwas",
       "community": 1,
@@ -1437,7 +1277,7 @@
       "label": "AsyncSession",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L173",
+      "source_location": "L135",
       "_origin": "ast",
       "id": "asyncsession",
       "community": 1,
@@ -1447,7 +1287,7 @@
       "label": "get_manhwa()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L185",
+      "source_location": "L147",
       "_origin": "ast",
       "id": "backend_main_get_manhwa",
       "community": 1,
@@ -1457,7 +1297,7 @@
       "label": "create_manhwa()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L196",
+      "source_location": "L158",
       "_origin": "ast",
       "id": "backend_main_create_manhwa",
       "community": 1,
@@ -1467,7 +1307,7 @@
       "label": "update_manhwa()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L207",
+      "source_location": "L169",
       "_origin": "ast",
       "id": "backend_main_update_manhwa",
       "community": 1,
@@ -1477,7 +1317,7 @@
       "label": "delete_manhwa()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L225",
+      "source_location": "L187",
       "_origin": "ast",
       "id": "backend_main_delete_manhwa",
       "community": 1,
@@ -1487,7 +1327,7 @@
       "label": "list_manhwa_files()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L239",
+      "source_location": "L201",
       "_origin": "ast",
       "id": "backend_main_list_manhwa_files",
       "community": 1,
@@ -1497,7 +1337,7 @@
       "label": "UpdateCurrentChapter",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L283",
+      "source_location": "L245",
       "_origin": "ast",
       "id": "backend_main_updatecurrentchapter",
       "community": 1,
@@ -1507,7 +1347,7 @@
       "label": "update_current_chapter()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L287",
+      "source_location": "L249",
       "_origin": "ast",
       "id": "backend_main_update_current_chapter",
       "community": 1,
@@ -1517,7 +1357,7 @@
       "label": "ScrollUpdate",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L311",
+      "source_location": "L273",
       "_origin": "ast",
       "id": "backend_main_scrollupdate",
       "community": 1,
@@ -1527,7 +1367,7 @@
       "label": "update_scroll()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L315",
+      "source_location": "L277",
       "_origin": "ast",
       "id": "backend_main_update_scroll",
       "community": 1,
@@ -1537,7 +1377,7 @@
       "label": "get_scroll()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L333",
+      "source_location": "L295",
       "_origin": "ast",
       "id": "backend_main_get_scroll",
       "community": 1,
@@ -1547,7 +1387,7 @@
       "label": "get_cbz_info()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L344",
+      "source_location": "L306",
       "_origin": "ast",
       "id": "backend_main_get_cbz_info",
       "community": 1,
@@ -1557,7 +1397,7 @@
       "label": "download_cbz_file()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L371",
+      "source_location": "L333",
       "_origin": "ast",
       "id": "backend_main_download_cbz_file",
       "community": 1,
@@ -1567,27 +1407,17 @@
       "label": "get_cbz_page()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L397",
+      "source_location": "L359",
       "_origin": "ast",
       "id": "backend_main_get_cbz_page",
       "community": 1,
       "norm_label": "get_cbz_page()"
     },
     {
-      "label": "_persist_sync_updates()",
-      "file_type": "code",
-      "source_file": "backend/main.py",
-      "source_location": "L439",
-      "_origin": "ast",
-      "id": "backend_main_persist_sync_updates",
-      "community": 1,
-      "norm_label": "_persist_sync_updates()"
-    },
-    {
       "label": "download_all_manhwas()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L489",
+      "source_location": "L402",
       "_origin": "ast",
       "id": "backend_main_download_all_manhwas",
       "community": 1,
@@ -1597,7 +1427,7 @@
       "label": "review_all_manhwas()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L716",
+      "source_location": "L574",
       "_origin": "ast",
       "id": "backend_main_review_all_manhwas",
       "community": 1,
@@ -1607,7 +1437,7 @@
       "label": "import_from_telegram()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L918",
+      "source_location": "L759",
       "_origin": "ast",
       "id": "backend_main_import_from_telegram",
       "community": 1,
@@ -1617,7 +1447,7 @@
       "label": "test_telegram_config()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L1059",
+      "source_location": "L900",
       "_origin": "ast",
       "id": "backend_main_test_telegram_config",
       "community": 1,
@@ -1627,9 +1457,9 @@
       "label": "Exige o token quando API_TOKEN est\u00e1 definido.      Aceita via header `Authoriz",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L33",
+      "source_location": "L27",
       "_origin": "ast",
-      "id": "backend_main_rationale_33",
+      "id": "backend_main_rationale_27",
       "community": 1,
       "norm_label": "exige o token quando api_token esta definido.      aceita via header `authoriz"
     },
@@ -1637,39 +1467,19 @@
       "label": "Gerencia o ciclo de vida da aplica\u00e7\u00e3o",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L51",
+      "source_location": "L45",
       "_origin": "ast",
-      "id": "backend_main_rationale_51",
+      "id": "backend_main_rationale_45",
       "community": 1,
       "norm_label": "gerencia o ciclo de vida da aplicacao"
-    },
-    {
-      "label": "Garante corpo JSON consistente para qualquer exce\u00e7\u00e3o n\u00e3o tratada.      Sem iss",
-      "file_type": "rationale",
-      "source_file": "backend/main.py",
-      "source_location": "L78",
-      "_origin": "ast",
-      "id": "backend_main_rationale_78",
-      "community": 1,
-      "norm_label": "garante corpo json consistente para qualquer excecao nao tratada.      sem iss"
-    },
-    {
-      "label": "Formato de resposta \u00fanico do /api/manhwas/download-all \u2014 sucesso, falha     par",
-      "file_type": "rationale",
-      "source_file": "backend/main.py",
-      "source_location": "L126",
-      "_origin": "ast",
-      "id": "backend_main_rationale_126",
-      "community": 1,
-      "norm_label": "formato de resposta unico do /api/manhwas/download-all \u2014 sucesso, falha     par"
     },
     {
       "label": "Retorna uma inst\u00e2ncia \u00fanica e conectada do scraper do Telegram para evitar erro",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L144",
+      "source_location": "L106",
       "_origin": "ast",
-      "id": "backend_main_rationale_144",
+      "id": "backend_main_rationale_106",
       "community": 1,
       "norm_label": "retorna uma instancia unica e conectada do scraper do telegram para evitar erro"
     },
@@ -1677,9 +1487,9 @@
       "label": "Retorna todos os manhwas, opcionalmente filtrados por status",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L174",
+      "source_location": "L136",
       "_origin": "ast",
-      "id": "backend_main_rationale_174",
+      "id": "backend_main_rationale_136",
       "community": 1,
       "norm_label": "retorna todos os manhwas, opcionalmente filtrados por status"
     },
@@ -1687,9 +1497,9 @@
       "label": "Retorna um manhwa espec\u00edfico",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L186",
+      "source_location": "L148",
       "_origin": "ast",
-      "id": "backend_main_rationale_186",
+      "id": "backend_main_rationale_148",
       "community": 1,
       "norm_label": "retorna um manhwa especifico"
     },
@@ -1697,9 +1507,9 @@
       "label": "Atualiza um manhwa existente",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L208",
+      "source_location": "L170",
       "_origin": "ast",
-      "id": "backend_main_rationale_208",
+      "id": "backend_main_rationale_170",
       "community": 1,
       "norm_label": "atualiza um manhwa existente"
     },
@@ -1707,9 +1517,9 @@
       "label": "Lista os arquivos .cbz baixados de um manhwa em D:\\\\Manhwas\\\\{titulo}\\\\",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L240",
+      "source_location": "L202",
       "_origin": "ast",
-      "id": "backend_main_rationale_240",
+      "id": "backend_main_rationale_202",
       "community": 1,
       "norm_label": "lista os arquivos .cbz baixados de um manhwa em d:\\\\manhwas\\\\{titulo}\\\\"
     },
@@ -1717,9 +1527,9 @@
       "label": "Atualiza o current_chapter de um manhwa (chamado ao terminar de ler um cap\u00edtulo)",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L288",
+      "source_location": "L250",
       "_origin": "ast",
-      "id": "backend_main_rationale_288",
+      "id": "backend_main_rationale_250",
       "community": 1,
       "norm_label": "atualiza o current_chapter de um manhwa (chamado ao terminar de ler um capitulo)"
     },
@@ -1727,9 +1537,9 @@
       "label": "Salva a posi\u00e7\u00e3o de rolagem de um cap\u00edtulo espec\u00edfico",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L316",
+      "source_location": "L278",
       "_origin": "ast",
-      "id": "backend_main_rationale_316",
+      "id": "backend_main_rationale_278",
       "community": 1,
       "norm_label": "salva a posicao de rolagem de um capitulo especifico"
     },
@@ -1737,9 +1547,9 @@
       "label": "Retorna a posi\u00e7\u00e3o de rolagem salva de um cap\u00edtulo espec\u00edfico",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L334",
+      "source_location": "L296",
       "_origin": "ast",
-      "id": "backend_main_rationale_334",
+      "id": "backend_main_rationale_296",
       "community": 1,
       "norm_label": "retorna a posicao de rolagem salva de um capitulo especifico"
     },
@@ -1747,9 +1557,9 @@
       "label": "Retorna informa\u00e7\u00f5es do CBZ (n\u00famero de p\u00e1ginas)",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L345",
+      "source_location": "L307",
       "_origin": "ast",
-      "id": "backend_main_rationale_345",
+      "id": "backend_main_rationale_307",
       "community": 1,
       "norm_label": "retorna informacoes do cbz (numero de paginas)"
     },
@@ -1757,9 +1567,9 @@
       "label": "Serve o .cbz inteiro pra download (usado pelo cache local do mobile).",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L372",
+      "source_location": "L334",
       "_origin": "ast",
-      "id": "backend_main_rationale_372",
+      "id": "backend_main_rationale_334",
       "community": 1,
       "norm_label": "serve o .cbz inteiro pra download (usado pelo cache local do mobile)."
     },
@@ -1767,29 +1577,19 @@
       "label": "Serve uma p\u00e1gina individual do CBZ como imagem",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L398",
+      "source_location": "L360",
       "_origin": "ast",
-      "id": "backend_main_rationale_398",
+      "id": "backend_main_rationale_360",
       "community": 1,
       "norm_label": "serve uma pagina individual do cbz como imagem"
-    },
-    {
-      "label": "Persiste as altera\u00e7\u00f5es da sincroniza\u00e7\u00e3o numa sess\u00e3o/conex\u00e3o NOVA.      Motivo:",
-      "file_type": "rationale",
-      "source_file": "backend/main.py",
-      "source_location": "L440",
-      "_origin": "ast",
-      "id": "backend_main_rationale_440",
-      "community": 1,
-      "norm_label": "persiste as alteracoes da sincronizacao numa sessao/conexao nova.      motivo:"
     },
     {
       "label": "Sincroniza todos os manhwas em paralelo: baixa os .cbz de todos que possuem link",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L490",
+      "source_location": "L403",
       "_origin": "ast",
-      "id": "backend_main_rationale_490",
+      "id": "backend_main_rationale_403",
       "community": 1,
       "norm_label": "sincroniza todos os manhwas em paralelo: baixa os .cbz de todos que possuem link"
     },
@@ -1797,9 +1597,9 @@
       "label": "Revisita todos os manhwas com link do Telegram e recalcula os metadados do t\u00f3pic",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L717",
+      "source_location": "L575",
       "_origin": "ast",
-      "id": "backend_main_rationale_717",
+      "id": "backend_main_rationale_575",
       "community": 1,
       "norm_label": "revisita todos os manhwas com link do telegram e recalcula os metadados do topic"
     },
@@ -1807,9 +1607,9 @@
       "label": "Importa manhwas de um canal do Telegram          Requer configura\u00e7\u00e3o pr\u00e9via da",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L919",
+      "source_location": "L760",
       "_origin": "ast",
-      "id": "backend_main_rationale_919",
+      "id": "backend_main_rationale_760",
       "community": 1,
       "norm_label": "importa manhwas de um canal do telegram          requer configuracao previa da"
     },
@@ -1817,9 +1617,9 @@
       "label": "Testa se as configura\u00e7\u00f5es do Telegram est\u00e3o corretas",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L1060",
+      "source_location": "L901",
       "_origin": "ast",
-      "id": "backend_main_rationale_1060",
+      "id": "backend_main_rationale_901",
       "community": 1,
       "norm_label": "testa se as configuracoes do telegram estao corretas"
     },
@@ -5770,7 +5570,7 @@
       "source_location": "L646",
       "_origin": "ast",
       "id": "graphify_skill_honesty_rules",
-      "community": 43,
+      "community": 2,
       "norm_label": "honesty rules"
     },
     {
@@ -6147,7 +5947,7 @@
       "label": "2. Frontend (Next.js / React Web)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L75",
+      "source_location": "L50",
       "_origin": "ast",
       "id": "agent_instructions_2_frontend_next_js_react_web",
       "community": 47,
@@ -6157,7 +5957,7 @@
       "label": "3. Mobile (Expo / React Native)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L84",
+      "source_location": "L59",
       "_origin": "ast",
       "id": "agent_instructions_3_mobile_expo_react_native",
       "community": 47,
@@ -6167,7 +5967,7 @@
       "label": "\ud83d\udcc1 Estrutura Interna (`/mobile`)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L90",
+      "source_location": "L65",
       "_origin": "ast",
       "id": "agent_instructions_estrutura_interna_mobile",
       "community": 47,
@@ -6177,7 +5977,7 @@
       "label": "\u2699\ufe0f Configura\u00e7\u00f5es Importantes",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L118",
+      "source_location": "L93",
       "_origin": "ast",
       "id": "agent_instructions_configura\u00e7\u00f5es_importantes",
       "community": 47,
@@ -6187,7 +5987,7 @@
       "label": "\ud83d\udda5\ufe0f Modo Tela Cheia (Imersivo) \u2014 apenas no leitor CBZ",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L123",
+      "source_location": "L98",
       "_origin": "ast",
       "id": "agent_instructions_modo_tela_cheia_imersivo_apenas_no_leitor_cbz",
       "community": 47,
@@ -6197,7 +5997,7 @@
       "label": "\ud83d\udccc Persist\u00eancia de progresso de leitura (scroll por cap\u00edtulo)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L135",
+      "source_location": "L110",
       "_origin": "ast",
       "id": "agent_instructions_persist\u00eancia_de_progresso_de_leitura_scroll_por_cap\u00edtulo",
       "community": 47,
@@ -6207,7 +6007,7 @@
       "label": "4. Automa\u00e7\u00e3o Trello \u2194 Claude Code",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L146",
+      "source_location": "L121",
       "_origin": "ast",
       "id": "agent_instructions_4_automa\u00e7\u00e3o_trello_claude_code",
       "community": 47,
@@ -6217,7 +6017,7 @@
       "label": "\ud83d\udd0d Como se Orientar (Instru\u00e7\u00f5es para Agentes)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L171",
+      "source_location": "L146",
       "_origin": "ast",
       "id": "agent_instructions_como_se_orientar_instru\u00e7\u00f5es_para_agentes",
       "community": 47,
@@ -6227,7 +6027,7 @@
       "label": "\ud83c\udfaf Pr\u00f3ximos Passos (Para a IA)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L192",
+      "source_location": "L157",
       "_origin": "ast",
       "id": "agent_instructions_pr\u00f3ximos_passos_para_a_ia",
       "community": 47,
@@ -6237,7 +6037,7 @@
       "label": "\ud83d\udcdd Manuten\u00e7\u00e3o deste Arquivo (Obrigat\u00f3rio para Agentes)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L205",
+      "source_location": "L170",
       "_origin": "ast",
       "id": "agent_instructions_manuten\u00e7\u00e3o_deste_arquivo_obrigat\u00f3rio_para_agentes",
       "community": 47,
@@ -6247,7 +6047,7 @@
       "label": "Como editar este arquivo corretamente",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L209",
+      "source_location": "L174",
       "_origin": "ast",
       "id": "agent_instructions_como_editar_este_arquivo_corretamente",
       "community": 47,
@@ -6257,7 +6057,7 @@
       "label": "Exemplo de fluxo",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L217",
+      "source_location": "L182",
       "_origin": "ast",
       "id": "agent_instructions_exemplo_de_fluxo",
       "community": 47,
@@ -6517,7 +6317,7 @@
       "label": "5. Rodar",
       "file_type": "document",
       "source_file": "automation/SETUP.md",
-      "source_location": "L169",
+      "source_location": "L165",
       "_origin": "ast",
       "id": "automation_setup_5_rodar",
       "community": 50,
@@ -6527,7 +6327,7 @@
       "label": "6. Uso no dia a dia",
       "file_type": "document",
       "source_file": "automation/SETUP.md",
-      "source_location": "L195",
+      "source_location": "L191",
       "_origin": "ast",
       "id": "automation_setup_6_uso_no_dia_a_dia",
       "community": 50,
@@ -6537,7 +6337,7 @@
       "label": "7. Limita\u00e7\u00f5es conhecidas (v1)",
       "file_type": "document",
       "source_file": "automation/SETUP.md",
-      "source_location": "L235",
+      "source_location": "L229",
       "_origin": "ast",
       "id": "automation_setup_7_limita\u00e7\u00f5es_conhecidas_v1",
       "community": 50,
@@ -6547,7 +6347,7 @@
       "label": "8. Troubleshooting r\u00e1pido",
       "file_type": "document",
       "source_file": "automation/SETUP.md",
-      "source_location": "L256",
+      "source_location": "L250",
       "_origin": "ast",
       "id": "automation_setup_8_troubleshooting_r\u00e1pido",
       "community": 50,
@@ -7802,7 +7602,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 43,
+      "community": 2,
       "norm_label": "audit trail (extracted/inferred/ambiguous)",
       "id": "graphify_skill_audit_trail"
     },
@@ -7828,7 +7628,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 60,
+      "community": 52,
       "norm_label": "ast structural extraction (part a)",
       "id": "graphify_skill_ast_extraction"
     },
@@ -8036,7 +7836,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 54,
+      "community": 60,
       "norm_label": "/graphify add (url ingestion)",
       "id": "add_watch_graphify_add"
     },
@@ -8049,7 +7849,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 54,
+      "community": 52,
       "norm_label": "--watch folder watcher",
       "id": "add_watch_watch_mode"
     },
@@ -8062,7 +7862,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 54,
+      "community": 52,
       "norm_label": "debounce mechanism",
       "id": "add_watch_debounce"
     },
@@ -8075,7 +7875,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 54,
+      "community": 60,
       "norm_label": "graphify.ingest.ingest",
       "id": "add_watch_ingest"
     },
@@ -8192,7 +7992,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 43,
+      "community": 2,
       "norm_label": "confidence score rubric",
       "id": "extraction_spec_confidence_rubric"
     },
@@ -8205,7 +8005,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 60,
+      "community": 2,
       "norm_label": "node id format rule",
       "id": "extraction_spec_node_id_format"
     },
@@ -8283,7 +8083,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 77,
+      "community": 54,
       "norm_label": "github repo clone (step 0)",
       "id": "github_and_merge_clone"
     },
@@ -8296,7 +8096,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 77,
+      "community": 54,
       "norm_label": "cross-repo merge",
       "id": "github_and_merge_cross_repo"
     },
@@ -8309,7 +8109,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 77,
+      "community": 54,
       "norm_label": "graphify merge-graphs",
       "id": "github_and_merge_graphs"
     },
@@ -8555,28 +8355,8 @@
       "source_file": "automation/claude_prompt.py",
       "source_location": "L69",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_claude_prompt",
-      "target": "automation_claude_prompt_build_prompt"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "automation/claude_prompt.py",
-      "source_location": "L114",
-      "weight": 1.0,
-      "source": "automation_claude_prompt",
-      "target": "automation_claude_prompt_parse_draft",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "automation/claude_prompt.py",
-      "source_location": "L108",
-      "weight": 1.0,
-      "source": "automation_claude_prompt",
-      "target": "automation_claude_prompt_promptdraft",
+      "target": "automation_claude_prompt_build_prompt",
       "confidence_score": 1.0
     },
     {
@@ -8585,51 +8365,8 @@
       "source_file": "automation/claude_prompt.py",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_claude_prompt_rationale_1",
-      "target": "automation_claude_prompt"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "automation/claude_prompt.py",
-      "source_location": "L136",
-      "weight": 1.0,
-      "source": "automation_claude_prompt_build_prompt",
-      "target": "automation_claude_prompt_promptdraft",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "automation/claude_prompt.py",
-      "source_location": "L114",
-      "weight": 1.0,
-      "source": "automation_claude_prompt_parse_draft",
-      "target": "automation_claude_prompt_promptdraft",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "automation/claude_prompt.py",
-      "source_location": "L158",
-      "weight": 1.0,
-      "source": "automation_claude_prompt_build_prompt",
-      "target": "automation_claude_prompt_parse_draft",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "automation/claude_prompt.py",
-      "source_location": "L115",
-      "weight": 1.0,
-      "source": "automation_claude_prompt_rationale_115",
-      "target": "automation_claude_prompt_parse_draft",
+      "target": "automation_claude_prompt",
       "confidence_score": 1.0
     },
     {
@@ -8639,9 +8376,9 @@
       "source_file": "automation/claude_prompt.py",
       "source_location": "L69",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_claude_prompt_build_prompt",
-      "target": "automation_claude_prompt_py_path"
+      "target": "automation_claude_prompt_py_path",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -8693,9 +8430,9 @@
       "source_file": "automation/claude_runner.py",
       "source_location": "L74",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_claude_runner",
-      "target": "automation_claude_runner_clauderunresult"
+      "target": "automation_claude_runner_clauderunresult",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8703,9 +8440,9 @@
       "source_file": "automation/claude_runner.py",
       "source_location": "L54",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_claude_runner",
-      "target": "automation_claude_runner_log"
+      "target": "automation_claude_runner_log",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8713,9 +8450,9 @@
       "source_file": "automation/claude_runner.py",
       "source_location": "L82",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_claude_runner",
-      "target": "automation_claude_runner_run_claude_code"
+      "target": "automation_claude_runner_run_claude_code",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
@@ -8723,9 +8460,9 @@
       "source_file": "automation/claude_runner.py",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_claude_runner_rationale_1",
-      "target": "automation_claude_runner"
+      "target": "automation_claude_runner",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -8734,9 +8471,9 @@
       "source_file": "automation/claude_runner.py",
       "source_location": "L116",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_claude_runner_run_claude_code",
-      "target": "automation_claude_runner_log"
+      "target": "automation_claude_runner_log",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -8745,9 +8482,9 @@
       "source_file": "automation/claude_runner.py",
       "source_location": "L82",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_claude_runner_run_claude_code",
-      "target": "automation_claude_runner_clauderunresult"
+      "target": "automation_claude_runner_clauderunresult",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -8756,9 +8493,9 @@
       "source_file": "automation/claude_runner.py",
       "source_location": "L82",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_claude_runner_run_claude_code",
-      "target": "automation_claude_runner_py_path"
+      "target": "automation_claude_runner_py_path",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -8788,9 +8525,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L56",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops",
-      "target": "automation_git_ops_branch_exists"
+      "target": "automation_git_ops_branch_exists",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8798,9 +8535,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L66",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops",
-      "target": "automation_git_ops_branch_name_for_card"
+      "target": "automation_git_ops_branch_name_for_card",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8808,9 +8545,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L114",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops",
-      "target": "automation_git_ops_changed_areas"
+      "target": "automation_git_ops_changed_areas",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8818,9 +8555,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L126",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops",
-      "target": "automation_git_ops_commit_all_if_dirty"
+      "target": "automation_git_ops_commit_all_if_dirty",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8828,9 +8565,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L49",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops",
-      "target": "automation_git_ops_current_branch"
+      "target": "automation_git_ops_current_branch",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8838,9 +8575,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L157",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops",
-      "target": "automation_git_ops_delete_branch"
+      "target": "automation_git_ops_delete_branch",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8848,9 +8585,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L21",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops",
-      "target": "automation_git_ops_giterror"
+      "target": "automation_git_ops_giterror",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8858,9 +8595,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L26",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops",
-      "target": "automation_git_ops_gitresult"
+      "target": "automation_git_ops_gitresult",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8868,9 +8605,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L44",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops",
-      "target": "automation_git_ops_is_clean"
+      "target": "automation_git_ops_is_clean",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8878,9 +8615,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L137",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops",
-      "target": "automation_git_ops_merge_branch"
+      "target": "automation_git_ops_merge_branch",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8888,9 +8625,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L161",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops",
-      "target": "automation_git_ops_push"
+      "target": "automation_git_ops_push",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8898,9 +8635,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L31",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops",
-      "target": "automation_git_ops_run"
+      "target": "automation_git_ops_run",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8908,9 +8645,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L61",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops",
-      "target": "automation_git_ops_slugify"
+      "target": "automation_git_ops_slugify",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8918,9 +8655,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L70",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops",
-      "target": "automation_git_ops_start_card_branch"
+      "target": "automation_git_ops_start_card_branch",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
@@ -8928,9 +8665,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_rationale_1",
-      "target": "automation_git_ops"
+      "target": "automation_git_ops",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -8939,9 +8676,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L133",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_commit_all_if_dirty",
-      "target": "automation_git_ops_giterror"
+      "target": "automation_git_ops_giterror",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -8950,9 +8687,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L52",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_current_branch",
-      "target": "automation_git_ops_giterror"
+      "target": "automation_git_ops_giterror",
+      "confidence_score": 1.0
     },
     {
       "relation": "inherits",
@@ -8960,9 +8697,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L21",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_giterror",
-      "target": "runtimeerror"
+      "target": "runtimeerror",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -8971,9 +8708,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L85",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_start_card_branch",
-      "target": "automation_git_ops_giterror"
+      "target": "automation_git_ops_giterror",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -8982,9 +8719,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L137",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_merge_branch",
-      "target": "automation_git_ops_gitresult"
+      "target": "automation_git_ops_gitresult",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -8993,9 +8730,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L161",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_push",
-      "target": "automation_git_ops_gitresult"
+      "target": "automation_git_ops_gitresult",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -9004,9 +8741,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L31",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_run",
-      "target": "automation_git_ops_gitresult"
+      "target": "automation_git_ops_gitresult",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9015,9 +8752,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L57",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_branch_exists",
-      "target": "automation_git_ops_run"
+      "target": "automation_git_ops_run",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9026,9 +8763,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L119",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_changed_areas",
-      "target": "automation_git_ops_run"
+      "target": "automation_git_ops_run",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9037,9 +8774,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L130",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_commit_all_if_dirty",
-      "target": "automation_git_ops_run"
+      "target": "automation_git_ops_run",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9048,9 +8785,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L50",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_current_branch",
-      "target": "automation_git_ops_run"
+      "target": "automation_git_ops_run",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9059,9 +8796,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L158",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_delete_branch",
-      "target": "automation_git_ops_run"
+      "target": "automation_git_ops_run",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9070,9 +8807,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L45",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_is_clean",
-      "target": "automation_git_ops_run"
+      "target": "automation_git_ops_run",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9081,9 +8818,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L146",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_merge_branch",
-      "target": "automation_git_ops_run"
+      "target": "automation_git_ops_run",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9092,9 +8829,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L162",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_push",
-      "target": "automation_git_ops_run"
+      "target": "automation_git_ops_run",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -9103,9 +8840,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L31",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_run",
-      "target": "automation_git_ops_py_path"
+      "target": "automation_git_ops_py_path",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9114,9 +8851,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L91",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_start_card_branch",
-      "target": "automation_git_ops_run"
+      "target": "automation_git_ops_run",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -9125,9 +8862,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L56",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_branch_exists",
-      "target": "automation_git_ops_py_path"
+      "target": "automation_git_ops_py_path",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -9136,9 +8873,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L114",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_changed_areas",
-      "target": "automation_git_ops_py_path"
+      "target": "automation_git_ops_py_path",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -9147,9 +8884,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L126",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_commit_all_if_dirty",
-      "target": "automation_git_ops_py_path"
+      "target": "automation_git_ops_py_path",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -9158,9 +8895,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L49",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_current_branch",
-      "target": "automation_git_ops_py_path"
+      "target": "automation_git_ops_py_path",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -9169,9 +8906,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L157",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_delete_branch",
-      "target": "automation_git_ops_py_path"
+      "target": "automation_git_ops_py_path",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -9180,9 +8917,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L44",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_is_clean",
-      "target": "automation_git_ops_py_path"
+      "target": "automation_git_ops_py_path",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -9191,9 +8928,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L137",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_merge_branch",
-      "target": "automation_git_ops_py_path"
+      "target": "automation_git_ops_py_path",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -9202,9 +8939,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L161",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_push",
-      "target": "automation_git_ops_py_path"
+      "target": "automation_git_ops_py_path",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -9213,9 +8950,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L70",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_start_card_branch",
-      "target": "automation_git_ops_py_path"
+      "target": "automation_git_ops_py_path",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9224,9 +8961,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L128",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_commit_all_if_dirty",
-      "target": "automation_git_ops_is_clean"
+      "target": "automation_git_ops_is_clean",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9235,9 +8972,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L143",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_merge_branch",
-      "target": "automation_git_ops_is_clean"
+      "target": "automation_git_ops_is_clean",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9246,9 +8983,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L84",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_start_card_branch",
-      "target": "automation_git_ops_is_clean"
+      "target": "automation_git_ops_is_clean",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9257,9 +8994,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L95",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_start_card_branch",
-      "target": "automation_git_ops_branch_exists"
+      "target": "automation_git_ops_branch_exists",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9268,9 +9005,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L67",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_branch_name_for_card",
-      "target": "automation_git_ops_slugify"
+      "target": "automation_git_ops_slugify",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
@@ -9278,9 +9015,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L71",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_rationale_71",
-      "target": "automation_git_ops_start_card_branch"
+      "target": "automation_git_ops_start_card_branch",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
@@ -9288,9 +9025,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L115",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_rationale_115",
-      "target": "automation_git_ops_changed_areas"
+      "target": "automation_git_ops_changed_areas",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
@@ -9298,9 +9035,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L127",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_rationale_127",
-      "target": "automation_git_ops_commit_all_if_dirty"
+      "target": "automation_git_ops_commit_all_if_dirty",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
@@ -9308,9 +9045,9 @@
       "source_file": "automation/git_ops.py",
       "source_location": "L138",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_git_ops_rationale_138",
-      "target": "automation_git_ops_merge_branch"
+      "target": "automation_git_ops_merge_branch",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9318,9 +9055,9 @@
       "source_file": "automation/mobile_build.py",
       "source_location": "L27",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_mobile_build",
-      "target": "automation_mobile_build_buildresult"
+      "target": "automation_mobile_build_buildresult",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9328,9 +9065,9 @@
       "source_file": "automation/mobile_build.py",
       "source_location": "L34",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_mobile_build",
-      "target": "automation_mobile_build_extract_download_url"
+      "target": "automation_mobile_build_extract_download_url",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9338,9 +9075,9 @@
       "source_file": "automation/mobile_build.py",
       "source_location": "L47",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_mobile_build",
-      "target": "automation_mobile_build_run_mobile_build"
+      "target": "automation_mobile_build_run_mobile_build",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
@@ -9348,9 +9085,9 @@
       "source_file": "automation/mobile_build.py",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_mobile_build_rationale_1",
-      "target": "automation_mobile_build"
+      "target": "automation_mobile_build",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -9359,9 +9096,9 @@
       "source_file": "automation/mobile_build.py",
       "source_location": "L47",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_mobile_build_run_mobile_build",
-      "target": "automation_mobile_build_buildresult"
+      "target": "automation_mobile_build_buildresult",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9370,9 +9107,9 @@
       "source_file": "automation/mobile_build.py",
       "source_location": "L120",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_mobile_build_run_mobile_build",
-      "target": "automation_mobile_build_extract_download_url"
+      "target": "automation_mobile_build_extract_download_url",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -9381,9 +9118,9 @@
       "source_file": "automation/mobile_build.py",
       "source_location": "L47",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_mobile_build_run_mobile_build",
-      "target": "automation_mobile_build_py_path"
+      "target": "automation_mobile_build_py_path",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9413,9 +9150,9 @@
       "source_file": "automation/proc_utils.py",
       "source_location": "L38",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_proc_utils",
-      "target": "automation_proc_utils_manual_path_search"
+      "target": "automation_proc_utils_manual_path_search",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9423,9 +9160,9 @@
       "source_file": "automation/proc_utils.py",
       "source_location": "L51",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_proc_utils",
-      "target": "automation_proc_utils_resolve_command"
+      "target": "automation_proc_utils_resolve_command",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
@@ -9433,9 +9170,9 @@
       "source_file": "automation/proc_utils.py",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_proc_utils_rationale_1",
-      "target": "automation_proc_utils"
+      "target": "automation_proc_utils",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9444,9 +9181,9 @@
       "source_file": "automation/proc_utils.py",
       "source_location": "L71",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_proc_utils_resolve_command",
-      "target": "automation_proc_utils_manual_path_search"
+      "target": "automation_proc_utils_manual_path_search",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
@@ -9454,9 +9191,9 @@
       "source_file": "automation/proc_utils.py",
       "source_location": "L52",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_proc_utils_rationale_52",
-      "target": "automation_proc_utils_resolve_command"
+      "target": "automation_proc_utils_resolve_command",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9464,9 +9201,9 @@
       "source_file": "automation/state.py",
       "source_location": "L25",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_state",
-      "target": "automation_state_default_state"
+      "target": "automation_state_default_state",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9474,9 +9211,9 @@
       "source_file": "automation/state.py",
       "source_location": "L57",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_state",
-      "target": "automation_state_get_card"
+      "target": "automation_state_get_card",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9484,9 +9221,9 @@
       "source_file": "automation/state.py",
       "source_location": "L35",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_state",
-      "target": "automation_state_load"
+      "target": "automation_state_load",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9494,9 +9231,9 @@
       "source_file": "automation/state.py",
       "source_location": "L49",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_state",
-      "target": "automation_state_save"
+      "target": "automation_state_save",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9504,9 +9241,9 @@
       "source_file": "automation/state.py",
       "source_location": "L70",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_state",
-      "target": "automation_state_set_card"
+      "target": "automation_state_set_card",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
@@ -9514,9 +9251,9 @@
       "source_file": "automation/state.py",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_state_rationale_1",
-      "target": "automation_state"
+      "target": "automation_state",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -9525,9 +9262,9 @@
       "source_file": "automation/state.py",
       "source_location": "L25",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_state_default_state",
-      "target": "automation_state_py_any"
+      "target": "automation_state_py_any",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9536,9 +9273,9 @@
       "source_file": "automation/state.py",
       "source_location": "L38",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_state_load",
-      "target": "automation_state_default_state"
+      "target": "automation_state_default_state",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -9547,9 +9284,9 @@
       "source_file": "automation/state.py",
       "source_location": "L57",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_state_get_card",
-      "target": "automation_state_py_any"
+      "target": "automation_state_py_any",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -9558,9 +9295,9 @@
       "source_file": "automation/state.py",
       "source_location": "L35",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_state_load",
-      "target": "automation_state_py_any"
+      "target": "automation_state_py_any",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -9569,9 +9306,9 @@
       "source_file": "automation/state.py",
       "source_location": "L49",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_state_save",
-      "target": "automation_state_py_any"
+      "target": "automation_state_py_any",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -9580,9 +9317,9 @@
       "source_file": "automation/state.py",
       "source_location": "L70",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_state_set_card",
-      "target": "automation_state_py_any"
+      "target": "automation_state_py_any",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9591,9 +9328,9 @@
       "source_file": "automation/state.py",
       "source_location": "L73",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_state_set_card",
-      "target": "automation_state_save"
+      "target": "automation_state_save",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9602,9 +9339,9 @@
       "source_file": "automation/state.py",
       "source_location": "L71",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_state_set_card",
-      "target": "automation_state_get_card"
+      "target": "automation_state_get_card",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9612,9 +9349,9 @@
       "source_file": "automation/telegram_notify.py",
       "source_location": "L16",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_telegram_notify",
-      "target": "automation_telegram_notify_send_telegram_message"
+      "target": "automation_telegram_notify_send_telegram_message",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
@@ -9622,9 +9359,9 @@
       "source_file": "automation/telegram_notify.py",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_telegram_notify_rationale_1",
-      "target": "automation_telegram_notify"
+      "target": "automation_telegram_notify",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9685,21 +9422,11 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "automation/trello_client.py",
-      "source_location": "L20",
-      "weight": 1.0,
-      "source": "automation_trello_client",
-      "target": "automation_trello_client_build_session",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "automation/trello_client.py",
       "source_location": "L77",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client",
-      "target": "automation_trello_client_resolve_list_ids"
+      "target": "automation_trello_client_resolve_list_ids",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9707,9 +9434,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L17",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client",
-      "target": "automation_trello_client_trelloclient"
+      "target": "automation_trello_client_trelloclient",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
@@ -9717,40 +9444,8 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_rationale_1",
-      "target": "automation_trello_client"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "automation/trello_client.py",
-      "source_location": "L20",
-      "weight": 1.0,
-      "source": "automation_trello_client_build_session",
-      "target": "session",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "automation/trello_client.py",
-      "source_location": "L21",
-      "weight": 1.0,
-      "source": "automation_trello_client_rationale_21",
-      "target": "automation_trello_client_build_session",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "automation/trello_client.py",
-      "source_location": "L45",
-      "weight": 1.0,
-      "source": "automation_trello_client_trelloclient_init",
-      "target": "automation_trello_client_build_session",
+      "target": "automation_trello_client",
       "confidence_score": 1.0
     },
     {
@@ -9760,9 +9455,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L77",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_resolve_list_ids",
-      "target": "automation_trello_client_trelloclient"
+      "target": "automation_trello_client_trelloclient",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -9770,9 +9465,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L72",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient",
-      "target": "automation_trello_client_trelloclient_add_label_name"
+      "target": "automation_trello_client_trelloclient_add_label_name",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -9780,9 +9475,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L23",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient",
-      "target": "automation_trello_client_trelloclient_auth"
+      "target": "automation_trello_client_trelloclient_auth",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -9790,9 +9485,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L59",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient",
-      "target": "automation_trello_client_trelloclient_comment_card"
+      "target": "automation_trello_client_trelloclient_comment_card",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -9800,9 +9495,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L26",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient",
-      "target": "automation_trello_client_trelloclient_get"
+      "target": "automation_trello_client_trelloclient_get",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -9810,9 +9505,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L47",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient",
-      "target": "automation_trello_client_trelloclient_get_cards"
+      "target": "automation_trello_client_trelloclient_get_cards",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -9820,9 +9515,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L62",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient",
-      "target": "automation_trello_client_trelloclient_get_comments"
+      "target": "automation_trello_client_trelloclient_get_comments",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -9830,9 +9525,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L43",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient",
-      "target": "automation_trello_client_trelloclient_get_lists"
+      "target": "automation_trello_client_trelloclient_get_lists",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -9840,9 +9535,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L18",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient",
-      "target": "automation_trello_client_trelloclient_init"
+      "target": "automation_trello_client_trelloclient_init",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -9850,9 +9545,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L56",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient",
-      "target": "automation_trello_client_trelloclient_move_card"
+      "target": "automation_trello_client_trelloclient_move_card",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -9860,9 +9555,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L31",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient",
-      "target": "automation_trello_client_trelloclient_post"
+      "target": "automation_trello_client_trelloclient_post",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -9870,9 +9565,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L36",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient",
-      "target": "automation_trello_client_trelloclient_put"
+      "target": "automation_trello_client_trelloclient_put",
+      "confidence_score": 1.0
     },
     {
       "relation": "uses",
@@ -9880,9 +9575,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L42",
       "weight": 0.8,
-      "confidence_score": 0.5,
       "source": "trelloclient",
-      "target": "automation_trello_client_trelloclient"
+      "target": "automation_trello_client_trelloclient",
+      "confidence_score": 0.5
     },
     {
       "relation": "calls",
@@ -9891,9 +9586,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L27",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient_get",
-      "target": "automation_trello_client_trelloclient_auth"
+      "target": "automation_trello_client_trelloclient_auth",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9902,9 +9597,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L32",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient_post",
-      "target": "automation_trello_client_trelloclient_auth"
+      "target": "automation_trello_client_trelloclient_auth",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9913,9 +9608,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L37",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient_put",
-      "target": "automation_trello_client_trelloclient_auth"
+      "target": "automation_trello_client_trelloclient_auth",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -9924,9 +9619,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L26",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient_get",
-      "target": "automation_trello_client_py_any"
+      "target": "automation_trello_client_py_any",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9935,9 +9630,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L49",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient_get_cards",
-      "target": "automation_trello_client_trelloclient_get"
+      "target": "automation_trello_client_trelloclient_get",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9946,9 +9641,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L63",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient_get_comments",
-      "target": "automation_trello_client_trelloclient_get"
+      "target": "automation_trello_client_trelloclient_get",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9957,9 +9652,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L45",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient_get_lists",
-      "target": "automation_trello_client_trelloclient_get"
+      "target": "automation_trello_client_trelloclient_get",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -9968,9 +9663,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L47",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient_get_cards",
-      "target": "automation_trello_client_py_any"
+      "target": "automation_trello_client_py_any",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -9979,9 +9674,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L62",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient_get_comments",
-      "target": "automation_trello_client_py_any"
+      "target": "automation_trello_client_py_any",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -9990,9 +9685,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L43",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient_get_lists",
-      "target": "automation_trello_client_py_any"
+      "target": "automation_trello_client_py_any",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -10001,9 +9696,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L31",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient_post",
-      "target": "automation_trello_client_py_any"
+      "target": "automation_trello_client_py_any",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -10012,9 +9707,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L36",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient_put",
-      "target": "automation_trello_client_py_any"
+      "target": "automation_trello_client_py_any",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -10023,9 +9718,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L74",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient_add_label_name",
-      "target": "automation_trello_client_trelloclient_post"
+      "target": "automation_trello_client_trelloclient_post",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -10034,9 +9729,9 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L60",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient_comment_card",
-      "target": "automation_trello_client_trelloclient_post"
+      "target": "automation_trello_client_trelloclient_post",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -10045,17 +9740,17 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L57",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_trelloclient_move_card",
-      "target": "automation_trello_client_trelloclient_put"
+      "target": "automation_trello_client_trelloclient_put",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "automation/trello_client.py",
-      "source_location": "L68",
+      "source_location": "L44",
       "weight": 1.0,
-      "source": "automation_trello_client_rationale_68",
+      "source": "automation_trello_client_rationale_44",
       "target": "automation_trello_client_trelloclient_get_lists",
       "confidence_score": 1.0
     },
@@ -10066,17 +9761,17 @@
       "source_file": "automation/trello_client.py",
       "source_location": "L83",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_trello_client_resolve_list_ids",
-      "target": "automation_trello_client_trelloclient_get_lists"
+      "target": "automation_trello_client_trelloclient_get_lists",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "automation/trello_client.py",
-      "source_location": "L72",
+      "source_location": "L48",
       "weight": 1.0,
-      "source": "automation_trello_client_rationale_72",
+      "source": "automation_trello_client_rationale_48",
       "target": "automation_trello_client_trelloclient_get_cards",
       "confidence_score": 1.0
     },
@@ -10084,9 +9779,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "automation/trello_client.py",
-      "source_location": "L97",
+      "source_location": "L73",
       "weight": 1.0,
-      "source": "automation_trello_client_rationale_97",
+      "source": "automation_trello_client_rationale_73",
       "target": "automation_trello_client_trelloclient_add_label_name",
       "confidence_score": 1.0
     },
@@ -10094,9 +9789,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "automation/trello_client.py",
-      "source_location": "L102",
+      "source_location": "L78",
       "weight": 1.0,
-      "source": "automation_trello_client_rationale_102",
+      "source": "automation_trello_client_rationale_78",
       "target": "automation_trello_client_resolve_list_ids",
       "confidence_score": 1.0
     },
@@ -10117,9 +9812,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L59",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher",
-      "target": "automation_watcher_card_url"
+      "target": "automation_watcher_card_url",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -10127,9 +9822,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L94",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher",
-      "target": "automation_watcher_handle_dev"
+      "target": "automation_watcher_handle_dev",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -10137,9 +9832,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L67",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher",
-      "target": "automation_watcher_handle_doing"
+      "target": "automation_watcher_handle_doing",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -10147,9 +9842,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L204",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher",
-      "target": "automation_watcher_handle_done"
+      "target": "automation_watcher_handle_done",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -10157,9 +9852,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L55",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher",
-      "target": "automation_watcher_log"
+      "target": "automation_watcher_log",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -10167,9 +9862,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L293",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher",
-      "target": "automation_watcher_main"
+      "target": "automation_watcher_main",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -10177,9 +9872,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L233",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher",
-      "target": "automation_watcher_maybe_trigger_build"
+      "target": "automation_watcher_maybe_trigger_build",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -10187,9 +9882,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L63",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher",
-      "target": "automation_watcher_now_iso"
+      "target": "automation_watcher_now_iso",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -10197,9 +9892,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L259",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher",
-      "target": "automation_watcher_tick"
+      "target": "automation_watcher_tick",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
@@ -10207,9 +9902,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher_rationale_1",
-      "target": "automation_watcher"
+      "target": "automation_watcher",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -10218,9 +9913,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L115",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher_handle_dev",
-      "target": "automation_watcher_log"
+      "target": "automation_watcher_log",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -10229,9 +9924,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L71",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher_handle_doing",
-      "target": "automation_watcher_log"
+      "target": "automation_watcher_log",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -10240,9 +9935,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L222",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher_handle_done",
-      "target": "automation_watcher_log"
+      "target": "automation_watcher_log",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -10251,9 +9946,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L311",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher_main",
-      "target": "automation_watcher_log"
+      "target": "automation_watcher_log",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -10262,9 +9957,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L243",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher_maybe_trigger_build",
-      "target": "automation_watcher_log"
+      "target": "automation_watcher_log",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -10273,9 +9968,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L285",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher_tick",
-      "target": "automation_watcher_log"
+      "target": "automation_watcher_log",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -10284,9 +9979,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L199",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher_handle_dev",
-      "target": "automation_watcher_card_url"
+      "target": "automation_watcher_card_url",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -10295,9 +9990,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L194",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher_handle_dev",
-      "target": "automation_watcher_now_iso"
+      "target": "automation_watcher_now_iso",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -10306,9 +10001,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L67",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher_handle_doing",
-      "target": "trelloclient"
+      "target": "trelloclient",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
@@ -10316,9 +10011,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L68",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher_rationale_68",
-      "target": "automation_watcher_handle_doing"
+      "target": "automation_watcher_handle_doing",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -10327,9 +10022,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L274",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher_tick",
-      "target": "automation_watcher_handle_doing"
+      "target": "automation_watcher_handle_doing",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -10338,9 +10033,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L94",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher_handle_dev",
-      "target": "trelloclient"
+      "target": "trelloclient",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -10349,9 +10044,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L204",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher_handle_done",
-      "target": "trelloclient"
+      "target": "trelloclient",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -10360,9 +10055,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L300",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher_main",
-      "target": "trelloclient"
+      "target": "trelloclient",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -10371,17 +10066,17 @@
       "source_file": "automation/watcher.py",
       "source_location": "L259",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher_tick",
-      "target": "trelloclient"
+      "target": "trelloclient",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "automation/watcher.py",
-      "source_location": "L101",
+      "source_location": "L95",
       "weight": 1.0,
-      "source": "automation_watcher_rationale_101",
+      "source": "automation_watcher_rationale_95",
       "target": "automation_watcher_handle_dev",
       "confidence_score": 1.0
     },
@@ -10392,17 +10087,17 @@
       "source_file": "automation/watcher.py",
       "source_location": "L276",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher_tick",
-      "target": "automation_watcher_handle_dev"
+      "target": "automation_watcher_handle_dev",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "automation/watcher.py",
-      "source_location": "L233",
+      "source_location": "L205",
       "weight": 1.0,
-      "source": "automation_watcher_rationale_233",
+      "source": "automation_watcher_rationale_205",
       "target": "automation_watcher_handle_done",
       "confidence_score": 1.0
     },
@@ -10413,9 +10108,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L278",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher_tick",
-      "target": "automation_watcher_handle_done"
+      "target": "automation_watcher_handle_done",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -10424,9 +10119,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L290",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher_tick",
-      "target": "automation_watcher_maybe_trigger_build"
+      "target": "automation_watcher_maybe_trigger_build",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -10435,9 +10130,9 @@
       "source_file": "automation/watcher.py",
       "source_location": "L318",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_watcher_main",
-      "target": "automation_watcher_tick"
+      "target": "automation_watcher_tick",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -10480,143 +10175,6 @@
       "target": "backend_database_get_db"
     },
     {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/database.py",
-      "source_location": "L37",
-      "weight": 1.0,
-      "source": "backend_database",
-      "target": "backend_database_is_connection_closed_error",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/database.py",
-      "source_location": "L64",
-      "weight": 1.0,
-      "source": "backend_database",
-      "target": "backend_database_safe_close",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/database.py",
-      "source_location": "L50",
-      "weight": 1.0,
-      "source": "backend_database",
-      "target": "backend_database_safe_rollback",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/database.py",
-      "source_location": "L92",
-      "weight": 1.0,
-      "source": "backend_database_get_db",
-      "target": "backend_database_is_connection_closed_error",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/database.py",
-      "source_location": "L37",
-      "weight": 1.0,
-      "source": "backend_database_is_connection_closed_error",
-      "target": "baseexception",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/database.py",
-      "source_location": "L38",
-      "weight": 1.0,
-      "source": "backend_database_rationale_38",
-      "target": "backend_database_is_connection_closed_error",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "backend/main.py",
-      "source_location": "L479",
-      "weight": 1.0,
-      "source": "backend_main_persist_sync_updates",
-      "target": "backend_database_is_connection_closed_error"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/database.py",
-      "source_location": "L97",
-      "weight": 1.0,
-      "source": "backend_database_get_db",
-      "target": "backend_database_safe_rollback",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/database.py",
-      "source_location": "L51",
-      "weight": 1.0,
-      "source": "backend_database_rationale_51",
-      "target": "backend_database_safe_rollback",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "backend/main.py",
-      "source_location": "L630",
-      "weight": 1.0,
-      "source": "backend_main_download_all_manhwas",
-      "target": "backend_database_safe_rollback"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "backend/main.py",
-      "source_location": "L862",
-      "weight": 1.0,
-      "source": "backend_main_review_all_manhwas",
-      "target": "backend_database_safe_rollback"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/database.py",
-      "source_location": "L104",
-      "weight": 1.0,
-      "source": "backend_database_get_db",
-      "target": "backend_database_safe_close",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/database.py",
-      "source_location": "L65",
-      "weight": 1.0,
-      "source": "backend_database_rationale_65",
-      "target": "backend_database_safe_close",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/database.py",
@@ -10630,21 +10188,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/database.py",
-      "source_location": "L74",
+      "source_location": "L52",
       "weight": 1.0,
-      "source": "backend_database_rationale_74",
-      "target": "backend_database_get_db",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/database.py",
-      "source_location": "L109",
-      "weight": 1.0,
-      "source": "backend_database_rationale_109",
-      "target": "backend_database_create_tables",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_database_rationale_52",
+      "target": "backend_database_create_tables"
     },
     {
       "relation": "calls",
@@ -10672,11 +10220,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/database.py",
-      "source_location": "L116",
+      "source_location": "L59",
       "weight": 1.0,
-      "source": "backend_database_rationale_116",
-      "target": "backend_database_drop_tables",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_database_rationale_59",
+      "target": "backend_database_drop_tables"
     },
     {
       "relation": "calls",
@@ -10935,21 +10483,11 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L439",
-      "weight": 1.0,
-      "source": "backend_main",
-      "target": "backend_main_persist_sync_updates",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
       "source_location": "L574",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_main",
-      "target": "backend_main_review_all_manhwas"
+      "target": "backend_main_review_all_manhwas",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -10975,16 +10513,6 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L125",
-      "weight": 1.0,
-      "source": "backend_main",
-      "target": "backend_main_syncresponse",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
       "source_location": "L95",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -11000,16 +10528,6 @@
       "confidence_score": 1.0,
       "source": "backend_main",
       "target": "backend_main_test_telegram_config"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L77",
-      "weight": 1.0,
-      "source": "backend_main",
-      "target": "backend_main_unhandled_exception_handler",
-      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11076,11 +10594,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L33",
+      "source_location": "L27",
       "weight": 1.0,
-      "source": "backend_main_rationale_33",
-      "target": "backend_main_verify_token",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_27",
+      "target": "backend_main_verify_token"
     },
     {
       "relation": "references",
@@ -11092,17 +10610,6 @@
       "confidence_score": 1.0,
       "source": "backend_main_verify_token",
       "target": "request"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L77",
-      "weight": 1.0,
-      "source": "backend_main_unhandled_exception_handler",
-      "target": "request",
-      "confidence_score": 1.0
     },
     {
       "relation": "uses",
@@ -11149,11 +10656,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L51",
+      "source_location": "L45",
       "weight": 1.0,
-      "source": "backend_main_rationale_51",
-      "target": "backend_main_lifespan",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_45",
+      "target": "backend_main_lifespan"
     },
     {
       "relation": "uses",
@@ -11184,57 +10691,6 @@
       "confidence_score": 0.5,
       "source": "fastapi",
       "target": "backend_telegram_scraper_telegrammanhwascraper"
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L78",
-      "weight": 1.0,
-      "source": "backend_main_rationale_78",
-      "target": "backend_main_unhandled_exception_handler",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L77",
-      "weight": 1.0,
-      "source": "backend_main_unhandled_exception_handler",
-      "target": "exception",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/main.py",
-      "source_location": "L23",
-      "weight": 0.8,
-      "source": "exception",
-      "target": "backend_models_chapterprogress",
-      "confidence_score": 0.5
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/main.py",
-      "source_location": "L23",
-      "weight": 0.8,
-      "source": "exception",
-      "target": "backend_models_manhwa",
-      "confidence_score": 0.5
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/main.py",
-      "source_location": "L146",
-      "weight": 0.8,
-      "source": "exception",
-      "target": "backend_telegram_scraper_telegrammanhwascraper",
-      "confidence_score": 0.5
     },
     {
       "relation": "inherits",
@@ -11315,16 +10771,6 @@
       "confidence_score": 1.0,
       "source": "backend_main_scrollupdate",
       "target": "basemodel"
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L125",
-      "weight": 1.0,
-      "source": "backend_main_syncresponse",
-      "target": "basemodel",
-      "confidence_score": 1.0
     },
     {
       "relation": "inherits",
@@ -11500,46 +10946,6 @@
       "target": "backend_telegram_scraper_telegrammanhwascraper"
     },
     {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L126",
-      "weight": 1.0,
-      "source": "backend_main_rationale_126",
-      "target": "backend_main_syncresponse",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/main.py",
-      "source_location": "L23",
-      "weight": 0.8,
-      "source": "backend_main_syncresponse",
-      "target": "backend_models_chapterprogress",
-      "confidence_score": 0.5
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/main.py",
-      "source_location": "L23",
-      "weight": 0.8,
-      "source": "backend_main_syncresponse",
-      "target": "backend_models_manhwa",
-      "confidence_score": 0.5
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/main.py",
-      "source_location": "L146",
-      "weight": 0.8,
-      "source": "backend_main_syncresponse",
-      "target": "backend_telegram_scraper_telegrammanhwascraper",
-      "confidence_score": 0.5
-    },
-    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -11576,11 +10982,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L144",
+      "source_location": "L106",
       "weight": 1.0,
-      "source": "backend_main_rationale_144",
-      "target": "backend_main_get_telegram_scraper",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_106",
+      "target": "backend_main_get_telegram_scraper"
     },
     {
       "relation": "calls",
@@ -11589,9 +10995,9 @@
       "source_file": "backend/main.py",
       "source_location": "L619",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_main_review_all_manhwas",
-      "target": "backend_main_get_telegram_scraper"
+      "target": "backend_main_get_telegram_scraper",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -11608,11 +11014,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L174",
+      "source_location": "L136",
       "weight": 1.0,
-      "source": "backend_main_rationale_174",
-      "target": "backend_main_get_manhwas",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_136",
+      "target": "backend_main_get_manhwas"
     },
     {
       "relation": "uses",
@@ -11761,9 +11167,9 @@
       "source_file": "backend/main.py",
       "source_location": "L574",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_main_review_all_manhwas",
-      "target": "asyncsession"
+      "target": "asyncsession",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -11802,31 +11208,31 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L186",
+      "source_location": "L148",
       "weight": 1.0,
-      "source": "backend_main_rationale_186",
-      "target": "backend_main_get_manhwa",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_148",
+      "target": "backend_main_get_manhwa"
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L208",
+      "source_location": "L170",
       "weight": 1.0,
-      "source": "backend_main_rationale_208",
-      "target": "backend_main_update_manhwa",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_170",
+      "target": "backend_main_update_manhwa"
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L240",
+      "source_location": "L202",
       "weight": 1.0,
-      "source": "backend_main_rationale_240",
-      "target": "backend_main_list_manhwa_files",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_202",
+      "target": "backend_main_list_manhwa_files"
     },
     {
       "relation": "references",
@@ -11873,11 +11279,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L288",
+      "source_location": "L250",
       "weight": 1.0,
-      "source": "backend_main_rationale_288",
-      "target": "backend_main_update_current_chapter",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_250",
+      "target": "backend_main_update_current_chapter"
     },
     {
       "relation": "uses",
@@ -11924,11 +11330,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L316",
+      "source_location": "L278",
       "weight": 1.0,
-      "source": "backend_main_rationale_316",
-      "target": "backend_main_update_scroll",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_278",
+      "target": "backend_main_update_scroll"
     },
     {
       "relation": "calls",
@@ -11945,21 +11351,21 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L334",
+      "source_location": "L296",
       "weight": 1.0,
-      "source": "backend_main_rationale_334",
-      "target": "backend_main_get_scroll",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_296",
+      "target": "backend_main_get_scroll"
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L345",
+      "source_location": "L307",
       "weight": 1.0,
-      "source": "backend_main_rationale_345",
-      "target": "backend_main_get_cbz_info",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_307",
+      "target": "backend_main_get_cbz_info"
     },
     {
       "relation": "rationale_for",
@@ -11975,71 +11381,29 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L372",
+      "source_location": "L360",
       "weight": 1.0,
-      "source": "backend_main_rationale_372",
-      "target": "backend_main_download_cbz_file",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_360",
+      "target": "backend_main_get_cbz_page"
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L398",
+      "source_location": "L403",
       "weight": 1.0,
-      "source": "backend_main_rationale_398",
-      "target": "backend_main_get_cbz_page",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L656",
-      "weight": 1.0,
-      "source": "backend_main_download_all_manhwas",
-      "target": "backend_main_persist_sync_updates",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_403",
+      "target": "backend_main_download_all_manhwas"
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L440",
+      "source_location": "L575",
       "weight": 1.0,
-      "source": "backend_main_rationale_440",
-      "target": "backend_main_persist_sync_updates",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L885",
-      "weight": 1.0,
-      "source": "backend_main_review_all_manhwas",
-      "target": "backend_main_persist_sync_updates",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L490",
-      "weight": 1.0,
-      "source": "backend_main_rationale_490",
-      "target": "backend_main_download_all_manhwas",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L717",
-      "weight": 1.0,
-      "source": "backend_main_rationale_717",
+      "source": "backend_main_rationale_575",
       "target": "backend_main_review_all_manhwas",
       "confidence_score": 1.0
     },
@@ -12047,9 +11411,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L919",
+      "source_location": "L760",
       "weight": 1.0,
-      "source": "backend_main_rationale_919",
+      "source": "backend_main_rationale_760",
       "target": "backend_main_import_from_telegram",
       "confidence_score": 1.0
     },
@@ -12057,9 +11421,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L1060",
+      "source_location": "L901",
       "weight": 1.0,
-      "source": "backend_main_rationale_1060",
+      "source": "backend_main_rationale_901",
       "target": "backend_main_test_telegram_config",
       "confidence_score": 1.0
     },
@@ -17136,9 +16500,9 @@
       "source_file": ".claude/CLAUDE.md",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "claude_claude",
-      "target": "claude_claude_graphify"
+      "target": "claude_claude_graphify",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17146,9 +16510,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L6",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill",
-      "target": "graphify_skill_graphify"
+      "target": "graphify_skill_graphify",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17156,9 +16520,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L621",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill_graphify",
-      "target": "graphify_skill_for_graphify_add_and_watch"
+      "target": "graphify_skill_for_graphify_add_and_watch",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17166,9 +16530,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L609",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill_graphify",
-      "target": "graphify_skill_for_graphify_query"
+      "target": "graphify_skill_for_graphify_query",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17176,9 +16540,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L627",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill_graphify",
-      "target": "graphify_skill_for_the_commit_hook_and_native_claude_md_integration"
+      "target": "graphify_skill_for_the_commit_hook_and_native_claude_md_integration",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17186,9 +16550,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L603",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill_graphify",
-      "target": "graphify_skill_for_update_and_cluster_only"
+      "target": "graphify_skill_for_update_and_cluster_only",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17196,9 +16560,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L646",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill_graphify",
-      "target": "graphify_skill_honesty_rules"
+      "target": "graphify_skill_honesty_rules",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17206,9 +16570,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L585",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill_graphify",
-      "target": "graphify_skill_interpreter_guard_for_subcommands"
+      "target": "graphify_skill_interpreter_guard_for_subcommands",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17216,9 +16580,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L633",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill_graphify",
-      "target": "graphify_skill_troubleshooting"
+      "target": "graphify_skill_troubleshooting",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17226,9 +16590,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L10",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill_graphify",
-      "target": "graphify_skill_usage"
+      "target": "graphify_skill_usage",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17236,9 +16600,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L45",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill_graphify",
-      "target": "graphify_skill_what_graphify_is_for"
+      "target": "graphify_skill_what_graphify_is_for",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17246,9 +16610,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L49",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill_graphify",
-      "target": "graphify_skill_what_you_must_do_when_invoked"
+      "target": "graphify_skill_what_you_must_do_when_invoked",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17256,9 +16620,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L61",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill_what_you_must_do_when_invoked",
-      "target": "graphify_skill_step_0_github_repos_and_multi_path_merge_only_if_a_url_or_several_paths"
+      "target": "graphify_skill_step_0_github_repos_and_multi_path_merge_only_if_a_url_or_several_paths",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17266,9 +16630,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L65",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill_what_you_must_do_when_invoked",
-      "target": "graphify_skill_step_1_ensure_graphify_is_installed"
+      "target": "graphify_skill_step_1_ensure_graphify_is_installed",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17276,9 +16640,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L166",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill_what_you_must_do_when_invoked",
-      "target": "graphify_skill_step_2_5_video_and_audio_only_if_video_files_detected"
+      "target": "graphify_skill_step_2_5_video_and_audio_only_if_video_files_detected",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17286,9 +16650,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L129",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill_what_you_must_do_when_invoked",
-      "target": "graphify_skill_step_2_detect_files"
+      "target": "graphify_skill_step_2_detect_files",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17296,9 +16660,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L170",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill_what_you_must_do_when_invoked",
-      "target": "graphify_skill_step_3_extract_entities_and_relationships"
+      "target": "graphify_skill_step_3_extract_entities_and_relationships",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17306,9 +16670,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L392",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill_what_you_must_do_when_invoked",
-      "target": "graphify_skill_step_4_build_graph_cluster_analyze_generate_outputs"
+      "target": "graphify_skill_step_4_build_graph_cluster_analyze_generate_outputs",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17316,9 +16680,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L444",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill_what_you_must_do_when_invoked",
-      "target": "graphify_skill_step_5_label_communities"
+      "target": "graphify_skill_step_5_label_communities",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17326,9 +16690,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L484",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill_what_you_must_do_when_invoked",
-      "target": "graphify_skill_step_6_generate_obsidian_vault_opt_in_html"
+      "target": "graphify_skill_step_6_generate_obsidian_vault_opt_in_html",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17336,9 +16700,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L510",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill_what_you_must_do_when_invoked",
-      "target": "graphify_skill_step_9_save_manifest_update_cost_tracker_clean_up_and_report"
+      "target": "graphify_skill_step_9_save_manifest_update_cost_tracker_clean_up_and_report",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17346,9 +16710,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L504",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill_what_you_must_do_when_invoked",
-      "target": "graphify_skill_steps_6b_8_wiki_neo4j_falkordb_svg_graphml_mcp_benchmark_only_on_their_flags"
+      "target": "graphify_skill_steps_6b_8_wiki_neo4j_falkordb_svg_graphml_mcp_benchmark_only_on_their_flags",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17356,9 +16720,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L187",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill_step_3_extract_entities_and_relationships",
-      "target": "graphify_skill_part_a_structural_extraction_for_code_files"
+      "target": "graphify_skill_part_a_structural_extraction_for_code_files",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17366,9 +16730,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L213",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill_step_3_extract_entities_and_relationships",
-      "target": "graphify_skill_part_b_semantic_extraction_parallel_subagents"
+      "target": "graphify_skill_part_b_semantic_extraction_parallel_subagents",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17376,9 +16740,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L358",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill_step_3_extract_entities_and_relationships",
-      "target": "graphify_skill_part_c_merge_ast_semantic_into_final_extraction"
+      "target": "graphify_skill_part_c_merge_ast_semantic_into_final_extraction",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17386,9 +16750,9 @@
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L635",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "graphify_skill_troubleshooting",
-      "target": "graphify_skill_powershell_5_1_vertical_scrolling_stops_working"
+      "target": "graphify_skill_powershell_5_1_vertical_scrolling_stops_working",
+      "confidence_score": 1.0
     },
     {
       "relation": "conceptually_related_to",
@@ -17406,9 +16770,9 @@
       "source_file": ".claude/skills/graphify/references/add-watch.md",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_add_watch",
-      "target": "references_add_watch_graphify_reference_add_a_url_and_watch_a_folder"
+      "target": "references_add_watch_graphify_reference_add_a_url_and_watch_a_folder",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17416,9 +16780,9 @@
       "source_file": ".claude/skills/graphify/references/add-watch.md",
       "source_location": "L5",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_add_watch_graphify_reference_add_a_url_and_watch_a_folder",
-      "target": "references_add_watch_for_graphify_add"
+      "target": "references_add_watch_for_graphify_add",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17426,9 +16790,9 @@
       "source_file": ".claude/skills/graphify/references/add-watch.md",
       "source_location": "L39",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_add_watch_graphify_reference_add_a_url_and_watch_a_folder",
-      "target": "references_add_watch_for_watch"
+      "target": "references_add_watch_for_watch",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17436,9 +16800,9 @@
       "source_file": ".claude/skills/graphify/references/exports.md",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_exports",
-      "target": "references_exports_graphify_reference_extra_exports_and_benchmark"
+      "target": "references_exports_graphify_reference_extra_exports_and_benchmark",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17446,9 +16810,9 @@
       "source_file": ".claude/skills/graphify/references/exports.md",
       "source_location": "L5",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_exports_graphify_reference_extra_exports_and_benchmark",
-      "target": "references_exports_step_6b_wiki_only_if_wiki_flag"
+      "target": "references_exports_step_6b_wiki_only_if_wiki_flag",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17456,9 +16820,9 @@
       "source_file": ".claude/skills/graphify/references/exports.md",
       "source_location": "L15",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_exports_graphify_reference_extra_exports_and_benchmark",
-      "target": "references_exports_step_7_neo4j_export_only_if_neo4j_or_neo4j_push_flag"
+      "target": "references_exports_step_7_neo4j_export_only_if_neo4j_or_neo4j_push_flag",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17466,9 +16830,9 @@
       "source_file": ".claude/skills/graphify/references/exports.md",
       "source_location": "L31",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_exports_graphify_reference_extra_exports_and_benchmark",
-      "target": "references_exports_step_7a_falkordb_export_only_if_falkordb_or_falkordb_push_flag"
+      "target": "references_exports_step_7a_falkordb_export_only_if_falkordb_or_falkordb_push_flag",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17476,9 +16840,9 @@
       "source_file": ".claude/skills/graphify/references/exports.md",
       "source_location": "L47",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_exports_graphify_reference_extra_exports_and_benchmark",
-      "target": "references_exports_step_7b_svg_export_only_if_svg_flag"
+      "target": "references_exports_step_7b_svg_export_only_if_svg_flag",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17486,9 +16850,9 @@
       "source_file": ".claude/skills/graphify/references/exports.md",
       "source_location": "L53",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_exports_graphify_reference_extra_exports_and_benchmark",
-      "target": "references_exports_step_7c_graphml_export_only_if_graphml_flag"
+      "target": "references_exports_step_7c_graphml_export_only_if_graphml_flag",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17496,9 +16860,9 @@
       "source_file": ".claude/skills/graphify/references/exports.md",
       "source_location": "L59",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_exports_graphify_reference_extra_exports_and_benchmark",
-      "target": "references_exports_step_7d_mcp_server_only_if_mcp_flag"
+      "target": "references_exports_step_7d_mcp_server_only_if_mcp_flag",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17506,9 +16870,9 @@
       "source_file": ".claude/skills/graphify/references/exports.md",
       "source_location": "L79",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_exports_graphify_reference_extra_exports_and_benchmark",
-      "target": "references_exports_step_8_token_reduction_benchmark_only_if_total_words_5000"
+      "target": "references_exports_step_8_token_reduction_benchmark_only_if_total_words_5000",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17516,9 +16880,9 @@
       "source_file": ".claude/skills/graphify/references/extraction-spec.md",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_extraction_spec",
-      "target": "references_extraction_spec_graphify_reference_extraction_subagent_prompt"
+      "target": "references_extraction_spec_graphify_reference_extraction_subagent_prompt",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17526,9 +16890,9 @@
       "source_file": ".claude/skills/graphify/references/github-and-merge.md",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_github_and_merge",
-      "target": "references_github_and_merge_graphify_reference_github_clone_and_cross_repo_merge"
+      "target": "references_github_and_merge_graphify_reference_github_clone_and_cross_repo_merge",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17536,9 +16900,9 @@
       "source_file": ".claude/skills/graphify/references/github-and-merge.md",
       "source_location": "L5",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_github_and_merge_graphify_reference_github_clone_and_cross_repo_merge",
-      "target": "references_github_and_merge_step_0_clone_github_repo_s_only_if_a_github_url_was_given"
+      "target": "references_github_and_merge_step_0_clone_github_repo_s_only_if_a_github_url_was_given",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17546,9 +16910,9 @@
       "source_file": ".claude/skills/graphify/references/hooks.md",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_hooks",
-      "target": "references_hooks_graphify_reference_commit_hook_and_native_claude_md_integration"
+      "target": "references_hooks_graphify_reference_commit_hook_and_native_claude_md_integration",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17556,9 +16920,9 @@
       "source_file": ".claude/skills/graphify/references/hooks.md",
       "source_location": "L5",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_hooks_graphify_reference_commit_hook_and_native_claude_md_integration",
-      "target": "references_hooks_for_git_commit_hook"
+      "target": "references_hooks_for_git_commit_hook",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17566,9 +16930,9 @@
       "source_file": ".claude/skills/graphify/references/hooks.md",
       "source_location": "L21",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_hooks_graphify_reference_commit_hook_and_native_claude_md_integration",
-      "target": "references_hooks_for_native_claude_md_integration"
+      "target": "references_hooks_for_native_claude_md_integration",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17576,9 +16940,9 @@
       "source_file": ".claude/skills/graphify/references/query.md",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_query",
-      "target": "references_query_graphify_reference_query_path_explain"
+      "target": "references_query_graphify_reference_query_path_explain",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17586,9 +16950,9 @@
       "source_file": ".claude/skills/graphify/references/query.md",
       "source_location": "L198",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_query_graphify_reference_query_path_explain",
-      "target": "references_query_for_graphify_explain"
+      "target": "references_query_for_graphify_explain",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17596,9 +16960,9 @@
       "source_file": ".claude/skills/graphify/references/query.md",
       "source_location": "L136",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_query_graphify_reference_query_path_explain",
-      "target": "references_query_for_graphify_path"
+      "target": "references_query_for_graphify_path",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17606,9 +16970,9 @@
       "source_file": ".claude/skills/graphify/references/transcribe.md",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_transcribe",
-      "target": "references_transcribe_graphify_reference_transcribe_video_and_audio"
+      "target": "references_transcribe_graphify_reference_transcribe_video_and_audio",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17616,9 +16980,9 @@
       "source_file": ".claude/skills/graphify/references/transcribe.md",
       "source_location": "L5",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_transcribe_graphify_reference_transcribe_video_and_audio",
-      "target": "references_transcribe_step_2_5_transcribe_video_audio_files_only_if_video_files_detected"
+      "target": "references_transcribe_step_2_5_transcribe_video_audio_files_only_if_video_files_detected",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17626,9 +16990,9 @@
       "source_file": ".claude/skills/graphify/references/update.md",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_update",
-      "target": "references_update_graphify_reference_incremental_update_and_cluster_only"
+      "target": "references_update_graphify_reference_incremental_update_and_cluster_only",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17636,9 +17000,9 @@
       "source_file": ".claude/skills/graphify/references/update.md",
       "source_location": "L171",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_update_graphify_reference_incremental_update_and_cluster_only",
-      "target": "references_update_for_cluster_only"
+      "target": "references_update_for_cluster_only",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17646,9 +17010,9 @@
       "source_file": ".claude/skills/graphify/references/update.md",
       "source_location": "L5",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "references_update_graphify_reference_incremental_update_and_cluster_only",
-      "target": "references_update_for_update_incremental_re_extraction"
+      "target": "references_update_for_update_incremental_re_extraction",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17656,9 +17020,9 @@
       "source_file": "AGENT_INSTRUCTIONS.md",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "agent_instructions",
-      "target": "agent_instructions_instru\u00e7\u00f5es_para_agentes"
+      "target": "agent_instructions_instru\u00e7\u00f5es_para_agentes",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17666,9 +17030,9 @@
       "source_file": "AGENT_INSTRUCTIONS.md",
       "source_location": "L146",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "agent_instructions_instru\u00e7\u00f5es_para_agentes",
-      "target": "agent_instructions_como_se_orientar_instru\u00e7\u00f5es_para_agentes"
+      "target": "agent_instructions_como_se_orientar_instru\u00e7\u00f5es_para_agentes",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17676,9 +17040,9 @@
       "source_file": "AGENT_INSTRUCTIONS.md",
       "source_location": "L170",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "agent_instructions_instru\u00e7\u00f5es_para_agentes",
-      "target": "agent_instructions_manuten\u00e7\u00e3o_deste_arquivo_obrigat\u00f3rio_para_agentes"
+      "target": "agent_instructions_manuten\u00e7\u00e3o_deste_arquivo_obrigat\u00f3rio_para_agentes",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17686,9 +17050,9 @@
       "source_file": "AGENT_INSTRUCTIONS.md",
       "source_location": "L157",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "agent_instructions_instru\u00e7\u00f5es_para_agentes",
-      "target": "agent_instructions_pr\u00f3ximos_passos_para_a_ia"
+      "target": "agent_instructions_pr\u00f3ximos_passos_para_a_ia",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17696,9 +17060,9 @@
       "source_file": "AGENT_INSTRUCTIONS.md",
       "source_location": "L5",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "agent_instructions_instru\u00e7\u00f5es_para_agentes",
-      "target": "agent_instructions_vis\u00e3o_geral_da_arquitetura"
+      "target": "agent_instructions_vis\u00e3o_geral_da_arquitetura",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17706,9 +17070,9 @@
       "source_file": "AGENT_INSTRUCTIONS.md",
       "source_location": "L9",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "agent_instructions_vis\u00e3o_geral_da_arquitetura",
-      "target": "agent_instructions_1_backend_fastapi_python"
+      "target": "agent_instructions_1_backend_fastapi_python",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17716,9 +17080,9 @@
       "source_file": "AGENT_INSTRUCTIONS.md",
       "source_location": "L50",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "agent_instructions_vis\u00e3o_geral_da_arquitetura",
-      "target": "agent_instructions_2_frontend_next_js_react_web"
+      "target": "agent_instructions_2_frontend_next_js_react_web",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17726,9 +17090,9 @@
       "source_file": "AGENT_INSTRUCTIONS.md",
       "source_location": "L59",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "agent_instructions_vis\u00e3o_geral_da_arquitetura",
-      "target": "agent_instructions_3_mobile_expo_react_native"
+      "target": "agent_instructions_3_mobile_expo_react_native",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17736,9 +17100,9 @@
       "source_file": "AGENT_INSTRUCTIONS.md",
       "source_location": "L121",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "agent_instructions_vis\u00e3o_geral_da_arquitetura",
-      "target": "agent_instructions_4_automa\u00e7\u00e3o_trello_claude_code"
+      "target": "agent_instructions_4_automa\u00e7\u00e3o_trello_claude_code",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17746,9 +17110,9 @@
       "source_file": "AGENT_INSTRUCTIONS.md",
       "source_location": "L93",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "agent_instructions_3_mobile_expo_react_native",
-      "target": "agent_instructions_configura\u00e7\u00f5es_importantes"
+      "target": "agent_instructions_configura\u00e7\u00f5es_importantes",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17756,9 +17120,9 @@
       "source_file": "AGENT_INSTRUCTIONS.md",
       "source_location": "L65",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "agent_instructions_3_mobile_expo_react_native",
-      "target": "agent_instructions_estrutura_interna_mobile"
+      "target": "agent_instructions_estrutura_interna_mobile",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17766,9 +17130,9 @@
       "source_file": "AGENT_INSTRUCTIONS.md",
       "source_location": "L98",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "agent_instructions_3_mobile_expo_react_native",
-      "target": "agent_instructions_modo_tela_cheia_imersivo_apenas_no_leitor_cbz"
+      "target": "agent_instructions_modo_tela_cheia_imersivo_apenas_no_leitor_cbz",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17776,9 +17140,9 @@
       "source_file": "AGENT_INSTRUCTIONS.md",
       "source_location": "L110",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "agent_instructions_3_mobile_expo_react_native",
-      "target": "agent_instructions_persist\u00eancia_de_progresso_de_leitura_scroll_por_cap\u00edtulo"
+      "target": "agent_instructions_persist\u00eancia_de_progresso_de_leitura_scroll_por_cap\u00edtulo",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17786,9 +17150,9 @@
       "source_file": "AGENT_INSTRUCTIONS.md",
       "source_location": "L174",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "agent_instructions_manuten\u00e7\u00e3o_deste_arquivo_obrigat\u00f3rio_para_agentes",
-      "target": "agent_instructions_como_editar_este_arquivo_corretamente"
+      "target": "agent_instructions_como_editar_este_arquivo_corretamente",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17796,9 +17160,9 @@
       "source_file": "AGENT_INSTRUCTIONS.md",
       "source_location": "L182",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "agent_instructions_manuten\u00e7\u00e3o_deste_arquivo_obrigat\u00f3rio_para_agentes",
-      "target": "agent_instructions_exemplo_de_fluxo"
+      "target": "agent_instructions_exemplo_de_fluxo",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17806,9 +17170,9 @@
       "source_file": "CLAUDE.md",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "claude",
-      "target": "claude_graphify"
+      "target": "claude_graphify",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17816,9 +17180,9 @@
       "source_file": "README.md",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "readme",
-      "target": "readme_manhwa_tracker"
+      "target": "readme_manhwa_tracker",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -17866,9 +17230,9 @@
       "source_file": "README.md",
       "source_location": "L146",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "readme_manhwa_tracker",
-      "target": "readme_api_endpoints_resumido"
+      "target": "readme_api_endpoints_resumido",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17876,9 +17240,9 @@
       "source_file": "README.md",
       "source_location": "L174",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "readme_manhwa_tracker",
-      "target": "readme_autor"
+      "target": "readme_autor",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -17896,9 +17260,9 @@
       "source_file": "README.md",
       "source_location": "L105",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "readme_manhwa_tracker",
-      "target": "readme_estrutura_do_projeto"
+      "target": "readme_estrutura_do_projeto",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17906,9 +17270,9 @@
       "source_file": "README.md",
       "source_location": "L24",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "readme_manhwa_tracker",
-      "target": "readme_funcionalidades"
+      "target": "readme_funcionalidades",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17916,9 +17280,9 @@
       "source_file": "README.md",
       "source_location": "L37",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "readme_manhwa_tracker",
-      "target": "readme_instala\u00e7\u00e3o_e_execu\u00e7\u00e3o"
+      "target": "readme_instala\u00e7\u00e3o_e_execu\u00e7\u00e3o",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17926,9 +17290,9 @@
       "source_file": "README.md",
       "source_location": "L170",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "readme_manhwa_tracker",
-      "target": "readme_licen\u00e7a"
+      "target": "readme_licen\u00e7a",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17936,9 +17300,9 @@
       "source_file": "README.md",
       "source_location": "L135",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "readme_manhwa_tracker",
-      "target": "readme_pr\u00f3ximas_melhorias"
+      "target": "readme_pr\u00f3ximas_melhorias",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17946,9 +17310,9 @@
       "source_file": "README.md",
       "source_location": "L5",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "readme_manhwa_tracker",
-      "target": "readme_tecnologias"
+      "target": "readme_tecnologias",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -17966,9 +17330,9 @@
       "source_file": "README.md",
       "source_location": "L13",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "readme_tecnologias",
-      "target": "readme_backend"
+      "target": "readme_backend",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17976,9 +17340,9 @@
       "source_file": "README.md",
       "source_location": "L7",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "readme_tecnologias",
-      "target": "readme_frontend_web"
+      "target": "readme_frontend_web",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17986,9 +17350,9 @@
       "source_file": "README.md",
       "source_location": "L19",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "readme_tecnologias",
-      "target": "readme_mobile"
+      "target": "readme_mobile",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17996,9 +17360,9 @@
       "source_file": "README.md",
       "source_location": "L39",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "readme_instala\u00e7\u00e3o_e_execu\u00e7\u00e3o",
-      "target": "readme_backend_fastapi_postgresql"
+      "target": "readme_backend_fastapi_postgresql",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18006,9 +17370,9 @@
       "source_file": "README.md",
       "source_location": "L81",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "readme_instala\u00e7\u00e3o_e_execu\u00e7\u00e3o",
-      "target": "readme_frontend_next_js"
+      "target": "readme_frontend_next_js",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18016,9 +17380,9 @@
       "source_file": "README.md",
       "source_location": "L91",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "readme_instala\u00e7\u00e3o_e_execu\u00e7\u00e3o",
-      "target": "readme_mobile_expo"
+      "target": "readme_mobile_expo",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18026,9 +17390,9 @@
       "source_file": "automation/SETUP.md",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_setup",
-      "target": "automation_setup_automa\u00e7\u00e3o_trello_claude_code"
+      "target": "automation_setup_automa\u00e7\u00e3o_trello_claude_code",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18036,9 +17400,9 @@
       "source_file": "automation/SETUP.md",
       "source_location": "L44",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_setup_automa\u00e7\u00e3o_trello_claude_code",
-      "target": "automation_setup_0_antes_de_come\u00e7ar_checklist_r\u00e1pido_no_seu_terminal"
+      "target": "automation_setup_0_antes_de_come\u00e7ar_checklist_r\u00e1pido_no_seu_terminal",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18046,9 +17410,9 @@
       "source_file": "automation/SETUP.md",
       "source_location": "L89",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_setup_automa\u00e7\u00e3o_trello_claude_code",
-      "target": "automation_setup_1_ajustar_as_listas_do_trello"
+      "target": "automation_setup_1_ajustar_as_listas_do_trello",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18056,9 +17420,9 @@
       "source_file": "automation/SETUP.md",
       "source_location": "L107",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_setup_automa\u00e7\u00e3o_trello_claude_code",
-      "target": "automation_setup_2_credenciais_do_trello"
+      "target": "automation_setup_2_credenciais_do_trello",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18066,9 +17430,9 @@
       "source_file": "automation/SETUP.md",
       "source_location": "L119",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_setup_automa\u00e7\u00e3o_trello_claude_code",
-      "target": "automation_setup_3_bot_do_telegram_avisos"
+      "target": "automation_setup_3_bot_do_telegram_avisos",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18076,9 +17440,9 @@
       "source_file": "automation/SETUP.md",
       "source_location": "L131",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_setup_automa\u00e7\u00e3o_trello_claude_code",
-      "target": "automation_setup_4_configurar_o_env"
+      "target": "automation_setup_4_configurar_o_env",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18086,9 +17450,9 @@
       "source_file": "automation/SETUP.md",
       "source_location": "L165",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_setup_automa\u00e7\u00e3o_trello_claude_code",
-      "target": "automation_setup_5_rodar"
+      "target": "automation_setup_5_rodar",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18096,9 +17460,9 @@
       "source_file": "automation/SETUP.md",
       "source_location": "L191",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_setup_automa\u00e7\u00e3o_trello_claude_code",
-      "target": "automation_setup_6_uso_no_dia_a_dia"
+      "target": "automation_setup_6_uso_no_dia_a_dia",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18106,9 +17470,9 @@
       "source_file": "automation/SETUP.md",
       "source_location": "L229",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_setup_automa\u00e7\u00e3o_trello_claude_code",
-      "target": "automation_setup_7_limita\u00e7\u00f5es_conhecidas_v1"
+      "target": "automation_setup_7_limita\u00e7\u00f5es_conhecidas_v1",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18116,9 +17480,9 @@
       "source_file": "automation/SETUP.md",
       "source_location": "L250",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "automation_setup_automa\u00e7\u00e3o_trello_claude_code",
-      "target": "automation_setup_8_troubleshooting_r\u00e1pido"
+      "target": "automation_setup_8_troubleshooting_r\u00e1pido",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18126,9 +17490,9 @@
       "source_file": "backend/README.md",
       "source_location": "L435",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme",
-      "target": "backend_readme_checklist_de_instala\u00e7\u00e3o"
+      "target": "backend_readme_checklist_de_instala\u00e7\u00e3o",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18136,9 +17500,9 @@
       "source_file": "backend/README.md",
       "source_location": "L143",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme",
-      "target": "backend_readme_configura\u00e7\u00e3o_do_postgresql"
+      "target": "backend_readme_configura\u00e7\u00e3o_do_postgresql",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18146,9 +17510,9 @@
       "source_file": "backend/README.md",
       "source_location": "L450",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme",
-      "target": "backend_readme_contribuindo"
+      "target": "backend_readme_contribuindo",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18156,9 +17520,9 @@
       "source_file": "backend/README.md",
       "source_location": "L265",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme",
-      "target": "backend_readme_endpoints_da_api"
+      "target": "backend_readme_endpoints_da_api",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18166,9 +17530,9 @@
       "source_file": "backend/README.md",
       "source_location": "L332",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme",
-      "target": "backend_readme_estrutura_do_projeto"
+      "target": "backend_readme_estrutura_do_projeto",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18176,9 +17540,9 @@
       "source_file": "backend/README.md",
       "source_location": "L17",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme",
-      "target": "backend_readme_instala\u00e7\u00e3o_r\u00e1pida"
+      "target": "backend_readme_instala\u00e7\u00e3o_r\u00e1pida",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18186,9 +17550,9 @@
       "source_file": "backend/README.md",
       "source_location": "L208",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme",
-      "target": "backend_readme_integra\u00e7\u00e3o_com_telegram"
+      "target": "backend_readme_integra\u00e7\u00e3o_com_telegram",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18196,9 +17560,9 @@
       "source_file": "backend/README.md",
       "source_location": "L460",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme",
-      "target": "backend_readme_licen\u00e7a"
+      "target": "backend_readme_licen\u00e7a",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18206,9 +17570,9 @@
       "source_file": "backend/README.md",
       "source_location": "L415",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme",
-      "target": "backend_readme_notas_importantes"
+      "target": "backend_readme_notas_importantes",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18216,9 +17580,9 @@
       "source_file": "backend/README.md",
       "source_location": "L425",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme",
-      "target": "backend_readme_recursos_adicionais"
+      "target": "backend_readme_recursos_adicionais",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18226,9 +17590,9 @@
       "source_file": "backend/README.md",
       "source_location": "L405",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme",
-      "target": "backend_readme_seguran\u00e7a"
+      "target": "backend_readme_seguran\u00e7a",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18236,9 +17600,9 @@
       "source_file": "backend/README.md",
       "source_location": "L351",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme",
-      "target": "backend_readme_tecnologias"
+      "target": "backend_readme_tecnologias",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18246,9 +17610,9 @@
       "source_file": "backend/README.md",
       "source_location": "L363",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme",
-      "target": "backend_readme_troubleshooting"
+      "target": "backend_readme_troubleshooting",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18256,9 +17620,9 @@
       "source_file": "backend/README.md",
       "source_location": "L5",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme",
-      "target": "backend_readme_\u00edndice"
+      "target": "backend_readme_\u00edndice",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18266,9 +17630,9 @@
       "source_file": "backend/README.md",
       "source_location": "L24",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_instala\u00e7\u00e3o_r\u00e1pida",
-      "target": "backend_readme_passo_a_passo"
+      "target": "backend_readme_passo_a_passo",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18276,9 +17640,9 @@
       "source_file": "backend/README.md",
       "source_location": "L19",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_instala\u00e7\u00e3o_r\u00e1pida",
-      "target": "backend_readme_pr\u00e9_requisitos"
+      "target": "backend_readme_pr\u00e9_requisitos",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18286,9 +17650,9 @@
       "source_file": "backend/README.md",
       "source_location": "L26",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_passo_a_passo",
-      "target": "backend_readme_1_instalar_postgresql"
+      "target": "backend_readme_1_instalar_postgresql",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18296,9 +17660,9 @@
       "source_file": "backend/README.md",
       "source_location": "L46",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_passo_a_passo",
-      "target": "backend_readme_2_criar_o_banco_de_dados"
+      "target": "backend_readme_2_criar_o_banco_de_dados",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18306,9 +17670,9 @@
       "source_file": "backend/README.md",
       "source_location": "L72",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_passo_a_passo",
-      "target": "backend_readme_3_configurar_o_projeto"
+      "target": "backend_readme_3_configurar_o_projeto",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18316,9 +17680,9 @@
       "source_file": "backend/README.md",
       "source_location": "L111",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_passo_a_passo",
-      "target": "backend_readme_4_inicializar_o_banco_de_dados"
+      "target": "backend_readme_4_inicializar_o_banco_de_dados",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18326,9 +17690,9 @@
       "source_file": "backend/README.md",
       "source_location": "L124",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_passo_a_passo",
-      "target": "backend_readme_5_iniciar_a_aplica\u00e7\u00e3o"
+      "target": "backend_readme_5_iniciar_a_aplica\u00e7\u00e3o",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18336,9 +17700,9 @@
       "source_file": "backend/README.md",
       "source_location": "L137",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_passo_a_passo",
-      "target": "backend_readme_6_testar"
+      "target": "backend_readme_6_testar",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18346,9 +17710,9 @@
       "source_file": "backend/README.md",
       "source_location": "L186",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_configura\u00e7\u00e3o_do_postgresql",
-      "target": "backend_readme_backup_e_restore"
+      "target": "backend_readme_backup_e_restore",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18356,9 +17720,9 @@
       "source_file": "backend/README.md",
       "source_location": "L164",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_configura\u00e7\u00e3o_do_postgresql",
-      "target": "backend_readme_comandos_\u00fateis_do_postgresql"
+      "target": "backend_readme_comandos_\u00fateis_do_postgresql",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18366,9 +17730,9 @@
       "source_file": "backend/README.md",
       "source_location": "L145",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_configura\u00e7\u00e3o_do_postgresql",
-      "target": "backend_readme_estrutura_do_banco_de_dados"
+      "target": "backend_readme_estrutura_do_banco_de_dados",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18376,9 +17740,9 @@
       "source_file": "backend/README.md",
       "source_location": "L198",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_configura\u00e7\u00e3o_do_postgresql",
-      "target": "backend_readme_migra\u00e7\u00e3o_de_dados_do_json"
+      "target": "backend_readme_migra\u00e7\u00e3o_de_dados_do_json",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18386,9 +17750,9 @@
       "source_file": "backend/README.md",
       "source_location": "L147",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_estrutura_do_banco_de_dados",
-      "target": "backend_readme_tabela_manhwas"
+      "target": "backend_readme_tabela_manhwas",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18396,9 +17760,9 @@
       "source_file": "backend/README.md",
       "source_location": "L255",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_integra\u00e7\u00e3o_com_telegram",
-      "target": "backend_readme_como_funciona"
+      "target": "backend_readme_como_funciona",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18406,9 +17770,9 @@
       "source_file": "backend/README.md",
       "source_location": "L222",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_integra\u00e7\u00e3o_com_telegram",
-      "target": "backend_readme_configurar_telegram"
+      "target": "backend_readme_configurar_telegram",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18416,9 +17780,9 @@
       "source_file": "backend/README.md",
       "source_location": "L210",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_integra\u00e7\u00e3o_com_telegram",
-      "target": "backend_readme_obter_credenciais_do_telegram"
+      "target": "backend_readme_obter_credenciais_do_telegram",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18426,9 +17790,9 @@
       "source_file": "backend/README.md",
       "source_location": "L233",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_integra\u00e7\u00e3o_com_telegram",
-      "target": "backend_readme_testar_integra\u00e7\u00e3o"
+      "target": "backend_readme_testar_integra\u00e7\u00e3o",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18436,9 +17800,9 @@
       "source_file": "backend/README.md",
       "source_location": "L267",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_endpoints_da_api",
-      "target": "backend_readme_manhwas"
+      "target": "backend_readme_manhwas",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18446,9 +17810,9 @@
       "source_file": "backend/README.md",
       "source_location": "L293",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_endpoints_da_api",
-      "target": "backend_readme_telegram"
+      "target": "backend_readme_telegram",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18456,9 +17820,9 @@
       "source_file": "backend/README.md",
       "source_location": "L398",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_troubleshooting",
-      "target": "backend_readme_api_n\u00e3o_est\u00e1_aceitando_conex\u00f5es"
+      "target": "backend_readme_api_n\u00e3o_est\u00e1_aceitando_conex\u00f5es",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18466,9 +17830,9 @@
       "source_file": "backend/README.md",
       "source_location": "L392",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_troubleshooting",
-      "target": "backend_readme_erro_ao_importar_do_telegram"
+      "target": "backend_readme_erro_ao_importar_do_telegram",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18476,9 +17840,9 @@
       "source_file": "backend/README.md",
       "source_location": "L365",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_troubleshooting",
-      "target": "backend_readme_erro_could_not_connect_to_server"
+      "target": "backend_readme_erro_could_not_connect_to_server",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18486,9 +17850,9 @@
       "source_file": "backend/README.md",
       "source_location": "L374",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_troubleshooting",
-      "target": "backend_readme_erro_database_does_not_exist"
+      "target": "backend_readme_erro_database_does_not_exist",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18496,9 +17860,9 @@
       "source_file": "backend/README.md",
       "source_location": "L386",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_troubleshooting",
-      "target": "backend_readme_erro_no_module_named_asyncpg"
+      "target": "backend_readme_erro_no_module_named_asyncpg",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18506,9 +17870,9 @@
       "source_file": "backend/README.md",
       "source_location": "L370",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_troubleshooting",
-      "target": "backend_readme_erro_password_authentication_failed"
+      "target": "backend_readme_erro_password_authentication_failed",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18516,9 +17880,9 @@
       "source_file": "backend/README.md",
       "source_location": "L378",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "backend_readme_troubleshooting",
-      "target": "backend_readme_erro_permiss\u00e3o_negada_para_esquema_public"
+      "target": "backend_readme_erro_permiss\u00e3o_negada_para_esquema_public",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18526,9 +17890,9 @@
       "source_file": "mobile/AGENTS.md",
       "source_location": "L26",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_agents",
-      "target": "mobile_agents_arquitetura_do_app_mobile"
+      "target": "mobile_agents_arquitetura_do_app_mobile",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18536,9 +17900,9 @@
       "source_file": "mobile/AGENTS.md",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_agents",
-      "target": "mobile_agents_expo_has_changed"
+      "target": "mobile_agents_expo_has_changed",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18546,9 +17910,9 @@
       "source_file": "mobile/AGENTS.md",
       "source_location": "L7",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_agents_expo_has_changed",
-      "target": "mobile_agents_vers\u00e3o_do_app_ota_ler_antes_de_bumpar_vers\u00e3o"
+      "target": "mobile_agents_vers\u00e3o_do_app_ota_ler_antes_de_bumpar_vers\u00e3o",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18556,9 +17920,9 @@
       "source_file": "mobile/AGENTS.md",
       "source_location": "L56",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_agents_arquitetura_do_app_mobile",
-      "target": "mobile_agents_cache_local_leitura_src_lib_cache_ts"
+      "target": "mobile_agents_cache_local_leitura_src_lib_cache_ts",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18566,9 +17930,9 @@
       "source_file": "mobile/AGENTS.md",
       "source_location": "L67",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_agents_arquitetura_do_app_mobile",
-      "target": "mobile_agents_download_src_lib_download_manager_ts_background_download_ts"
+      "target": "mobile_agents_download_src_lib_download_manager_ts_background_download_ts",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18576,9 +17940,9 @@
       "source_file": "mobile/AGENTS.md",
       "source_location": "L107",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_agents_arquitetura_do_app_mobile",
-      "target": "mobile_agents_entregar_via_eas_update_autorizado_pro_claude"
+      "target": "mobile_agents_entregar_via_eas_update_autorizado_pro_claude",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18586,9 +17950,9 @@
       "source_file": "mobile/AGENTS.md",
       "source_location": "L89",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_agents_arquitetura_do_app_mobile",
-      "target": "mobile_agents_fila_offline_src_lib_sync_queue_ts"
+      "target": "mobile_agents_fila_offline_src_lib_sync_queue_ts",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18596,9 +17960,9 @@
       "source_file": "mobile/AGENTS.md",
       "source_location": "L37",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_agents_arquitetura_do_app_mobile",
-      "target": "mobile_agents_leitor_src_components_cbzreader_tsx_src_lib_reader_store_ts_readerhost_tsx"
+      "target": "mobile_agents_leitor_src_components_cbzreader_tsx_src_lib_reader_store_ts_readerhost_tsx",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18606,9 +17970,9 @@
       "source_file": "mobile/AGENTS.md",
       "source_location": "L93",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_agents_arquitetura_do_app_mobile",
-      "target": "mobile_agents_nativo_build"
+      "target": "mobile_agents_nativo_build",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18616,9 +17980,9 @@
       "source_file": "mobile/AGENTS.md",
       "source_location": "L103",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_agents_arquitetura_do_app_mobile",
-      "target": "mobile_agents_performance"
+      "target": "mobile_agents_performance",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18626,9 +17990,9 @@
       "source_file": "mobile/AGENTS.md",
       "source_location": "L32",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_agents_arquitetura_do_app_mobile",
-      "target": "mobile_agents_telas_rotas_src_app"
+      "target": "mobile_agents_telas_rotas_src_app",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -18646,9 +18010,9 @@
       "source_file": "mobile/CHANGELOG.md",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_changelog",
-      "target": "mobile_changelog_changelog_mobile"
+      "target": "mobile_changelog_changelog_mobile",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -18666,9 +18030,9 @@
       "source_file": "mobile/CHANGELOG.md",
       "source_location": "L74",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_changelog_changelog_mobile",
-      "target": "mobile_changelog_1_1_10"
+      "target": "mobile_changelog_1_1_10",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18676,9 +18040,9 @@
       "source_file": "mobile/CHANGELOG.md",
       "source_location": "L64",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_changelog_changelog_mobile",
-      "target": "mobile_changelog_1_1_11"
+      "target": "mobile_changelog_1_1_11",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18686,9 +18050,9 @@
       "source_file": "mobile/CHANGELOG.md",
       "source_location": "L55",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_changelog_changelog_mobile",
-      "target": "mobile_changelog_1_1_12"
+      "target": "mobile_changelog_1_1_12",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18696,9 +18060,9 @@
       "source_file": "mobile/CHANGELOG.md",
       "source_location": "L35",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_changelog_changelog_mobile",
-      "target": "mobile_changelog_1_2_0"
+      "target": "mobile_changelog_1_2_0",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18706,9 +18070,9 @@
       "source_file": "mobile/CHANGELOG.md",
       "source_location": "L25",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_changelog_changelog_mobile",
-      "target": "mobile_changelog_1_2_1"
+      "target": "mobile_changelog_1_2_1",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18716,9 +18080,9 @@
       "source_file": "mobile/CHANGELOG.md",
       "source_location": "L7",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_changelog_changelog_mobile",
-      "target": "mobile_changelog_1_2_2"
+      "target": "mobile_changelog_1_2_2",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18726,9 +18090,9 @@
       "source_file": "mobile/README.md",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_readme",
-      "target": "mobile_readme_welcome_to_your_expo_app"
+      "target": "mobile_readme_welcome_to_your_expo_app",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18736,9 +18100,9 @@
       "source_file": "mobile/README.md",
       "source_location": "L28",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_readme_welcome_to_your_expo_app",
-      "target": "mobile_readme_get_a_fresh_project"
+      "target": "mobile_readme_get_a_fresh_project",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18746,9 +18110,9 @@
       "source_file": "mobile/README.md",
       "source_location": "L5",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_readme_welcome_to_your_expo_app",
-      "target": "mobile_readme_get_started"
+      "target": "mobile_readme_get_started",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18756,9 +18120,9 @@
       "source_file": "mobile/README.md",
       "source_location": "L51",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_readme_welcome_to_your_expo_app",
-      "target": "mobile_readme_join_the_community"
+      "target": "mobile_readme_join_the_community",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18766,9 +18130,9 @@
       "source_file": "mobile/README.md",
       "source_location": "L44",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_readme_welcome_to_your_expo_app",
-      "target": "mobile_readme_learn_more"
+      "target": "mobile_readme_learn_more",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18776,9 +18140,9 @@
       "source_file": "mobile/README.md",
       "source_location": "L38",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_readme_get_a_fresh_project",
-      "target": "mobile_readme_other_setup_steps"
+      "target": "mobile_readme_other_setup_steps",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -20090,5 +19454,5 @@
       "source_file": ".claude/skills/graphify/references/query.md"
     }
   ],
-  "built_at_commit": "9e125e69c12987af0d0ae68c903d7d67b8051346"
+  "built_at_commit": "8b008413b6e0699bcb2fb5f47b67d2ee2c064003"
 }
