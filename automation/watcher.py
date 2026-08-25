@@ -277,6 +277,7 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
         branch=branch,
         model=model_choice,
         effort=effort_choice,
+        areas=areas,
         session_id=result.session_id,
         last_comment_date=now_iso(),
         blocked_notified=False,
@@ -353,11 +354,27 @@ def maybe_trigger_build(state: dict, list_ids: dict, cards: list[dict]) -> None:
     if any_active:
         return
 
-    pending = [cid for cid, cs in state["cards"].items() if cs.get("stage") == "merged" and not cs.get("built")]
-    if not pending:
+    unbuilt = [(cid, cs) for cid, cs in state["cards"].items() if cs.get("stage") == "merged" and not cs.get("built")]
+    if not unbuilt:
         return
 
-    log(f"Nenhum card ativo e {len(pending)} card(s) mergeado(s) sem build -> disparando eas build...")
+    # Só builda o mobile se algum card mergeado de fato mexeu em mobile/ - antes disso
+    # todo merge disparava um `eas build`, mesmo pra cards 100% backend/frontend, o que
+    # só gastava cota de build à toa. Cards sem "areas" registrado (mergeados antes
+    # dessa informação existir) continuam builadando por segurança, já que não dá pra
+    # saber o que mudaram.
+    needs_build = [cid for cid, cs in unbuilt if cs.get("areas") is None or "Mobile" in cs.get("areas")]
+    skip_build = [cid for cid, cs in unbuilt if cid not in needs_build]
+
+    for cid in skip_build:
+        state_mod.set_card(state, cid, built=True)
+    if skip_build:
+        log(f"{len(skip_build)} card(s) mergeado(s) não mexeram em mobile/ - pulando build do EAS pra eles.")
+
+    if not needs_build:
+        return
+
+    log(f"Nenhum card ativo e {len(needs_build)} card(s) mergeado(s) tocaram mobile/ sem build -> disparando eas build...")
     send_telegram_message("🏗️ Todas as tasks concluídas. Iniciando o build do app mobile (EAS)...")
 
     result = run_mobile_build(MOBILE_DIR, profile=BUILD_PROFILE)
@@ -369,7 +386,7 @@ def maybe_trigger_build(state: dict, list_ids: dict, cards: list[dict]) -> None:
         send_telegram_message(f"❌ Build falhou: {result.message[:500]}")
         return  # não marca como built - vai tentar de novo no próximo poll
 
-    for cid in pending:
+    for cid in needs_build:
         state_mod.set_card(state, cid, built=True)
 
 
