@@ -12,3 +12,4 @@ manhwas.json
 .env
 manhwa_session.session
 *.session-journal
+logs/

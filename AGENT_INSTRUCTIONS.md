@@ -16,6 +16,12 @@ O projeto Manhwa Tracker é composto por três partes principais:
   - `telegram_scraper.py`: Integração com Telegram (Telethon) — scraping de tópicos e download paralelo de `.cbz`.
   - `init_db.py`: Script para criar/resetar as tabelas (`python init_db.py [--reset]`).
   - `add_col.py`: Migração ad-hoc (adiciona coluna `andamento`). Use só se atualizar um banco antigo.
+  - `error_logger.py`: `log_error(exc, context="...")` grava erro + traceback em
+    `backend/logs/<YYYY-MM-DD>/<timestamp>_error.log`, criando a pasta do dia automaticamente.
+    `backend/logs/` não é versionado (`.gitignore`). Desligável via `ERROR_LOGGING_ENABLED=0` no
+    ambiente. Chamado hoje no `@app.exception_handler(Exception)` global e nos dois blocos "ERRO
+    CRÍTICO" (`/api/manhwas/download-all`, `/api/manhwas/review-all`) — ao adicionar um novo `except`
+    para uma falha inesperada/crítica, chame `log_error()` junto do `print()` existente.
 - **Transações no `get_db()` (`database.py`):** a dependency já faz `commit()` automático se o endpoint
   retornar sem exceção, e `rollback()` se uma exceção propagar. **Não dê `await db.commit()` manual
   dentro de um endpoint** — deixe o `get_db()` cuidar disso, senão fica fácil deixar o banco com commits
