@@ -20,27 +20,44 @@ O projeto Manhwa Tracker é composto por três partes principais:
   retornar sem exceção, e `rollback()` se uma exceção propagar. **Não dê `await db.commit()` manual
   dentro de um endpoint** — deixe o `get_db()` cuidar disso, senão fica fácil deixar o banco com commits
   parciais (ex.: um loop que atualiza vários registros e falha no meio). Se um endpoint precisa de
-  atomicidade "tudo ou nada" sobre múltiplas operações (ex.: `/api/manhwas/download-all` e
-  `/api/manhwas/review-all`, que processam vários manhwas e só devem persistir se TODOS derem certo),
-  capture as falhas, chame `await db.rollback()` explicitamente antes de retornar, e retorne
-  normalmente (sem raise) com `success: False` no payload — o `get_db()` faz um commit vazio depois,
-  o que é um no-op seguro.
-- **`POST /api/manhwas/review-all` (revisão de metadados):** revisita todos os manhwas cujo `notes`
-  contém `t.me` e recalcula, via `scraper._get_topic_stats(link)`, o `total_chapters` (nº de `.cbz` no
-  tópico) e o `medium_reaction` (média de reações por capítulo). **Não baixa nada** — é a versão
-  "só leitura" do `download-all`, útil pra corrigir contagens sem tocar no disco.
-  - Usa a instância compartilhada via `get_telegram_scraper()` (obrigatório: instanciar um
-    `TelegramManhwaScraper` novo dá "database is locked" no `.session`) e um `asyncio.Semaphore(1)`,
-    para não tomar Flood 429 do Telegram.
-  - Manhwas sem link do Telegram são **pulados silenciosamente** (não entram em `results` nem contam
-    como erro), diferente do `download-all` que também exige a flag `download`.
-  - ❗ **`_get_topic_stats()` engole as próprias exceções** e devolve `{"cbz_count": 0, "avg_reactions": 0}`
-    quando falha. Por isso o endpoint trata `cbz_count == 0` como **falha**, não como dado válido —
-    sem esse guarda, uma queda de rede gravaria `total_chapters = 0` por cima de um valor correto.
-    Qualquer falha (exceção OU 0 CBZs) dispara o rollback de TODA a revisão.
-  - Resposta: `success`, `message`, `total_processed`, `total_updated`, `total_errors` e `results`
-    (por manhwa: `manhwa_id`, `manhwa_title`, `success`, `updated`, valores antigo/novo de
-    `total_chapters` e `medium_reaction`, `elapsed`).
+  atomicidade "tudo ou nada" sobre múltiplas operações (ex.: `/api/manhwas/download-all`, que processa
+  vários manhwas e só deve persistir se TODOS derem certo), capture as falhas, descarte/reverta as
+  alterações antes de retornar, e retorne normalmente (sem raise) com `success: False` no payload — o
+  `get_db()` faz um commit vazio depois, o que é um no-op seguro. Veja também a regra de requests longos
+  abaixo, que muda ONDE a escrita deve acontecer.
+- **❗ Requests longos: NÃO escreva na sessão do request depois de uma espera longa.** A sessão injetada
+  por `Depends(get_db)` segura uma conexão asyncpg aberta durante todo o request. Em endpoints que passam
+  minutos fora do banco (ex.: `/api/manhwas/download-all`, que baixa do Telegram), essa conexão fica
+  ociosa e é derrubada pelo Postgres/rede — qualquer escrita depois disso falha com
+  `InterfaceError: connection is closed`, **inclusive um commit feito imediatamente após o trabalho longo**
+  (a conexão já está morta há minutos; adiantar ou atrasar o commit não muda nada). Padrão correto:
+  1. Use a sessão do request só para as **leituras iniciais**.
+  2. Durante o trabalho longo, acumule as alterações em **estrutura na memória** (ex.: `{id: {campo: valor}}`),
+     sem `db.add()` / mutação de objetos ORM.
+  3. No fim, persista tudo numa **sessão/conexão nova** (`async_session_maker()`), numa única transação —
+     ver `_persist_sync_updates()` em `main.py`. Isso preserva a atomicidade "tudo ou nada" e roda numa
+     conexão saudável. O helper ainda tenta uma segunda vez se a conexão nova nascer inutilizável.
+  4. Persista **antes** de montar a resposta de sucesso, para que uma falha de escrita vire falha para o
+     cliente — e não um "sucesso" seguido de um 500 solto.
+  - `is_connection_closed_error()` (em `database.py`) centraliza a detecção desse tipo de erro.
+  - `get_db()` engole o erro do commit final **apenas** quando a sessão não tem alterações pendentes
+    (só houve leitura, ou o endpoint já persistiu por conta própria) — nesse caso não há nada a perder e
+    deixar o erro subir viraria um 500 confuso. Se houver escrita pendente, o erro sobe normalmente.
+- **Respostas HTTP consistentes (endpoints tipo "sync"):** qualquer endpoint que um client (frontend/mobile)
+  lê como `{ success, message, ... }` deve retornar **sempre** esse shape — nunca deixar um caminho de
+  erro cair no `{ detail: "..." }` padrão do FastAPI (`raise HTTPException`), pois o client não sabe ler
+  esse formato. Padrão usado em `/api/manhwas/download-all`:
+  - Um `response_model` Pydantic (`SyncResponse`) documenta e valida o shape único usado em todo caminho
+    de retorno (sucesso, falha parcial revertida, falha crítica).
+  - Erros esperados (ex.: `ImportError` do scraper) retornam `JSONResponse(status_code=..., content={...})`
+    diretamente com o mesmo shape, em vez de `raise HTTPException` — retornar um `Response`/`JSONResponse`
+    faz o FastAPI pular a validação do `response_model` e usar o status/body exatos que você montou.
+  - Um `@app.exception_handler(Exception)` global (perto da criação do `app`, em `main.py`) captura
+    qualquer exceção não tratada (inclusive uma que escape do commit automático do `get_db()` DEPOIS que
+    o endpoint já retornou) e converte pra `{ success: False, message: ... }` — sem isso, o client recebe
+    o texto puro "Internal Server Error" do Starlette, que quebra o `response.json()` e aparenta erro de
+    conexão mesmo quando os dados já foram salvos com sucesso. Não interfere no tratamento de
+    `HTTPException` dos demais endpoints (o FastAPI já registra um handler mais específico pra ela).
 - **Variáveis de ambiente (`backend/.env`):**
   - `DATABASE_URL` — string `postgresql+asyncpg://...` (default: `postgres:postgres@localhost:5432/manhwa_tracker`).
   - `DOWNLOAD_DIR` — pasta onde os `.cbz` baixados ficam (default: `D:\Manhwas`). Altere aqui para mover a biblioteca.

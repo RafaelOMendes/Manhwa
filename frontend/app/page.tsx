@@ -43,7 +43,12 @@ export default function Home() {
                 headers: authHeaders(),
             })
             const data = await response.json()
-            setSyncResult({ success: data.success, message: data.message })
+
+            if (!response.ok) {
+                setSyncResult({ success: false, message: data.message || `Erro do servidor (${response.status})` })
+            } else {
+                setSyncResult({ success: data.success, message: data.message })
+            }
 
             // Limpar feedback após 8 segundos
             setTimeout(() => setSyncResult(null), 8000)
