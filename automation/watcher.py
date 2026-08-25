@@ -431,10 +431,12 @@ def main() -> None:
         },
     )
 
+    version = git_ops.automation_version(REPO_DIR)
     log(f"Repositório: {REPO_DIR}")
+    log(f"Versão da automação: {version}")
     log(f"Branch base: {BASE_BRANCH}")
     log(f"Listas do Trello resolvidas: {list_ids}")
-    send_telegram_message("🤖 Automação Trello ↔ Claude Code iniciada. De olho no board!")
+    send_telegram_message(f"🤖 Automação Trello ↔ Claude Code iniciada (versão {version}). De olho no board!")
 
     # Só notifica a PRIMEIRA falha de uma sequência (ex: Trello fora do ar por
     # alguns minutos) - sem isso, cada poll (a cada POLL_INTERVAL_SECONDS) durante
