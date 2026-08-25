@@ -331,11 +331,11 @@ class ScrollUpdate(BaseModel):
 async def update_scroll(manhwa_id: int, filename: str, body: ScrollUpdate, db: AsyncSession = Depends(get_db)):
     """Salva a posição de rolagem de um capítulo específico"""
     result = await db.execute(select(ChapterProgress).where(
-        ChapterProgress.manhwa_id == manhwa_id, 
-        ChapterProgress.filename == filename
+        (ChapterProgress.manhwa_id == manhwa_id) &
+        (ChapterProgress.filename == filename)
     ))
     progress = result.scalar_one_or_none()
-    
+
     if progress:
         progress.scroll_position = body.scroll_position
     else:
@@ -349,11 +349,11 @@ async def update_scroll(manhwa_id: int, filename: str, body: ScrollUpdate, db: A
 async def get_scroll(manhwa_id: int, filename: str, db: AsyncSession = Depends(get_db)):
     """Retorna a posição de rolagem salva de um capítulo específico"""
     result = await db.execute(select(ChapterProgress).where(
-        ChapterProgress.manhwa_id == manhwa_id, 
-        ChapterProgress.filename == filename
+        (ChapterProgress.manhwa_id == manhwa_id) &
+        (ChapterProgress.filename == filename)
     ))
     progress = result.scalar_one_or_none()
-    
+
     return {"scroll_position": progress.scroll_position if progress else 0}
 
 @app.get("/api/manhwas/{manhwa_id}/read/{filename}")
