@@ -55,7 +55,7 @@ backend/
 | POST | `/api/manhwas` | Cria um manhwa |
 | PUT | `/api/manhwas/{id}` | Atualiza um manhwa |
 | DELETE | `/api/manhwas/{id}` | Exclui um manhwa |
-| PATCH | `/api/manhwas/{id}/current-chapter` | Atualiza o capítulo atual |
+| PATCH | `/api/manhwas/{id}/current-chapter` | Atualiza o capítulo atual e marca os anteriores como lidos |
 | GET | `/api/manhwas/{id}/files` | Lista `.cbz` em `DOWNLOAD_DIR/{título}/` |
 | GET | `/api/manhwas/{id}/read/{filename}` | Info do CBZ (nº de páginas) |
 | GET | `/api/manhwas/{id}/read/{filename}/page/{n}` | Serve uma página |

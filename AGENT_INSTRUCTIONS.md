@@ -139,6 +139,33 @@ O projeto Manhwa Tracker é composto por três partes principais:
     o texto puro "Internal Server Error" do Starlette, que quebra o `response.json()` e aparenta erro de
     conexão mesmo quando os dados já foram salvos com sucesso. Não interfere no tratamento de
     `HTTPException` dos demais endpoints (o FastAPI já registra um handler mais específico pra ela).
+- **📖 Marcação automática de capítulos anteriores (`PATCH /api/manhwas/{id}/current-chapter`).** Ao
+  terminar de ler o capítulo X, o client manda `{"current_chapter": X}` — e o backend, além de gravar o
+  `current_chapter` e ligar o status `reading`, cria um `ChapterProgress` para **todo arquivo `.cbz` do
+  manhwa cujo número de capítulo seja menor que X**. Antes, quem pulava do 1 direto pro 50 ficava com
+  1..49 sem registro nenhum, e o progresso de leitura só existia como o inteiro `current_chapter`.
+  Regras da implementação (`_mark_previous_chapters_read()` em `main.py`):
+  1. **"Lido" = existir uma linha em `ChapterProgress` para aquele filename.** A criação usa
+     `scroll_position=0`, que é indistinguível de "sem registro" para o `GET .../scroll` (ele já devolvia
+     `0` quando não achava nada) — por isso a mudança é **puramente aditiva** e não altera nada na UI
+     do web nem do mobile.
+  2. **Nunca sobrescreve registro existente.** Um capítulo que já tem posição de scroll real gravada é
+     pulado, senão avançar de capítulo apagaria onde o usuário parou. Só as linhas que faltavam são criadas.
+  3. **Nada é deletado — regressão preserva histórico.** Voltar o `current_chapter` de 5 para 3 só muda o
+     inteiro; os registros dos capítulos 4 e 5 continuam lá. A rota é chamada por retry da fila offline do
+     mobile (`sync-queue.ts`), que pode chegar fora de ordem, então destruir estado aqui seria perda de dados.
+  4. **Arquivo sem número no nome fica de fora.** `_extract_chapter_number()` devolve `0` quando não acha
+     número nenhum; marcar esses como lidos seria chute, então o filtro é `0 < chapter_number < X`.
+  5. A resposta ganhou o campo aditivo **`chapters_marked_read`** (quantos registros novos entraram).
+     Os dois clients só olham `res.ok`, então nada quebrou — mas é o número a conferir ao depurar.
+  - **Helpers extraídos para uso compartilhado** (antes eram lógica duplicada/aninhada em cada rota):
+    `_manhwa_download_dir(title)` (saneamento do nome igual ao do scraper), `_extract_chapter_number(filename)`
+    (agora no nível do módulo, não mais dentro de `list_manhwa_files`) e `_list_cbz_files(dir)` (listagem
+    ordenada por capítulo). A marcação e o `GET /files` **precisam** enxergar exatamente o mesmo diretório
+    e o mesmo número de capítulo — se divergirem, o app marca o arquivo errado como lido.
+  - Testes: `backend/test_auto_mark_read.py` (SQLite em memória + diretório temporário, sem Postgres e sem
+    servidor no ar) cobre avanço, preservação de scroll real, regressão, idempotência, capítulo fracionário,
+    manhwa sem arquivos em disco e a integridade do `GET /files`.
 - **Variáveis de ambiente (`backend/.env`):**
   - `DATABASE_URL` — string `postgresql+asyncpg://...` (default: `postgres:postgres@localhost:5432/manhwa_tracker`).
   - `DOWNLOAD_DIR` — pasta onde os `.cbz` baixados ficam (default: `D:\Manhwas`). Altere aqui para mover a biblioteca.

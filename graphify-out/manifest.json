@@ -25,8 +25,8 @@
     "semantic_hash": "7ef9f5edc693e896e11c7238d0f973ce"
   },
   "backend/main.py": {
-    "mtime": 1787689894.1066916,
-    "ast_hash": "76edd5ac4ce3240bcb8e5c3f0ce1cb18",
+    "mtime": 1787690511.6375425,
+    "ast_hash": "9fac38a59ccdbc00363be808d8799082",
     "semantic_hash": ""
   },
   "backend/models.py": {
@@ -320,8 +320,8 @@
     "semantic_hash": ""
   },
   "AGENT_INSTRUCTIONS.md": {
-    "mtime": 1787689554.112625,
-    "ast_hash": "ac32a152471cb2f517541ec050028a9d",
+    "mtime": 1787690546.345497,
+    "ast_hash": "3128fb2aa7e3cff2bae3bd743590fc34",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -335,8 +335,8 @@
     "semantic_hash": ""
   },
   "backend/README.md": {
-    "mtime": 1787687789.3624592,
-    "ast_hash": "e8d0081f43ad04c5adf2e38e5bff9641",
+    "mtime": 1787690553.6469626,
+    "ast_hash": "6c82c4811fe822bb9e6645899d972d79",
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
@@ -557,6 +557,11 @@
   "mobile/eslint.config.js": {
     "mtime": 1787687789.393458,
     "ast_hash": "c60b59a7db5b8eca8fbc5543cbe06e4a",
+    "semantic_hash": ""
+  },
+  "backend/test_auto_mark_read.py": {
+    "mtime": 1787690430.883086,
+    "ast_hash": "3dc8b9ee9b8332a2cd227b07014fde0f",
     "semantic_hash": ""
   }
 }

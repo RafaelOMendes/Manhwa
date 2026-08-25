@@ -251,37 +251,29 @@ async def delete_manhwa(manhwa_id: int, db: AsyncSession = Depends(get_db)):
     
     return None
 
-@app.get("/api/manhwas/{manhwa_id}/files")
-async def list_manhwa_files(manhwa_id: int, db: AsyncSession = Depends(get_db)):
-    """Lista os arquivos .cbz baixados de um manhwa em D:\\Manhwas\\{titulo}\\"""
-    import os
+def _manhwa_download_dir(title: str) -> str:
+    """Diretório dos .cbz de um manhwa — mesmo saneamento de nome usado pelo scraper."""
+    safe_name = "".join(c for c in title if c.isalnum() or c in " _-().").strip()
+    return os.path.join(DOWNLOAD_DIR, safe_name or "Manhwa_Desconhecido")
 
-    result = await db.execute(select(ManhwaModel).where(ManhwaModel.id == manhwa_id))
-    manhwa = result.scalar_one_or_none()
 
-    if not manhwa:
-        raise HTTPException(status_code=404, detail="Manhwa não encontrado")
+def _extract_chapter_number(filename: str) -> float:
+    """Extrai o número do capítulo do nome do arquivo para ordenação."""
+    # Tenta padrões como "Cap 01", "Chapter 123", "Cap. 05", "- 10 -", etc.
+    m = re.search(r'(?:cap(?:[ií]tulo)?\.?\s*|chapter\s*|ch\.?\s*|ep\.?\s*|#)(\d+(?:\.\d+)?)', filename, re.IGNORECASE)
+    if m:
+        return float(m.group(1))
+    # Fallback: pega qualquer número no nome
+    nums = re.findall(r'(\d+(?:\.\d+)?)', filename)
+    if nums:
+        return float(nums[-1])
+    return 0
 
-    # Sanitizar nome igual ao scraper
-    safe_name = "".join(c for c in manhwa.title if c.isalnum() or c in " _-().").strip()
-    if not safe_name:
-        safe_name = "Manhwa_Desconhecido"
-    download_dir = os.path.join(DOWNLOAD_DIR, safe_name)
 
-    if not os.path.exists(download_dir):
-        return {"files": [], "path": download_dir}
-
-    def _extract_chapter_number(filename: str) -> float:
-        """Extrai o número do capítulo do nome do arquivo para ordenação."""
-        # Tenta padrões como "Cap 01", "Chapter 123", "Cap. 05", "- 10 -", etc.
-        m = re.search(r'(?:cap(?:[ií]tulo)?\.?\s*|chapter\s*|ch\.?\s*|ep\.?\s*|#)(\d+(?:\.\d+)?)', filename, re.IGNORECASE)
-        if m:
-            return float(m.group(1))
-        # Fallback: pega qualquer número no nome
-        nums = re.findall(r'(\d+(?:\.\d+)?)', filename)
-        if nums:
-            return float(nums[-1])
-        return 0
+def _list_cbz_files(download_dir: str) -> List[dict]:
+    """Lista os .cbz de um diretório já ordenados pelo número do capítulo."""
+    if not os.path.isdir(download_dir):
+        return []
 
     raw_files = []
     for f in os.listdir(download_dir):
@@ -291,17 +283,80 @@ async def list_manhwa_files(manhwa_id: int, db: AsyncSession = Depends(get_db)):
             chapter_num = _extract_chapter_number(f)
             raw_files.append({"name": f, "size_mb": size_mb, "chapter_number": chapter_num})
 
-    # Ordenar pelo número do capítulo
     raw_files.sort(key=lambda x: x["chapter_number"])
+    return raw_files
 
-    return {"files": raw_files, "path": download_dir, "current_chapter": manhwa.current_chapter or 0}
+
+@app.get("/api/manhwas/{manhwa_id}/files")
+async def list_manhwa_files(manhwa_id: int, db: AsyncSession = Depends(get_db)):
+    """Lista os arquivos .cbz baixados de um manhwa em D:\\Manhwas\\{titulo}\\"""
+    result = await db.execute(select(ManhwaModel).where(ManhwaModel.id == manhwa_id))
+    manhwa = result.scalar_one_or_none()
+
+    if not manhwa:
+        raise HTTPException(status_code=404, detail="Manhwa não encontrado")
+
+    download_dir = _manhwa_download_dir(manhwa.title)
+
+    if not os.path.exists(download_dir):
+        return {"files": [], "path": download_dir}
+
+    return {
+        "files": _list_cbz_files(download_dir),
+        "path": download_dir,
+        "current_chapter": manhwa.current_chapter or 0,
+    }
 
 class UpdateCurrentChapter(BaseModel):
     current_chapter: int
 
+
+async def _mark_previous_chapters_read(db: AsyncSession, manhwa: ManhwaModel, current_chapter: int) -> int:
+    """Registra como lidos todos os capítulos anteriores ao capítulo atual.
+
+    Um capítulo conta como lido quando existe um ChapterProgress pro arquivo
+    dele. Aqui só criamos os que faltam, com scroll_position=0 — registros
+    existentes não são tocados, pra não apagar posição de scroll real. Nada é
+    deletado: regredir o current_chapter mantém o histórico de leitura.
+
+    Devolve quantos registros novos foram adicionados à sessão (o commit fica
+    a cargo de quem chamou).
+    """
+    if current_chapter <= 1:
+        return 0
+
+    arquivos = _list_cbz_files(_manhwa_download_dir(manhwa.title))
+    if not arquivos:
+        return 0
+
+    # chapter_number == 0 é o fallback de "não achei número no nome do arquivo";
+    # marcar esses como lidos seria chute, então ficam de fora.
+    anteriores = [f["name"] for f in arquivos if 0 < f["chapter_number"] < current_chapter]
+    if not anteriores:
+        return 0
+
+    result = await db.execute(
+        select(ChapterProgress.filename).where(ChapterProgress.manhwa_id == manhwa.id)
+    )
+    ja_registrados = set(result.scalars().all())
+
+    novos = 0
+    for filename in anteriores:
+        if filename in ja_registrados:
+            continue
+        db.add(ChapterProgress(manhwa_id=manhwa.id, filename=filename, scroll_position=0))
+        novos += 1
+
+    return novos
+
+
 @app.patch("/api/manhwas/{manhwa_id}/current-chapter")
 async def update_current_chapter(manhwa_id: int, body: UpdateCurrentChapter, db: AsyncSession = Depends(get_db)):
-    """Atualiza o current_chapter de um manhwa (chamado ao terminar de ler um capítulo)"""
+    """Atualiza o current_chapter de um manhwa (chamado ao terminar de ler um capítulo).
+
+    Também marca automaticamente como lidos todos os capítulos anteriores ao
+    informado — quem pula direto pro 50 não fica com 1..49 aparecendo como não lidos.
+    """
     result = await db.execute(select(ManhwaModel).where(ManhwaModel.id == manhwa_id))
     manhwa = result.scalar_one_or_none()
     if not manhwa:
@@ -312,17 +367,24 @@ async def update_current_chapter(manhwa_id: int, body: UpdateCurrentChapter, db:
     if manhwa.current_chapter != body.current_chapter:
         manhwa.current_chapter = body.current_chapter
         updated = True
-        
+
     # Muda automaticamente para "reading" se não estiver lendo ou completo
-    if manhwa.status != "reading" and manhwa.status != "completed":
+    if manhwa.status not in ("reading", "completed"):
         manhwa.status = "reading"
         updated = True
 
-    if updated:
+    marcados = await _mark_previous_chapters_read(db, manhwa, body.current_chapter)
+
+    if updated or marcados:
         await db.commit()
         await db.refresh(manhwa)
 
-    return {"success": True, "current_chapter": manhwa.current_chapter, "status": manhwa.status}
+    return {
+        "success": True,
+        "current_chapter": manhwa.current_chapter,
+        "status": manhwa.status,
+        "chapters_marked_read": marcados,
+    }
 
 class ScrollUpdate(BaseModel):
     scroll_position: int
@@ -366,8 +428,7 @@ async def get_cbz_info(manhwa_id: int, filename: str, db: AsyncSession = Depends
     if not manhwa:
         raise HTTPException(status_code=404, detail="Manhwa não encontrado")
 
-    safe_name = "".join(c for c in manhwa.title if c.isalnum() or c in " _-().").strip() or "Manhwa_Desconhecido"
-    cbz_path = os.path.join(DOWNLOAD_DIR, safe_name, filename)
+    cbz_path = os.path.join(_manhwa_download_dir(manhwa.title), filename)
 
     if not os.path.exists(cbz_path):
         raise HTTPException(status_code=404, detail="Arquivo não encontrado")
@@ -392,8 +453,7 @@ async def download_cbz_file(manhwa_id: int, filename: str, db: AsyncSession = De
         print(f"📵 [APP-DOWNLOAD] 404 — manhwa_id={manhwa_id} não existe")
         raise HTTPException(status_code=404, detail="Manhwa não encontrado")
 
-    safe_name = "".join(c for c in manhwa.title if c.isalnum() or c in " _-().").strip() or "Manhwa_Desconhecido"
-    cbz_path = os.path.join(DOWNLOAD_DIR, safe_name, filename)
+    cbz_path = os.path.join(_manhwa_download_dir(manhwa.title), filename)
 
     if not os.path.exists(cbz_path):
         print(f"📵 [APP-DOWNLOAD] 404 — {manhwa.title} / {filename} (não está em disco)")
@@ -419,8 +479,7 @@ async def get_cbz_page(manhwa_id: int, filename: str, page_num: int, db: AsyncSe
     if not manhwa:
         raise HTTPException(status_code=404, detail="Manhwa não encontrado")
 
-    safe_name = "".join(c for c in manhwa.title if c.isalnum() or c in " _-().").strip() or "Manhwa_Desconhecido"
-    cbz_path = os.path.join(DOWNLOAD_DIR, safe_name, filename)
+    cbz_path = os.path.join(_manhwa_download_dir(manhwa.title), filename)
 
     if not os.path.exists(cbz_path):
         raise HTTPException(status_code=404, detail="Arquivo não encontrado")
