@@ -226,17 +226,23 @@ A posição de scroll dentro de um capítulo é salva tanto **local** (`AsyncSto
      prompt final numa chamada separada (explora o repo com Read/Glob/Grep) → comenta
      no card e move pra "Em Desenvolvimento".
   2. Claude Code principal (`--permission-mode acceptEdits`, modelo/effort escolhidos
-     acima) executa sozinho numa branch git própria do card (sempre nova na rodada
-     inicial) → commita, sobe a branch pro remoto, move o card pra "Teste" e avisa no
-     Telegram a cada etapa (gerando prompt / executando / pronto).
+     acima) executa sozinho **direto na `BASE_BRANCH`** (sem branch por card - dava
+     mais fricção que ajuda, ninguém testava antes de aprovar) → checkout +
+     `git pull --ff-only` antes de começar, commita e dá push na `BASE_BRANCH` ao
+     fim, move o card pra "Teste" e avisa no Telegram a cada etapa (gerando prompt /
+     executando / pronto).
   3. Em "Teste": comentar no card (sem arrastar nada) reinicia o ciclo sozinho -
      manda de volta pra "Em Andamento", redesenha o prompt considerando o comentário,
      executa de novo retomando a mesma sessão do Claude Code. Arrastar direto pra "Em
      Desenvolvimento" também funciona (pula o redesenho, manda o comentário como
      feedback cru).
-  4. Card aprovado ("Concluído") → branch é mergeada na `BASE_BRANCH`. Quando não
-     sobra task ativa e algum card mergeado mexeu em `mobile/`, dispara `eas build` e
-     manda o link de download (cards que não tocaram mobile não disparam build).
+  4. Card aprovado ("Concluído") → não faz nada de git (o código já está na
+     `BASE_BRANCH` desde a etapa 2), só marca o card. Quando não sobra task ativa e
+     algum card concluído mexeu em `mobile/`, dispara `eas build` e manda o link de
+     download (cards que não tocaram mobile não disparam build). Compatibilidade:
+     cards criados ANTES dessa mudança que ainda têm uma branch própria em
+     `state.json` continuam nela até serem concluídos (aí sim faz o merge, como
+     antes) - ver `handle_dev()`/`handle_done()` em `watcher.py`.
   5. Se a conta bater no limite de uso do Claude Code, a automação não fica tentando
      de novo a cada poll - espera até o horário de reset (extraído da própria mensagem
      de erro) e retoma sozinha, com aviso no Telegram nos dois momentos.

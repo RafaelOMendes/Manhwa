@@ -6,7 +6,7 @@ configuração):
 
   [A Fazer] --(você arrasta)--> [Em Andamento]
         --(watcher: Claude Code, modelo leve, gera o prompt)--> [Em Desenvolvimento]
-        --(watcher: Claude Code executa numa branch própria)--> [Teste]
+        --(watcher: Claude Code executa DIRETO na BASE_BRANCH e dá push)--> [Teste]
         --(watcher: avisa no Telegram)
   Você testa. Se estiver ruim, tem duas formas de pedir correção:
     a) só COMENTA no card enquanto ele está em [Teste] (sem arrastar nada) - o watcher
@@ -16,11 +16,16 @@ configuração):
     b) arrasta na mão de volta pra [Em Desenvolvimento] e comenta o que precisa mudar
        -> o watcher retoma a mesma sessão com esse feedback direto, sem redesenhar o
        prompt (mais rápido, pula a etapa de rascunho).
-  Se estiver bom, arrasta pra [Concluído]
-        --(watcher: dá merge da branch do card na branch base)
+  Se estiver bom, arrasta pra [Concluído] (não faz nada de git - o trabalho já está
+  na BASE_BRANCH desde a etapa anterior; só marca o card como concluído).
   Quando não sobra nenhum card em Em Andamento / Em Desenvolvimento / Teste e existe pelo
-  menos um card recém-concluído ainda não "buildado", o watcher dispara `eas build` do
-  app mobile e manda o link de download no Telegram.
+  menos um card recém-concluído que tocou mobile/ ainda não "buildado", o watcher
+  dispara `eas build` do app mobile e manda o link de download no Telegram.
+
+  Sem branch por card, de propósito - o isolamento de branch+merge-só-quando-aprovado
+  não estava sendo usado na prática (ninguém testava antes de aprovar), só
+  atrapalhava. Cards criados ANTES dessa mudança que já tinham uma branch própria
+  continuam nela até serem concluídos (compatibilidade, ver handle_dev()/handle_done()).
 
 Rode com `python watcher.py` (ou o atalho `iniciaAutomation.bat` na raiz do repo).
 Pare com Ctrl+C.
@@ -55,7 +60,6 @@ import git_ops  # noqa: E402
 
 POLL_INTERVAL_SECONDS = int(os.environ.get("POLL_INTERVAL_SECONDS", "30"))
 BASE_BRANCH = os.environ.get("BASE_BRANCH", "main")
-PUSH_TO_REMOTE = os.environ.get("PUSH_TO_REMOTE", "false").strip().lower() == "true"
 BUILD_PROFILE = os.environ.get("EAS_BUILD_PROFILE", "preview")
 
 
@@ -134,27 +138,35 @@ def handle_doing(client: TrelloClient, card: dict, state: dict, list_ids: dict) 
 
 
 def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) -> None:
-    """Card está em 'Em Desenvolvimento': roda o Claude Code (autônomo) numa branch
-    própria do card e move pra 'Teste' quando terminar. Se o card já tinha passado por
-    aqui antes (tem session_id), trata como uma rodada de correção retomando a mesma
-    sessão - com o prompt redesenhado do zero se veio de check_test_for_new_comment()
-    (stage == "prompted"), ou com um feedback avulso montado a partir dos comentários
-    novos se foi arrastado direto de Teste."""
+    """Card está em 'Em Desenvolvimento': roda o Claude Code (autônomo) DIRETO na
+    BASE_BRANCH (sem branch por card) e move pra 'Teste' quando terminar. Se o card
+    já tinha passado por aqui antes (tem session_id), trata como uma rodada de
+    correção retomando a mesma sessão - com o prompt redesenhado do zero se veio de
+    check_test_for_new_comment() (stage == "prompted"), ou com um feedback avulso
+    montado a partir dos comentários novos se foi arrastado direto de Teste.
+
+    Compatibilidade: um card que JÁ tinha uma branch própria (criado antes da
+    automação passar a trabalhar direto na BASE_BRANCH) continua usando essa branch
+    até ser concluído, pra não abandonar trabalho em andamento no meio do caminho."""
     card_id = card["id"]
     card_state = state["cards"][card_id]
     is_fix_round = bool(card_state.get("session_id"))
-
-    branch = card_state.get("branch") or git_ops.branch_name_for_card(card_id, card["name"])
+    branch = card_state.get("branch")  # só não-None em cards antigos (compat)
+    before_commit = None
 
     try:
-        # fresh=True só na rodada inicial: garante uma branch nova mesmo que tenha
-        # sobrado uma com o mesmo nome de uma execução anterior interrompida. Numa
-        # rodada de correção (is_fix_round) reaproveita a mesma branch de propósito.
-        git_ops.start_card_branch(REPO_DIR, BASE_BRANCH, branch, fresh=not is_fix_round)
+        if branch:
+            # Compat: card antigo, continua na própria branch. fresh=True só na
+            # rodada inicial desse card especificamente (não deveria acontecer mais
+            # em cards novos, mas mantém o comportamento pra quem já estava em curso).
+            git_ops.start_card_branch(REPO_DIR, BASE_BRANCH, branch, fresh=not is_fix_round)
+        else:
+            git_ops.prepare_base_branch(REPO_DIR, BASE_BRANCH)
+            before_commit = git_ops.current_commit(REPO_DIR)
     except git_ops.GitError as exc:
         if not card_state.get("blocked_notified"):
             send_telegram_message(f"⚠️ Card '{card['name']}' travado: {exc}")
-            client.comment_card(card_id, f"⚠️ Automação travada ao tentar criar a branch:\n{exc}")
+            client.comment_card(card_id, f"⚠️ Automação travada ao preparar o git:\n{exc}")
             state_mod.set_card(state, card_id, blocked_notified=True)
         log(f"BLOQUEADO ({card['name']}): {exc}")
         return  # não atualiza last_list_id -> tenta de novo no próximo poll
@@ -239,17 +251,23 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
     # rede de segurança: garante que nada ficou sem commit
     git_ops.commit_all_if_dirty(REPO_DIR, f"WIP automático: {card['name']}")
 
-    areas = git_ops.changed_areas(REPO_DIR, BASE_BRANCH, branch)
+    if branch:
+        areas = git_ops.changed_areas(REPO_DIR, BASE_BRANCH, branch)
+    else:
+        areas = git_ops.changed_areas_since(REPO_DIR, before_commit)
     areas_text = ", ".join(areas) if areas else "nenhuma área identificada (backend/frontend/mobile)"
 
-    # Sobe a branch do card pro remoto assim que tudo está commitado (sucesso ou
-    # falha) - fica disponível pra você continuar mexendo nela de fora se precisar.
-    # Propositalmente NÃO volta pro BASE_BRANCH depois: o repositório fica checked out
-    # na própria branch do card, pra qualquer correção manual/nova rodada continuar no
-    # mesmo lugar.
-    push_res = git_ops.push(REPO_DIR, branch)
+    # Sobe pro remoto assim que tudo está commitado (sucesso ou falha) - branch do
+    # card se for um card antigo (compat), ou a própria BASE_BRANCH direto no fluxo
+    # atual ("manda pra frente"). Propositalmente NÃO troca de branch depois: o
+    # repositório fica checked out onde já está, pra qualquer correção manual/nova
+    # rodada continuar no mesmo lugar.
+    push_target = branch or BASE_BRANCH
+    push_res = git_ops.push(REPO_DIR, push_target)
     if not push_res.ok:
-        log(f"AVISO: não consegui dar push da branch '{branch}': {push_res.output[:200]}")
+        log(f"AVISO: não consegui dar push de '{push_target}': {push_res.output[:200]}")
+
+    where = f"branch `{branch}`" if branch else f"direto em `{BASE_BRANCH}`"
 
     if not result.ok:
         if not card_state.get("blocked_notified"):
@@ -264,7 +282,7 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
 
     client.comment_card(
         card_id,
-        f"✅ Claude Code terminou (branch `{branch}`, modelo: {model_choice or 'padrão'}, "
+        f"✅ Claude Code terminou ({where}, modelo: {model_choice or 'padrão'}, "
         f"effort: {effort_choice or 'padrão'}) - áreas alteradas: {areas_text}\n\n{result.result_text}",
     )
     client.move_card(card_id, list_ids["TEST"])
@@ -287,21 +305,26 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
         f"🧪 Pronto pra testar: '{card['name']}'\nFiz: {_short_summary(result.result_text)}\n"
         f"Áreas alteradas: {areas_text}\n"
         f"Modelo: {model_choice or 'padrão'} (effort: {effort_choice or 'padrão'})\n"
-        f"Branch: {branch}\nCard: {card_url(card)}"
+        f"{where.capitalize()}\nCard: {card_url(card)}"
     )
     log(f"Card '{card['name']}' movido para Teste.")
 
 
 def handle_done(client: TrelloClient, card: dict, state: dict) -> None:
-    """Card foi aprovado (movido pra 'Concluído'): dá merge da branch dele na branch
-    base. Se der conflito, avisa e deixa marcado como bloqueado pra você resolver na mão."""
+    """Card foi aprovado (movido pra 'Concluído'). No fluxo atual (sem branch por
+    card) isso é um no-op de git: o trabalho já foi commitado e empurrado direto pra
+    BASE_BRANCH lá em handle_dev(), só marca o card como concluído. Compatibilidade:
+    se o card tem uma branch própria registrada (criado antes dessa mudança), dá
+    merge dela na branch base como antes - avisa e deixa bloqueado pra você resolver
+    na mão se der conflito."""
     card_id = card["id"]
     card_state = state["cards"][card_id]
     branch = card_state.get("branch")
 
     if not branch:
-        # card foi movido direto pra Concluído sem passar pelo fluxo - nada a mergear.
+        # Fluxo atual: nada a mergear, o trabalho já está na BASE_BRANCH.
         state_mod.set_card(state, card_id, last_list_id=card["idList"], stage="done")
+        log(f"Card '{card['name']}' concluído (já estava em {BASE_BRANCH}, nada a mergear).")
         return
 
     res = git_ops.merge_branch(REPO_DIR, BASE_BRANCH, branch)
@@ -313,8 +336,12 @@ def handle_done(client: TrelloClient, card: dict, state: dict) -> None:
         log(f"CONFLITO ao mergear '{card['name']}': {res.output[:200]}")
         return  # não atualiza last_list_id -> tenta de novo (e reconhece se você resolver na mão) a cada poll
 
-    if PUSH_TO_REMOTE:
-        git_ops.push(REPO_DIR, BASE_BRANCH)
+    # Sempre sobe pro remoto depois do merge, consistente com o fluxo atual (que
+    # também sempre dá push, sem flag) - não faz sentido mergear localmente e deixar
+    # só na sua máquina.
+    push_res = git_ops.push(REPO_DIR, BASE_BRANCH)
+    if not push_res.ok:
+        log(f"AVISO: não consegui dar push de '{BASE_BRANCH}' depois do merge: {push_res.output[:200]}")
 
     git_ops.delete_branch(REPO_DIR, branch)
     state_mod.set_card(state, card_id, last_list_id=card["idList"], stage="merged", built=False)
@@ -354,7 +381,13 @@ def maybe_trigger_build(state: dict, list_ids: dict, cards: list[dict]) -> None:
     if any_active:
         return
 
-    unbuilt = [(cid, cs) for cid, cs in state["cards"].items() if cs.get("stage") == "merged" and not cs.get("built")]
+    # "done" = fluxo atual (handle_done marca assim quando não tem branch pra
+    # mergear, já que o trabalho já estava na BASE_BRANCH); "merged" = compat com
+    # cards antigos que tinham branch própria.
+    unbuilt = [
+        (cid, cs) for cid, cs in state["cards"].items()
+        if cs.get("stage") in ("done", "merged") and not cs.get("built")
+    ]
     if not unbuilt:
         return
 
