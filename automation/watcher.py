@@ -1,5 +1,5 @@
 """
-Loop principal da automação Trello -> Claude Code -> Telegram -> EAS Build.
+Loop principal da automação Trello -> Claude Code -> Telegram.
 
 Fluxo (ver automation/SETUP.md para a explicação completa e o passo a passo de
 configuração):
@@ -18,9 +18,13 @@ configuração):
        prompt (mais rápido, pula a etapa de rascunho).
   Se estiver bom, arrasta pra [Concluído] (não faz nada de git - o trabalho já está
   na BASE_BRANCH desde a etapa anterior; só marca o card como concluído).
-  Quando não sobra nenhum card em Em Andamento / Em Desenvolvimento / Teste e existe pelo
-  menos um card recém-concluído que tocou mobile/ ainda não "buildado", o watcher
-  dispara `eas build` do app mobile e manda o link de download no Telegram.
+
+  IMPORTANTE: a automação NUNCA roda `eas build` sozinha (proibido pelo usuário - custa
+  cota e ele quer controlar quando builda). Mudanças só-JS/TS em mobile/ saem via
+  `eas update`, disparado pelo próprio Claude Code durante a execução do card (ver
+  MOBILE_EAS_UPDATE_REMINDER em claude_runner.py). Se uma task mexer em dependência
+  nativa/app.json/plugins, o Claude Code pede confirmação em vez de buildar - buildar
+  fica sempre a cargo do usuário, manualmente.
 
   Sem branch por card, de propósito - o isolamento de branch+merge-só-quando-aprovado
   não estava sendo usado na prática (ninguém testava antes de aprovar), só
@@ -44,7 +48,6 @@ from dotenv import load_dotenv
 
 AUTOMATION_DIR = Path(__file__).resolve().parent
 REPO_DIR = AUTOMATION_DIR.parent
-MOBILE_DIR = REPO_DIR / "mobile"
 
 load_dotenv(AUTOMATION_DIR / ".env")
 
@@ -55,12 +58,10 @@ from trello_client import TrelloClient, resolve_list_ids  # noqa: E402
 from claude_prompt import build_prompt  # noqa: E402
 from claude_runner import run_claude_code, GRAPHIFY_REMINDER, MOBILE_EAS_UPDATE_REMINDER  # noqa: E402
 from telegram_notify import send_telegram_message  # noqa: E402
-from mobile_build import run_mobile_build  # noqa: E402
 import git_ops  # noqa: E402
 
 POLL_INTERVAL_SECONDS = int(os.environ.get("POLL_INTERVAL_SECONDS", "30"))
 BASE_BRANCH = os.environ.get("BASE_BRANCH", "main")
-BUILD_PROFILE = os.environ.get("EAS_BUILD_PROFILE", "preview")
 
 
 def log(msg: str) -> None:
@@ -375,54 +376,6 @@ def check_test_for_new_comment(client: TrelloClient, card: dict, state: dict, li
     return True
 
 
-def maybe_trigger_build(state: dict, list_ids: dict, cards: list[dict]) -> None:
-    active = {list_ids["DOING"], list_ids["DEV"], list_ids["TEST"]}
-    any_active = any(c["idList"] in active for c in cards)
-    if any_active:
-        return
-
-    # "done" = fluxo atual (handle_done marca assim quando não tem branch pra
-    # mergear, já que o trabalho já estava na BASE_BRANCH); "merged" = compat com
-    # cards antigos que tinham branch própria.
-    unbuilt = [
-        (cid, cs) for cid, cs in state["cards"].items()
-        if cs.get("stage") in ("done", "merged") and not cs.get("built")
-    ]
-    if not unbuilt:
-        return
-
-    # Só builda o mobile se algum card mergeado de fato mexeu em mobile/ - antes disso
-    # todo merge disparava um `eas build`, mesmo pra cards 100% backend/frontend, o que
-    # só gastava cota de build à toa. Cards sem "areas" registrado (mergeados antes
-    # dessa informação existir) continuam builadando por segurança, já que não dá pra
-    # saber o que mudaram.
-    needs_build = [cid for cid, cs in unbuilt if cs.get("areas") is None or "Mobile" in cs.get("areas")]
-    skip_build = [cid for cid, cs in unbuilt if cid not in needs_build]
-
-    for cid in skip_build:
-        state_mod.set_card(state, cid, built=True)
-    if skip_build:
-        log(f"{len(skip_build)} card(s) mergeado(s) não mexeram em mobile/ - pulando build do EAS pra eles.")
-
-    if not needs_build:
-        return
-
-    log(f"Nenhum card ativo e {len(needs_build)} card(s) mergeado(s) tocaram mobile/ sem build -> disparando eas build...")
-    send_telegram_message("🏗️ Todas as tasks concluídas. Iniciando o build do app mobile (EAS)...")
-
-    result = run_mobile_build(MOBILE_DIR, profile=BUILD_PROFILE)
-    if result.ok and result.download_url:
-        send_telegram_message(f"📱 App pronto! Baixe aqui:\n{result.download_url}")
-    elif result.ok:
-        send_telegram_message(f"📱 Build concluído, mas não achei o link automaticamente.\n{result.message}")
-    else:
-        send_telegram_message(f"❌ Build falhou: {result.message[:500]}")
-        return  # não marca como built - vai tentar de novo no próximo poll
-
-    for cid in needs_build:
-        state_mod.set_card(state, cid, built=True)
-
-
 def tick(client: TrelloClient, list_ids: dict) -> None:
     state = state_mod.load()
     cards = client.get_cards()
@@ -459,8 +412,6 @@ def tick(client: TrelloClient, list_ids: dict) -> None:
             if not card_state.get("blocked_notified"):
                 send_telegram_message(f"❌ Erro inesperado processando '{card['name']}': {err.splitlines()[-1][:300]}")
                 state_mod.set_card(state, card_id, blocked_notified=True)
-
-    maybe_trigger_build(state, list_ids, cards)
 
 
 def main() -> None:

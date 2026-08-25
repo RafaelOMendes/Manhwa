@@ -237,12 +237,10 @@ A posição de scroll dentro de um capítulo é salva tanto **local** (`AsyncSto
      Desenvolvimento" também funciona (pula o redesenho, manda o comentário como
      feedback cru).
   4. Card aprovado ("Concluído") → não faz nada de git (o código já está na
-     `BASE_BRANCH` desde a etapa 2), só marca o card. Quando não sobra task ativa e
-     algum card concluído mexeu em `mobile/`, dispara `eas build` e manda o link de
-     download (cards que não tocaram mobile não disparam build). Compatibilidade:
-     cards criados ANTES dessa mudança que ainda têm uma branch própria em
-     `state.json` continuam nela até serem concluídos (aí sim faz o merge, como
-     antes) - ver `handle_dev()`/`handle_done()` em `watcher.py`.
+     `BASE_BRANCH` desde a etapa 2), só marca o card. Compatibilidade: cards criados
+     ANTES dessa mudança que ainda têm uma branch própria em `state.json` continuam
+     nela até serem concluídos (aí sim faz o merge, como antes) - ver
+     `handle_dev()`/`handle_done()` em `watcher.py`.
   5. Se a conta bater no limite de uso do Claude Code, a automação não fica tentando
      de novo a cada poll - espera até o horário de reset (extraído da própria mensagem
      de erro) e retoma sozinha, com aviso no Telegram nos dois momentos.
@@ -257,13 +255,19 @@ A posição de scroll dentro de um capítulo é salva tanto **local** (`AsyncSto
   que a task tocar `mobile/` com mudança só JS/TS - bumpar `APP_VERSION`, atualizar o
   `CHANGELOG.md` e rodar `eas update --branch preview` automaticamente. Se
   `mobile/AGENTS.md` mudar esse procedimento, atualize o texto do lembrete junto.
+- **`eas build` é proibido na automação, em qualquer ponto do fluxo** - o usuário não
+  autoriza rodar build automaticamente (custa cota do plano Expo e ele quer controlar
+  quando builda). Só `eas update` é permitido, e mesmo assim só pra mudanças só-JS/TS
+  (ver lembrete acima); qualquer coisa que exija `eas build` fica pendente para o
+  usuário rodar manualmente. Não reintroduza um gatilho automático de build sem o
+  usuário pedir explicitamente.
 - **Arquivos principais:** `watcher.py` (loop principal), `trello_client.py` (API do
   Trello, com retry automático), `claude_prompt.py`, `claude_runner.py` (chama o CLI
   `claude`, com retry/espera automática em limite de uso), `git_ops.py`,
-  `telegram_notify.py`, `mobile_build.py`, `state.py` (estado local em `state.json`,
-  não versionado - por card: branch, session_id, model/effort escolhidos, áreas
-  alteradas), `proc_utils.py` (resolve o caminho completo de `claude`/`eas`/`git`
-  antes de chamar subprocess).
+  `telegram_notify.py`, `state.py` (estado local em `state.json`, não versionado -
+  por card: branch, session_id, model/effort escolhidos, áreas alteradas),
+  `proc_utils.py` (resolve o caminho completo de `claude`/`git` antes de chamar
+  subprocess).
 - **Configuração:** `automation/.env` (não versionado — copie de `.env.example`).
   Passo a passo completo em `automation/SETUP.md`.
 - **Roda local**, disparado manualmente via `iniciaAutomation.bat` (não sobe pra
