@@ -13,7 +13,13 @@ import os
 import re
 from contextlib import asynccontextmanager
 
-from database import get_db, create_tables, async_session_maker, is_connection_closed_error
+from database import (
+    get_db,
+    create_tables,
+    async_session_maker,
+    is_connection_closed_error,
+    safe_rollback,
+)
 from models import Manhwa as ManhwaModel, ChapterProgress
 
 DOWNLOAD_DIR = os.environ.get("DOWNLOAD_DIR", r"D:\Manhwas")
@@ -618,6 +624,10 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
             print(f"   Manhwas com falha: {', '.join(failed_manhwas)}")
             print(f"   Alterações descartadas: {len(pending_updates)} manhwa(s) que haviam tido sucesso.")
             pending_updates.clear()
+            # Descarta a sessão do request antes de responder: ela ficou ociosa
+            # durante os downloads e a conexão provavelmente já morreu. Sem isso,
+            # o get_db() ainda tentaria commitar nela depois da resposta.
+            await safe_rollback(db)
             print("   ↩️  Rollback concluído — nenhuma alteração foi salva no banco.")
 
             total_elapsed = time.time() - sync_start
@@ -644,6 +654,13 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
         # ANTES de montar a resposta. Se isso falhar, cai no except abaixo e o
         # frontend recebe falha — em vez de "sucesso" seguido de um 500 solto.
         await _persist_sync_updates(pending_updates)
+
+        # Tudo já está persistido na conexão nova. A sessão `db` do request não
+        # tem nenhuma alteração em memória (as mudanças só existiram em
+        # `pending_updates`), então damos rollback explícito nela: descarta
+        # qualquer estado intermediário e evita que o get_db() tente commitar
+        # numa conexão que ficou minutos ociosa e já está morta.
+        await safe_rollback(db)
 
         total_elapsed = time.time() - sync_start
         print(f"\n{'=' * 60}")
@@ -748,6 +765,11 @@ async def review_all_manhwas(db: AsyncSession = Depends(get_db)):
         manhwa_sem = asyncio.Semaphore(1)
         processed_count = 0
 
+        # Mesmo padrão do download-all: a leitura das stats de todos os tópicos leva
+        # minutos e a conexão da sessão `db` morre nesse meio tempo. As alterações
+        # ficam como dados simples aqui e são aplicadas no fim, numa conexão nova.
+        pending_updates: dict = {}
+
         async def review_one_manhwa(manhwa):
             nonlocal processed_count
             async with manhwa_sem:
@@ -783,18 +805,17 @@ async def review_all_manhwas(db: AsyncSession = Depends(get_db)):
                     print(f"   📊 Resultado: {cbz_count} CBZs | reação média: {avg_reactions}")
                     print(f"   ⏱️  Tempo: {elapsed:.1f}s")
 
-                    updated = False
+                    changes = {}
                     if manhwa.total_chapters != cbz_count:
                         print(f"   🔄 Atualizando total de capítulos: {old_chapters} → {cbz_count}")
-                        manhwa.total_chapters = cbz_count
-                        updated = True
+                        changes["total_chapters"] = cbz_count
                     if manhwa.medium_reaction != avg_reactions:
                         print(f"   ❤️  Atualizando reação média: {old_reaction} → {avg_reactions}")
-                        manhwa.medium_reaction = avg_reactions
-                        updated = True
+                        changes["medium_reaction"] = avg_reactions
 
+                    updated = bool(changes)
                     if updated:
-                        db.add(manhwa)
+                        pending_updates[manhwa.id] = changes
                     else:
                         print("   ✔️  Já estava atualizado — nada a alterar.")
 
@@ -833,7 +854,12 @@ async def review_all_manhwas(db: AsyncSession = Depends(get_db)):
             # estado intermediário.
             print(f"\n🔄 ROLLBACK: {total_errors} manhwa(s) falharam — revertendo TODAS as alterações desta revisão.")
             print(f"   Manhwas com falha: {', '.join(failed_manhwas)}")
-            await db.rollback()
+            print(f"   Alterações descartadas: {len(pending_updates)} manhwa(s) que haviam tido sucesso.")
+            pending_updates.clear()
+            # Nada foi escrito (as mudanças só existiam em memória), mas ainda assim
+            # descartamos a sessão do request para o get_db() não commitar numa
+            # conexão que ficou ociosa durante a revisão inteira.
+            await safe_rollback(db)
             print("   ↩️  Rollback concluído — nenhuma alteração foi salva no banco.")
 
             total_elapsed = time.time() - review_start
@@ -853,7 +879,15 @@ async def review_all_manhwas(db: AsyncSession = Depends(get_db)):
                 "results": results_list,
             }
 
-        # Todos com sucesso: o commit da transação é feito pelo get_db() ao final.
+        # Todos com sucesso: persistir agora, numa conexão nova. Se falhar, cai no
+        # except abaixo e o frontend recebe erro — em vez de "sucesso" seguido de
+        # um 500 solto vindo do commit do get_db().
+        await _persist_sync_updates(pending_updates)
+
+        # Alterações já persistidas; a sessão `db` não tem nada em memória. Rollback
+        # explícito para o get_db() não tentar commitar na conexão morta.
+        await safe_rollback(db)
+
         total_elapsed = time.time() - review_start
         print(f"\n{'=' * 60}")
         print(f"✅ REVISÃO CONCLUÍDA")

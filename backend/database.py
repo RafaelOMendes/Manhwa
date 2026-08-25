@@ -47,8 +47,14 @@ def is_connection_closed_error(exc: BaseException) -> bool:
     return "connection is closed" in texto or "connection was closed" in texto
 
 
-async def _safe_rollback(session):
-    """Rollback que nao explode se a conexao ja estiver morta."""
+async def safe_rollback(session):
+    """Rollback que nao explode se a conexao ja estiver morta.
+
+    Publico de proposito: endpoints longos (ex.: /api/manhwas/download-all e
+    /api/manhwas/review-all) chamam isso depois de persistirem numa conexao nova,
+    para descartar a sessao do request e impedir que o get_db() tente commitar
+    numa conexao que ja sabemos estar morta.
+    """
     try:
         await session.rollback()
     except Exception as exc:  # pragma: no cover - conexao ja inutilizavel
@@ -88,11 +94,11 @@ async def get_db():
                         "[get_db] Conexao fechada no commit final, mas a sessao nao tinha "
                         f"alteracoes pendentes - nada foi perdido. Detalhe: {commit_exc}"
                     )
-                    await _safe_rollback(session)
+                    await safe_rollback(session)
                 else:
                     raise
         except Exception:
-            await _safe_rollback(session)
+            await safe_rollback(session)
             raise
         finally:
             await _safe_close(session)
