@@ -230,10 +230,11 @@ estado atual do board.
      - **Ou** comente e arraste você mesmo de volta pra **Em Desenvolvimento** — pula
        direto pra execução com o comentário como feedback cru (mais rápido, sem
        redesenhar o prompt), retomando a mesma sessão.
-7. Quando não sobrar nenhum card ativo (Em Andamento / Em Desenvolvimento / Teste
-   vazios) e pelo menos um card tiver sido concluído desde o último build, o watcher
-   dispara automaticamente `eas build` (perfil `preview`, gera `.apk`) e manda o link
-   de download assim que terminar.
+7. **A automação nunca roda `eas build` sozinha** (proibido - custa cota do plano
+   Expo e quem decide quando builda é você). Mudanças só-JS/TS em `mobile/` saem via
+   `eas update`, disparado pelo próprio Claude Code durante a execução do card (ver
+   `MOBILE_EAS_UPDATE_REMINDER` em `claude_runner.py`); mudanças nativas ficam para
+   você buildar manualmente quando quiser.
 8. **Se a conta bater no limite de uso do Claude Code** (mensagem real já vista:
    "You've hit your session limit · resets 2:30pm (America/Sao_Paulo)"), o watcher
    **não** fica tentando de novo a cada poll — manda um aviso no Telegram (`⏳`), dorme
@@ -263,12 +264,10 @@ estado atual do board.
   manualmente (`git pull`/`git merge`/`git rebase` na mão).
 - **Custo:** cada card consome DUAS sessões do Claude Code — uma rápida/barata (modelo
   leve) pra rascunhar o prompt, e uma completa (modelo principal) pra executar —
-  cobradas normalmente pela sua assinatura/API. Builds do EAS também consomem sua
-  cota de builds do plano Expo.
-- **Sem retomar builds em paralelo** — só um build mobile por vez.
-- Os nomes de campo do JSON do `eas build --json` podem variar entre versões do
-  `eas-cli`; se o watcher não achar o link automaticamente, ele te manda o `build id`
-  pra você achar em https://expo.dev.
+  cobradas normalmente pela sua assinatura/API.
+- **`eas build` é sempre manual.** A automação só roda `eas update` (via Claude Code,
+  quando a task mexeu só em JS/TS de `mobile/`); qualquer coisa que exija build nativo
+  fica pendente para você rodar `eas build` você mesmo quando quiser.
 
 ---
 
@@ -281,12 +280,10 @@ estado atual do board.
 | Card fica travado em "Em Andamento" sem mover pra "Em Desenvolvimento" | Rode `claude -p "oi" --model haiku` manualmente pra ver se o CLI/login/modelo estão OK |
 | Card fica travado em "Em Desenvolvimento" e não sai | Olhe a janela do terminal / o log; provavelmente `git status` não está limpo na `BASE_BRANCH`, ou o Claude Code deu timeout |
 | Não chega aviso no Telegram | Confira se você mandou `/start` pro bot e se `TELEGRAM_CHAT_ID` está certo |
-| `eas build` falha | Rode `eas build --platform android --profile preview` manualmente uma vez pra ver o erro completo (login, credenciais Android etc) |
 | `❌ Erro no watcher: requests.exceptions.ReadTimeout` (ou `ConnectionError`) da API do Trello, depois de rodar muito tempo | Normal em execuções longas - a API do Trello ocasionalmente demora/oscila. O watcher já se recupera sozinho no próximo poll (não trava, só pula um ciclo), e `trello_client.py` já tenta de novo automaticamente (retry com backoff) antes de chegar a dar erro. Se aparecer só uma vez de vez em quando, ignore; se for constante, é a API do Trello (ou sua rede) fora do ar mesmo - confira status.atlassian.com |
-| `OSError: [WinError 87] O parâmetro está incorreto` ao chamar o Claude Code/EAS/git | **Causa real (confirmada):** não é o shim `.CMD`/`.PS1` do npm — `automation/proc_utils.py` já resolvia isso certinho. O bug era `os.environ.get("CLAUDE_CLI_PATH", "claude")` em `claude_runner.py`: como `CLAUDE_CLI_PATH=` fica **presente mas vazio** no `.env` (intencional, ver passo 4), `os.environ.get(chave, default)` devolve `""` em vez do default — o default só entra quando a chave não existe. `resolve_command("")` não acha nada e caía num fallback `[""]`; `subprocess.run([""...])` manda um argv[0] vazio pro `CreateProcess`, que devolve exatamente `WinError 87`. Corrigido: `claude_runner.py`/`mobile_build.py` agora usam `os.environ.get("X") or default` (trata string vazia como "não setado"), e `proc_utils.resolve_command()` levanta um `ValueError` claro se receber um nome vazio, em vez de deixar o erro aparecer disfarçado de `WinError 87` lá na frente. `git` nunca teve esse problema (`GIT_CMD` vem do literal `"git"`, não de env var), e `eas` só não quebrou porque `EAS_CLI_PATH=eas` já vinha preenchido no `.env.example`. Se reaparecer, rode `python -c "import proc_utils; print(proc_utils.resolve_command('claude'))"` de dentro de `automation/` (com o venv ativado) e confira se bate com `Get-Command claude` no PowerShell |
+| `OSError: [WinError 87] O parâmetro está incorreto` ao chamar o Claude Code/EAS/git | **Causa real (confirmada):** não é o shim `.CMD`/`.PS1` do npm — `automation/proc_utils.py` já resolvia isso certinho. O bug era `os.environ.get("CLAUDE_CLI_PATH", "claude")` em `claude_runner.py`: como `CLAUDE_CLI_PATH=` fica **presente mas vazio** no `.env` (intencional, ver passo 4), `os.environ.get(chave, default)` devolve `""` em vez do default — o default só entra quando a chave não existe. `resolve_command("")` não acha nada e caía num fallback `[""]`; `subprocess.run([""...])` manda um argv[0] vazio pro `CreateProcess`, que devolve exatamente `WinError 87`. Corrigido: `claude_runner.py` agora usa `os.environ.get("X") or default` (trata string vazia como "não setado"), e `proc_utils.resolve_command()` levanta um `ValueError` claro se receber um nome vazio, em vez de deixar o erro aparecer disfarçado de `WinError 87` lá na frente. `git` nunca teve esse problema (`GIT_CMD` vem do literal `"git"`, não de env var), e `eas` só não quebrou porque `EAS_CLI_PATH=eas` já vinha preenchido no `.env.example`. Se reaparecer, rode `python -c "import proc_utils; print(proc_utils.resolve_command('claude'))"` de dentro de `automation/` (com o venv ativado) e confira se bate com `Get-Command claude` no PowerShell |
 
 ---
 
-Qualquer ajuste de fluxo (outro nome de lista, outro perfil de build, mais de uma
-plataforma no build, trocar os modelos usados, etc.) é só mexer nas variáveis do
-`.env` ou pedir pra eu ajustar os scripts em `automation/`.
+Qualquer ajuste de fluxo (outro nome de lista, trocar os modelos usados, etc.) é só
+mexer nas variáveis do `.env` ou pedir pra eu ajustar os scripts em `automation/`.
