@@ -38,29 +38,61 @@ code.claude.com/docs/en/cli-reference, ago/2026):
 - `--output-format json` devolve um objeto com `result` (texto final), `session_id`,
   `total_cost_usd` etc, o que facilita registrar um resumo no Trello/Telegram e permite
   retomar a mesma conversa depois com `--resume <session_id>` (usado no fluxo de
-  "correção" quando você move o card de volta pra Em Desenvolvimento com feedback).
+  "correção" quando você move o card de volta pra Em Desenvolvimento com feedback, e
+  também no retry automático de limite de uso logo abaixo).
+
+Limite de uso (session/usage limit): quando a conta esbarra no limite, o Claude Code
+devolve `is_error: true` e um `result` tipo "You've hit your session limit · resets
+2:30pm (America/Sao_Paulo)" (formato real observado - ver comentário no card do Trello
+em 25/08/2026). run_claude_code() detecta esse padrão, NÃO fica tentando de novo a
+cada poll do watcher (isso só bateria no limite de novo, sem sentido) - em vez disso,
+avisa no Telegram, dorme (bloqueando, dentro dessa mesma chamada) até o horário de
+reset informado, e retoma automaticamente: se a tentativa que bateu no limite já tinha
+gerado um `session_id` (ela avançou antes de travar), a próxima tentativa usa
+`--resume` nesse session_id com um prompt curto de "continue" em vez de recomeçar a
+task do zero.
 """
 
 from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import threading
 import time
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from proc_utils import resolve_command
+from telegram_notify import send_telegram_message
+
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:  # não deveria acontecer no Python usado aqui, só por garantia
+    ZoneInfo = None  # type: ignore
 
 
 def _log(msg: str) -> None:
     print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)
 
+
 EXEC_ALLOWED_TOOLS = "Bash,Read,Edit,Write,Glob,Grep,WebFetch,WebSearch"
 
 # Timeout generoso - tarefas de codificação autônomas podem levar bastante tempo.
 DEFAULT_TIMEOUT_SECONDS = int(os.environ.get("CLAUDE_RUN_TIMEOUT_SECONDS", str(60 * 45)))
+
+# Se a mensagem de limite não trouxer um horário de reset reconhecível (mudança de
+# formato futura, por exemplo), espera esse tanto antes de tentar de novo.
+USAGE_LIMIT_FALLBACK_WAIT_SECONDS = int(os.environ.get("USAGE_LIMIT_FALLBACK_WAIT_SECONDS", str(30 * 60)))
+# Rede de segurança contra loop infinito, caso a detecção dispare por engano repetidas
+# vezes - na prática nunca deveria chegar nem perto disso.
+USAGE_LIMIT_MAX_RETRIES = 5
+USAGE_LIMIT_RESUME_PROMPT = "Continue de onde parou."
+
+USAGE_LIMIT_KEYWORDS = ("session limit", "usage limit")
+USAGE_LIMIT_RESET_RE = re.compile(r"(?i)resets\s+(\d{1,2}):(\d{2})\s*([ap]m)\s*\(([^)]+)\)")
 
 GRAPHIFY_REMINDER = (
     "Este repositório tem um grafo de conhecimento em graphify-out/ (god nodes, "
@@ -82,6 +114,40 @@ class ClaudeRunResult:
     raw_output: str
 
 
+def _looks_like_usage_limit(text: str) -> bool:
+    low = (text or "").lower()
+    return any(k in low for k in USAGE_LIMIT_KEYWORDS)
+
+
+def _parse_usage_limit_reset(text: str) -> datetime | None:
+    """Extrai o horário de reset de mensagens tipo "...resets 2:30pm
+    (America/Sao_Paulo)". Devolve None se não achar o padrão ou não reconhecer o fuso -
+    quem chama cai pro fallback fixo (USAGE_LIMIT_FALLBACK_WAIT_SECONDS) nesse caso."""
+    match = USAGE_LIMIT_RESET_RE.search(text or "")
+    if not match:
+        return None
+
+    hour_str, minute_str, ampm, tz_name = match.groups()
+    hour = int(hour_str) % 12
+    if ampm.lower() == "pm":
+        hour += 12
+    minute = int(minute_str)
+
+    tz = None
+    if ZoneInfo is not None:
+        try:
+            tz = ZoneInfo(tz_name.strip())
+        except Exception:
+            tz = None
+
+    now = datetime.now(tz) if tz else datetime.now()
+    reset_at = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+    if reset_at <= now:
+        # já passou esse horário hoje - o reset é amanhã
+        reset_at += timedelta(days=1)
+    return reset_at
+
+
 def run_claude_code(
     repo_dir: Path,
     prompt: str,
@@ -92,6 +158,65 @@ def run_claude_code(
     permission_mode: str | None = "acceptEdits",
     timeout_seconds: int | None = None,
     append_system_prompt: str | None = None,
+) -> ClaudeRunResult:
+    for attempt in range(1, USAGE_LIMIT_MAX_RETRIES + 2):
+        result = _run_once(
+            repo_dir,
+            prompt,
+            resume_session_id=resume_session_id,
+            model=model,
+            effort=effort,
+            allowed_tools=allowed_tools,
+            permission_mode=permission_mode,
+            timeout_seconds=timeout_seconds,
+            append_system_prompt=append_system_prompt,
+        )
+        if result.ok or not _looks_like_usage_limit(result.result_text):
+            return result
+        if attempt > USAGE_LIMIT_MAX_RETRIES:
+            _log(f"Limite de uso atingido {USAGE_LIMIT_MAX_RETRIES}x seguidas - desistindo, devolvendo a falha.")
+            return result
+
+        reset_at = _parse_usage_limit_reset(result.result_text)
+        if reset_at is not None:
+            wait_seconds = max(0, (reset_at - datetime.now(reset_at.tzinfo)).total_seconds()) + 30
+            reset_label = reset_at.strftime("%H:%M %Z").strip()
+        else:
+            wait_seconds = USAGE_LIMIT_FALLBACK_WAIT_SECONDS
+            reset_label = f"~{wait_seconds // 60}min (horário exato não veio na mensagem)"
+
+        msg = (
+            f"⏳ Limite de uso do Claude Code atingido: \"{result.result_text.strip()}\". "
+            f"Vou aguardar até {reset_label} e retomar automaticamente de onde parei - "
+            f"não vou ficar tentando de novo a cada poll."
+        )
+        _log(msg)
+        send_telegram_message(msg)
+
+        time.sleep(wait_seconds)
+
+        send_telegram_message("▶️ Reset do limite de uso passou - retomando a task automaticamente.")
+
+        # Se essa tentativa já tinha avançado o suficiente pra gerar um session_id,
+        # retoma ELA (--resume) com um prompt curto de continuação em vez de
+        # recomeçar a task inteira do zero - "de onde parou" de verdade.
+        if result.session_id:
+            resume_session_id = result.session_id
+            prompt = USAGE_LIMIT_RESUME_PROMPT
+
+    return result  # pragma: no cover - inatingível (o for sempre retorna ou o guard acima devolve)
+
+
+def _run_once(
+    repo_dir: Path,
+    prompt: str,
+    resume_session_id: str | None,
+    model: str | None,
+    effort: str | None,
+    allowed_tools: str,
+    permission_mode: str | None,
+    timeout_seconds: int | None,
+    append_system_prompt: str | None,
 ) -> ClaudeRunResult:
     claude_cmd = resolve_command(os.environ.get("CLAUDE_CLI_PATH") or "claude")
 

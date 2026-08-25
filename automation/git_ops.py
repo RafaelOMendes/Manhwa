@@ -58,6 +58,20 @@ def branch_exists(repo_dir: Path, branch: str) -> bool:
     return res.ok
 
 
+def automation_version(repo_dir: Path) -> str:
+    """"Versão" da automação = branch + hash curto do commit atual - só pra você saber,
+    olhando o Telegram/terminal, exatamente com qual código essa instância do watcher
+    está rodando (relevante porque o processo não recarrega código sozinho quando você
+    faz merge/checkout de outra branch enquanto ele já está de pé)."""
+    try:
+        branch = current_branch(repo_dir)
+    except GitError:
+        branch = "desconhecida"
+    commit = _run(repo_dir, "rev-parse", "--short", "HEAD")
+    commit_hash = commit.output.strip() if commit.ok else "desconhecido"
+    return f"{branch}@{commit_hash}"
+
+
 def slugify(text: str, max_len: int = 40) -> str:
     slug = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
     return slug[:max_len].strip("-") or "tarefa"

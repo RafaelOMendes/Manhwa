@@ -65,6 +65,7 @@ def get_card(state: dict[str, Any], card_id: str) -> dict[str, Any]:
             "prompt": None,
             "model": None,  # "sonnet" | "opus" | None - escolhido pela etapa de rascunho do prompt
             "effort": None,  # "low" | "medium" | "high" | "xhigh" | "max" | None
+            "areas": None,  # list["Back"|"Front"|"Mobile"] | None - None = desconhecido (builda por segurança)
         },
     )
 

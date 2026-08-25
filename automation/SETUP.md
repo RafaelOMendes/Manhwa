@@ -237,6 +237,15 @@ estado atual do board.
    vazios) e pelo menos um card tiver sido concluído desde o último build, o watcher
    dispara automaticamente `eas build` (perfil `preview`, gera `.apk`) e manda o link
    de download assim que terminar.
+8. **Se a conta bater no limite de uso do Claude Code** (mensagem real já vista:
+   "You've hit your session limit · resets 2:30pm (America/Sao_Paulo)"), o watcher
+   **não** fica tentando de novo a cada poll — manda um aviso no Telegram (`⏳`), dorme
+   (bloqueado, sem gastar nada nesse meio-tempo) até o horário de reset informado na
+   própria mensagem, e retoma sozinho quando passa (`▶️` no Telegram) - se a tentativa
+   que bateu no limite já tinha avançado o suficiente pra abrir uma sessão, ele retoma
+   ELA (`--resume`) em vez de recomeçar a task do zero. Se por algum motivo a mensagem
+   não trouxer um horário reconhecível, cai num fallback de 30min
+   (`USAGE_LIMIT_FALLBACK_WAIT_SECONDS` no `.env`).
 
 ---
 

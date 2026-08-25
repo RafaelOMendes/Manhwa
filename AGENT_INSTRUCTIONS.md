@@ -213,23 +213,47 @@ A posição de scroll dentro de um capítulo é salva tanto **local** (`AsyncSto
 ### 4. Automação Trello ↔ Claude Code
 - **Diretório:** `/automation`
 - **Descrição:** Script Python (`watcher.py`) que faz polling de um board do Trello e
-  orquestra o ciclo completo de uma task: Claude Code (`claude -p`, modelo leve, só
-  leitura) gera o prompt a partir do card → Claude Code (modelo principal,
-  `--permission-mode acceptEdits`) executa sozinho numa branch git própria do card →
-  move o card pra "Teste" e avisa no Telegram →
-  quando o card é aprovado ("Concluído"), a branch é mergeada na `BASE_BRANCH` → quando
-  não sobra nenhuma task ativa, dispara `eas build` do mobile e manda o link de
-  download.
-- **Arquivos principais:** `watcher.py` (loop principal), `trello_client.py`,
-  `claude_prompt.py`, `claude_runner.py`, `git_ops.py`, `telegram_notify.py`,
-  `mobile_build.py`, `state.py` (estado local em `state.json`, não versionado),
-  `proc_utils.py` (resolve o caminho completo de `claude`/`eas`/`git` antes de
-  chamar subprocess - contorna um bug clássico do Windows com shims `.cmd`/`.ps1`
-  de CLIs instalados via npm).
+  orquestra o ciclo completo de uma task:
+  1. Card entra em "Em Andamento" → Claude Code leve (`claude_prompt.py`, modelo
+     `CLAUDE_PROMPT_MODEL`/haiku, só leitura) escolhe modelo (`sonnet`/`opus`) e
+     effort (`low`-`max`) pra execução numa chamada curta e dedicada, e escreve o
+     prompt final numa chamada separada (explora o repo com Read/Glob/Grep) → comenta
+     no card e move pra "Em Desenvolvimento".
+  2. Claude Code principal (`--permission-mode acceptEdits`, modelo/effort escolhidos
+     acima) executa sozinho numa branch git própria do card (sempre nova na rodada
+     inicial) → commita, sobe a branch pro remoto, move o card pra "Teste" e avisa no
+     Telegram a cada etapa (gerando prompt / executando / pronto).
+  3. Em "Teste": comentar no card (sem arrastar nada) reinicia o ciclo sozinho -
+     manda de volta pra "Em Andamento", redesenha o prompt considerando o comentário,
+     executa de novo retomando a mesma sessão do Claude Code. Arrastar direto pra "Em
+     Desenvolvimento" também funciona (pula o redesenho, manda o comentário como
+     feedback cru).
+  4. Card aprovado ("Concluído") → branch é mergeada na `BASE_BRANCH`. Quando não
+     sobra task ativa e algum card mergeado mexeu em `mobile/`, dispara `eas build` e
+     manda o link de download (cards que não tocaram mobile não disparam build).
+  5. Se a conta bater no limite de uso do Claude Code, a automação não fica tentando
+     de novo a cada poll - espera até o horário de reset (extraído da própria mensagem
+     de erro) e retoma sozinha, com aviso no Telegram nos dois momentos.
+- **Ambas as chamadas ao Claude Code que exploram o repositório (rascunho do prompt e
+  execução) recebem um lembrete explícito (via `--append-system-prompt`) pra usar o
+  graphify em vez de grep/Read cru quando `graphify-out/graph.json` existir - mesma
+  regra deste arquivo, seção "graphify" no topo. Ao adicionar uma nova chamada ao
+  Claude Code nesse fluxo que tenha acesso a Read/Glob/Bash, inclua o mesmo lembrete
+  (`GRAPHIFY_REMINDER`, exportado de `claude_runner.py`).
+- **Arquivos principais:** `watcher.py` (loop principal), `trello_client.py` (API do
+  Trello, com retry automático), `claude_prompt.py`, `claude_runner.py` (chama o CLI
+  `claude`, com retry/espera automática em limite de uso), `git_ops.py`,
+  `telegram_notify.py`, `mobile_build.py`, `state.py` (estado local em `state.json`,
+  não versionado - por card: branch, session_id, model/effort escolhidos, áreas
+  alteradas), `proc_utils.py` (resolve o caminho completo de `claude`/`eas`/`git`
+  antes de chamar subprocess).
 - **Configuração:** `automation/.env` (não versionado — copie de `.env.example`).
   Passo a passo completo em `automation/SETUP.md`.
 - **Roda local**, disparado manualmente via `iniciaAutomation.bat` (não sobe pra
-  produção nem é iniciado automaticamente com o Windows).
+  produção nem é iniciado automaticamente com o Windows). O processo não recarrega
+  código sozinho - se você fizer merge/checkout de outra branch com ele já rodando,
+  precisa reiniciar pra pegar o código novo (a versão rodando aparece no log/Telegram
+  de início, como `branch@commit`).
 - Se for mexer nesse fluxo (novos estágios, outro board, outra forma de build),
   atualize `automation/SETUP.md` junto.
 
