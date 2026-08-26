@@ -4,6 +4,15 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.5.0
+
+- **Novo filtro "Apenas com download" no menu "Lendo".** Mostra só os manhwas com download automático
+  ativado (`download: true`). O checkbox aparece ao lado de "Apenas com capítulos novos" e os dois se
+  combinam (só os que têm download E capítulo novo).
+- O filtro é exclusivo do "Lendo": não aparece no Top 30 nem nos outros filtros, e não afeta a listagem
+  deles mesmo se tiver sido marcado antes de trocar de aba — ao voltar pro "Lendo" ele continua valendo.
+- Mesma mudança feita na web (`frontend/app/page.tsx`), pra as duas telas ficarem iguais.
+
 ## 1.4.2
 
 - **Corrigido o reset do aparelho depois de ~1h com o app aberto** (VPN, Bluetooth e Wi-Fi caindo

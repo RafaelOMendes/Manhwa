@@ -11,6 +11,7 @@ export default function Home() {
     const [manhwas, setManhwas] = useState<Manhwa[]>([])
     const [filter, setFilter] = useState<'all' | 'reading' | 'completed' | 'plan_to_read' | 'top30'>('all')
     const [showOnlyNew, setShowOnlyNew] = useState(false)
+    const [showOnlyDownloaded, setShowOnlyDownloaded] = useState(false)
     const [showOnlyUnreadTop30, setShowOnlyUnreadTop30] = useState(false)
     const [showOnlyMoreThan80Chapters, setShowOnlyMoreThan80Chapters] = useState(false)
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -79,14 +80,15 @@ export default function Home() {
         return result.filter(manhwa => {
             if (filter === 'all') return true
             if (filter === 'reading') {
+                if (manhwa.status !== 'reading') return false
+                if (showOnlyDownloaded && !manhwa.download) return false
                 if (showOnlyNew) {
-                    return manhwa.status === 'reading' &&
-                        manhwa.total_chapters !== undefined &&
+                    return manhwa.total_chapters !== undefined &&
                         manhwa.total_chapters !== null &&
                         manhwa.current_chapter !== undefined &&
                         manhwa.total_chapters > manhwa.current_chapter
                 }
-                return manhwa.status === 'reading'
+                return true
             }
             return manhwa.status === filter
         })
@@ -179,15 +181,26 @@ export default function Home() {
 
                     <div className="mt-4 flex flex-wrap items-center gap-3">
                         {filter === 'reading' && (
-                            <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer hover:text-white transition bg-background-darker/50 px-3 py-2 rounded-lg border border-gray-800/50">
-                                <input
-                                    type="checkbox"
-                                    checked={showOnlyNew}
-                                    onChange={(e) => setShowOnlyNew(e.target.checked)}
-                                    className="w-4 h-4 rounded border-gray-600 bg-background-dark text-blue-500 focus:ring-blue-500 focus:ring-offset-background-dark"
-                                />
-                                <span>Apenas com capítulos novos</span>
-                            </label>
+                            <>
+                                <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer hover:text-white transition bg-background-darker/50 px-3 py-2 rounded-lg border border-gray-800/50">
+                                    <input
+                                        type="checkbox"
+                                        checked={showOnlyNew}
+                                        onChange={(e) => setShowOnlyNew(e.target.checked)}
+                                        className="w-4 h-4 rounded border-gray-600 bg-background-dark text-blue-500 focus:ring-blue-500 focus:ring-offset-background-dark"
+                                    />
+                                    <span>Apenas com capítulos novos</span>
+                                </label>
+                                <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer hover:text-white transition bg-background-darker/50 px-3 py-2 rounded-lg border border-gray-800/50">
+                                    <input
+                                        type="checkbox"
+                                        checked={showOnlyDownloaded}
+                                        onChange={(e) => setShowOnlyDownloaded(e.target.checked)}
+                                        className="w-4 h-4 rounded border-gray-600 bg-background-dark text-blue-500 focus:ring-blue-500 focus:ring-offset-background-dark"
+                                    />
+                                    <span>Apenas com download</span>
+                                </label>
+                            </>
                         )}
 
                         {filter === 'top30' && (

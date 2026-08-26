@@ -63,6 +63,7 @@ export default function Home() {
     const [lastReadMap, setLastReadMap] = useState<Record<string, string>>({});
     const [filter, setFilter] = useState<FilterId>('all');
     const [showOnlyNew, setShowOnlyNew] = useState(false);
+    const [showOnlyDownloaded, setShowOnlyDownloaded] = useState(false);
     const [showOnlyUnreadTop30, setShowOnlyUnreadTop30] = useState(false);
     const [showOnlyMoreThan80Chapters, setShowOnlyMoreThan80Chapters] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -268,14 +269,15 @@ export default function Home() {
             .filter(manhwa => {
                 if (filter === 'all') return true;
                 if (filter === 'reading') {
+                    if (manhwa.status !== 'reading') return false;
+                    if (showOnlyDownloaded && !manhwa.download) return false;
                     if (showOnlyNew) {
-                        return manhwa.status === 'reading' &&
-                            manhwa.total_chapters !== undefined &&
+                        return manhwa.total_chapters !== undefined &&
                             manhwa.total_chapters !== null &&
                             manhwa.current_chapter !== undefined &&
                             manhwa.total_chapters > manhwa.current_chapter;
                     }
-                    return manhwa.status === 'reading';
+                    return true;
                 }
                 return manhwa.status === filter;
             })
@@ -349,11 +351,18 @@ export default function Home() {
             {/* Checkboxes */}
             <View className="flex-row flex-wrap gap-2 mb-2">
                 {filter === 'reading' && (
-                    <Checkbox
-                        value={showOnlyNew}
-                        onChange={setShowOnlyNew}
-                        label="Apenas com capítulos novos"
-                    />
+                    <>
+                        <Checkbox
+                            value={showOnlyNew}
+                            onChange={setShowOnlyNew}
+                            label="Apenas com capítulos novos"
+                        />
+                        <Checkbox
+                            value={showOnlyDownloaded}
+                            onChange={setShowOnlyDownloaded}
+                            label="Apenas com download"
+                        />
+                    </>
                 )}
                 {filter === 'top30' && (
                     <>
