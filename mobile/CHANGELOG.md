@@ -4,6 +4,19 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.2.3
+
+- Corrige perda silenciosa de downloads ao usar "Baixar tudo" com vários
+  manhwas em paralelo (`MANHWA_CONCURRENCY = 4`). Cada `syncManhwaLocal`
+  carregava o índice inteiro no início e só salvava no fim (depois de baixar
+  todos os capítulos) — quando 2+ manhwas terminavam perto um do outro, quem
+  salvasse por último sobrescrevia o índice inteiro e apagava os
+  `pending`/`cached` que os outros tinham acabado de gravar (arquivos ficavam
+  no disco mas fora do índice — provável causa do caso "X GB usado mas 0
+  baixado"). Agora o load→mutate→save do índice passa por `withIndexLock()`,
+  que serializa só essa parte (os downloads de capítulo continuam 100%
+  paralelos). Aplica ao `cache.ts` inteiro, não só ao sync.
+
 ## 1.2.2
 
 - Reverte estratégia da 1.2.0/1.2.1 (pré-cálculo bloqueando o mount da
