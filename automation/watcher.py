@@ -8,14 +8,14 @@ configuração):
         --(watcher: Claude Code, modelo leve, gera o prompt)--> [Em Desenvolvimento]
         --(watcher: Claude Code executa DIRETO na BASE_BRANCH e dá push)--> [Teste]
         --(watcher: avisa no Telegram)
-  Você testa. Se estiver ruim, tem duas formas de pedir correção:
-    a) só COMENTA no card enquanto ele está em [Teste] (sem arrastar nada) - o watcher
-       detecta o comentário sozinho, manda o card de volta pra [Em Andamento],
+  Você testa. Se estiver ruim, arraste você mesmo o card de volta (o watcher não
+  reage sozinho a comentário novo em [Teste] - você decide quando reprocessar):
+    a) de volta pra [Em Andamento] e comenta o que precisa mudar -> o watcher
        redesenha o prompt do zero já com esse comentário, e executa de novo (retomando
        a mesma sessão do Claude Code, pra manter o contexto do que já foi feito).
-    b) arrasta na mão de volta pra [Em Desenvolvimento] e comenta o que precisa mudar
-       -> o watcher retoma a mesma sessão com esse feedback direto, sem redesenhar o
-       prompt (mais rápido, pula a etapa de rascunho).
+    b) de volta pra [Em Desenvolvimento] e comenta o que precisa mudar -> o watcher
+       retoma a mesma sessão com esse feedback direto, sem redesenhar o prompt (mais
+       rápido, pula a etapa de rascunho).
   Se estiver bom, arrasta pra [Concluído] (não faz nada de git - o trabalho já está
   na BASE_BRANCH desde a etapa anterior; só marca o card como concluído).
 
@@ -142,9 +142,10 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
     """Card está em 'Em Desenvolvimento': roda o Claude Code (autônomo) DIRETO na
     BASE_BRANCH (sem branch por card) e move pra 'Teste' quando terminar. Se o card
     já tinha passado por aqui antes (tem session_id), trata como uma rodada de
-    correção retomando a mesma sessão - com o prompt redesenhado do zero se veio de
-    check_test_for_new_comment() (stage == "prompted"), ou com um feedback avulso
-    montado a partir dos comentários novos se foi arrastado direto de Teste.
+    correção retomando a mesma sessão - com o prompt redesenhado do zero se o card foi
+    arrastado manualmente de volta pra 'Em Andamento' (stage == "prompted"), ou com um
+    feedback avulso montado a partir dos comentários novos se foi arrastado direto de
+    Teste pra 'Em Desenvolvimento'.
 
     Compatibilidade: um card que JÁ tinha uma branch própria (criado antes da
     automação passar a trabalhar direto na BASE_BRANCH) continua usando essa branch
@@ -173,10 +174,10 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
         return  # não atualiza last_list_id -> tenta de novo no próximo poll
 
     if is_fix_round and card_state.get("stage") == "prompted":
-        # Rodada de correção onde o prompt acabou de ser REDESENHADO do zero (ver
-        # check_test_for_new_comment() - card comentado em Teste volta sozinho pra Em
-        # Andamento, handle_doing() já rodou de novo e já deixou um prompt novo em
-        # card_state["prompt"], já considerando esse comentário). Usa esse prompt novo
+        # Rodada de correção onde o prompt acabou de ser REDESENHADO do zero (card
+        # arrastado manualmente de volta pra Em Andamento, handle_doing() já rodou de
+        # novo e já deixou um prompt novo em card_state["prompt"], já considerando os
+        # comentários novos). Usa esse prompt novo
         # em vez de montar um feedback avulso, mas ainda retomando a mesma sessão -
         # assim o Claude Code tem instruções novas E lembra o que já fez.
         prompt = card_state.get("prompt")
@@ -349,33 +350,6 @@ def handle_done(client: TrelloClient, card: dict, state: dict) -> None:
     log(f"Card '{card['name']}' mergeado em {BASE_BRANCH}.")
 
 
-def check_test_for_new_comment(client: TrelloClient, card: dict, state: dict, list_ids: dict) -> bool:
-    """Card está em 'Teste' - normalmente não tem nada a fazer aqui (espera você
-    testar e arrastar manualmente pra 'Concluído' ou 'Em Desenvolvimento'). Mas se
-    aparecer um comentário novo desde a última rodada, trata como um pedido de
-    correção automático: manda o card sozinho de volta pra 'Em Andamento', sem
-    precisar arrastar nada na mão. Devolve True se moveu o card (não atualiza
-    last_list_id de propósito - mesmo padrão de handle_doing()/handle_dev(): deixa o
-    PRÓXIMO poll comparar contra o estado real do Trello, já em 'Em Andamento', e
-    disparar handle_doing() normalmente - que redesenha o prompt do zero já
-    considerando esse comentário, e daí handle_dev() executa ele em seguida."""
-    card_id = card["id"]
-    card_state = state["cards"][card_id]
-    last_seen = card_state.get("last_comment_date") or ""
-    comments = client.get_comments(card_id)
-    new_comments = [c for c in comments if c.get("date", "") > last_seen and c.get("data", {}).get("text")]
-    if not new_comments:
-        return False
-
-    log(f"Novo comentário em '{card['name']}' (Teste) -> mandando de volta pra Em Andamento pra reprocessar.")
-    send_telegram_message(
-        f"💬 Novo comentário em '{card['name']}' (Teste) - reiniciando o ciclo "
-        f"automaticamente (Em Andamento)."
-    )
-    client.move_card(card_id, list_ids["DOING"])
-    return True
-
-
 def tick(client: TrelloClient, list_ids: dict) -> None:
     state = state_mod.load()
     cards = client.get_cards()
@@ -387,12 +361,6 @@ def tick(client: TrelloClient, list_ids: dict) -> None:
         prev_list = card_state["last_list_id"]
 
         try:
-            # Card parado em "Teste" (cur_list == prev_list, cai fora do "nada mudou"
-            # abaixo) ainda pode ter algo pra fazer: um comentário novo dispara
-            # reprocessamento automático - ver check_test_for_new_comment().
-            if cur_list == list_ids["TEST"] and check_test_for_new_comment(client, card, state, list_ids):
-                continue
-
             if cur_list == prev_list:
                 continue  # nada mudou pra esse card desde o último poll
 
