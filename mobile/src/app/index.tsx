@@ -12,6 +12,7 @@ import {
     loadManhwaList,
     getLocalChaptersSet,
     getLastReadMap,
+    getManhwasWithLocalData,
 } from '../lib/cache';
 import { drainQueue } from '../lib/sync-queue';
 import { checkConnectivity } from '../lib/connectivity';
@@ -61,6 +62,9 @@ export default function Home() {
     const menuAnim = useRef(new Animated.Value(0)).current;
     // Mapa id→ISO da última leitura local (ordena a home na hora, mesmo offline).
     const [lastReadMap, setLastReadMap] = useState<Record<string, string>>({});
+    // Ids com pelo menos um capítulo em disco. Pré-computado porque saber isso é
+    // async (índice no AsyncStorage) e o filtro da lista roda síncrono no render.
+    const [downloadedManhwaIds, setDownloadedManhwaIds] = useState<Set<number>>(new Set());
     const [filter, setFilter] = useState<FilterId>('all');
     const [showOnlyNew, setShowOnlyNew] = useState(false);
     const [showOnlyDownloaded, setShowOnlyDownloaded] = useState(false);
@@ -81,9 +85,18 @@ export default function Home() {
         setIsOffline(value);
     }, []);
 
-    const refreshLastRead = useCallback(() => {
-        getLastReadMap().then(setLastReadMap).catch(() => {});
+    // Lê o índice local uma vez e devolve quem tem capítulo baixado. `getLocalChaptersSet`
+    // por manhwa faria um getItem + JSON.parse do índice INTEIRO por manhwa; este helper
+    // resolve tudo num load só (mesmo predicado: algum `pending` ou `cached`).
+    const refreshDownloadedIds = useCallback(() => {
+        getManhwasWithLocalData().then(setDownloadedManhwaIds).catch(() => {});
     }, []);
+
+    // Estado local da home: última leitura (ordenação) + quem tem capítulo baixado (filtro).
+    const refreshLocalState = useCallback(() => {
+        getLastReadMap().then(setLastReadMap).catch(() => {});
+        refreshDownloadedIds();
+    }, [refreshDownloadedIds]);
 
     // Lista offline: snapshot do AsyncStorage filtrado pra quem tem capítulos baixados.
     const loadCachedManhwas = useCallback(async () => {
@@ -100,8 +113,9 @@ export default function Home() {
         setManhwas(filtered);
     }, []);
 
-    // Ao voltar pra home (ex.: depois de ler um capítulo), reavalia a última leitura local.
-    useFocusEffect(refreshLastRead);
+    // Ao voltar pra home (ex.: depois de ler ou de baixar na tela de Downloads), reavalia
+    // a última leitura local e quais manhwas passaram a ter capítulo em disco.
+    useFocusEffect(refreshLocalState);
 
     // Anima abertura/fechamento do menu de download (fade + slide).
     useEffect(() => {
@@ -150,8 +164,11 @@ export default function Home() {
             setOffline(true);
         } finally {
             setIsLoading(false);
+            // Vale pros dois caminhos (servidor ou cache): a lista mudou, então
+            // reavalia quem tem capítulo baixado antes do filtro rodar.
+            refreshDownloadedIds();
         }
-    }, [loadCachedManhwas, setOffline]);
+    }, [loadCachedManhwas, setOffline, refreshDownloadedIds]);
 
     // Startup: um ping curto (10s) decide se a home entra em modo offline. Se o
     // servidor não responde, mostra direto o cache local sem esperar o timeout
@@ -170,16 +187,16 @@ export default function Home() {
             setOffline(false);
             await fetchManhwas({ force: true });
         })();
-        refreshLastRead();
+        refreshLocalState();
         return () => { cancelled = true; };
-    }, [fetchManhwas, loadCachedManhwas, refreshLastRead, setOffline]);
+    }, [fetchManhwas, loadCachedManhwas, refreshLocalState, setOffline]);
 
     // Passado pros cards: ao fechar o leitor, recarrega lista + "último lido"
     // (re-ordena a home na hora, mesmo offline).
     const handleCardUpdate = useCallback(() => {
         fetchManhwas();
-        refreshLastRead();
-    }, [fetchManhwas, refreshLastRead]);
+        refreshLocalState();
+    }, [fetchManhwas, refreshLocalState]);
 
     const tryReconnect = async () => {
         if (isReconnecting) return;
@@ -270,7 +287,7 @@ export default function Home() {
                 if (filter === 'all') return true;
                 if (filter === 'reading') {
                     if (manhwa.status !== 'reading') return false;
-                    if (showOnlyDownloaded && !manhwa.download) return false;
+                    if (showOnlyDownloaded && !downloadedManhwaIds.has(manhwa.id)) return false;
                     if (showOnlyNew) {
                         return manhwa.total_chapters !== undefined &&
                             manhwa.total_chapters !== null &&
@@ -360,7 +377,7 @@ export default function Home() {
                         <Checkbox
                             value={showOnlyDownloaded}
                             onChange={setShowOnlyDownloaded}
-                            label="Apenas com download"
+                            label="Apenas com capítulos baixados"
                         />
                     </>
                 )}

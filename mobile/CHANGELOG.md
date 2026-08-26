@@ -4,6 +4,18 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.5.1
+
+- **O filtro do "Lendo" agora olha o celular, não o flag do servidor** — virou **"Apenas com capítulos
+  baixados"**. Antes usava `manhwa.download`, que é só a opção de *download automático* no backend:
+  marcava manhwa sem nenhum arquivo no aparelho e escondia manhwa que você tinha baixado à mão.
+  Agora mostra só quem tem de fato pelo menos um capítulo em disco.
+- Como saber isso é assíncrono (índice no AsyncStorage) e o filtro roda síncrono no render, os ids são
+  pré-computados num `Set` e recalculados ao carregar a lista (online ou offline) e sempre que a home
+  volta ao foco — então baixar na tela de Downloads e voltar já traz o manhwa de volta pra lista.
+- A web (`frontend/`) continua filtrando por `download`: lá o flag é o significado certo, já que não
+  existe arquivo local no navegador.
+
 ## 1.5.0
 
 - **Novo filtro "Apenas com download" no menu "Lendo".** Mostra só os manhwas com download automático

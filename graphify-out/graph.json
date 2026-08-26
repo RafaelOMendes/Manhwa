@@ -1057,27 +1057,17 @@
       "label": "handle_done()",
       "file_type": "code",
       "source_file": "automation/watcher.py",
-      "source_location": "L314",
+      "source_location": "L315",
       "_origin": "ast",
       "id": "automation_watcher_handle_done",
       "community": 42,
       "norm_label": "handle_done()"
     },
     {
-      "label": "check_test_for_new_comment()",
-      "file_type": "code",
-      "source_file": "automation/watcher.py",
-      "source_location": "L352",
-      "_origin": "ast",
-      "id": "automation_watcher_check_test_for_new_comment",
-      "community": 42,
-      "norm_label": "check_test_for_new_comment()"
-    },
-    {
       "label": "tick()",
       "file_type": "code",
       "source_file": "automation/watcher.py",
-      "source_location": "L379",
+      "source_location": "L353",
       "_origin": "ast",
       "id": "automation_watcher_tick",
       "community": 42,
@@ -1087,7 +1077,7 @@
       "label": "main()",
       "file_type": "code",
       "source_file": "automation/watcher.py",
-      "source_location": "L417",
+      "source_location": "L385",
       "_origin": "ast",
       "id": "automation_watcher_main",
       "community": 42,
@@ -1147,21 +1137,11 @@
       "label": "Card foi aprovado (movido pra 'Conclu\u00eddo'). No fluxo atual (sem branch por",
       "file_type": "rationale",
       "source_file": "automation/watcher.py",
-      "source_location": "L315",
+      "source_location": "L316",
       "_origin": "ast",
-      "id": "automation_watcher_rationale_315",
+      "id": "automation_watcher_rationale_316",
       "community": 42,
       "norm_label": "card foi aprovado (movido pra 'concluido'). no fluxo atual (sem branch por"
-    },
-    {
-      "label": "Card est\u00e1 em 'Teste' - normalmente n\u00e3o tem nada a fazer aqui (espera voc\u00ea     t",
-      "file_type": "rationale",
-      "source_file": "automation/watcher.py",
-      "source_location": "L353",
-      "_origin": "ast",
-      "id": "automation_watcher_rationale_353",
-      "community": 42,
-      "norm_label": "card esta em 'teste' - normalmente nao tem nada a fazer aqui (espera voce     t"
     },
     {
       "label": "add_col.py",
@@ -1440,7 +1420,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_error_logger",
-      "community": 14,
+      "community": 81,
       "norm_label": "error_logger.py"
     },
     {
@@ -1450,7 +1430,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "backend_error_logger_log_error",
-      "community": 14,
+      "community": 81,
       "norm_label": "log_error()"
     },
     {
@@ -1460,7 +1440,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "backend_error_logger_py_baseexception",
-      "community": 14,
+      "community": 81,
       "norm_label": "baseexception"
     },
     {
@@ -1470,7 +1450,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "backend_error_logger_rationale_18",
-      "community": 14,
+      "community": 81,
       "norm_label": "grava `exc` (com traceback) em `logs/<yyyy-mm-dd>/<yyyy-mm-dd_hh-mm-ss-ffffff>_e"
     },
     {
@@ -1620,7 +1600,7 @@
       "source_location": "L118",
       "_origin": "ast",
       "id": "backend_main_manhwabase",
-      "community": 1,
+      "community": 57,
       "norm_label": "manhwabase"
     },
     {
@@ -1640,7 +1620,7 @@
       "source_location": "L130",
       "_origin": "ast",
       "id": "backend_main_manhwacreate",
-      "community": 1,
+      "community": 57,
       "norm_label": "manhwacreate"
     },
     {
@@ -1650,7 +1630,7 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "backend_main_manhwaupdate",
-      "community": 1,
+      "community": 57,
       "norm_label": "manhwaupdate"
     },
     {
@@ -1660,7 +1640,7 @@
       "source_location": "L136",
       "_origin": "ast",
       "id": "backend_main_manhwa",
-      "community": 1,
+      "community": 57,
       "norm_label": "manhwa"
     },
     {
@@ -1670,7 +1650,7 @@
       "source_location": "L143",
       "_origin": "ast",
       "id": "backend_main_telegramimportrequest",
-      "community": 57,
+      "community": 1,
       "norm_label": "telegramimportrequest"
     },
     {
@@ -1690,7 +1670,7 @@
       "source_location": "L166",
       "_origin": "ast",
       "id": "backend_main_get_telegram_scraper",
-      "community": 57,
+      "community": 81,
       "norm_label": "get_telegram_scraper()"
     },
     {
@@ -1750,7 +1730,7 @@
       "source_location": "L228",
       "_origin": "ast",
       "id": "backend_main_create_manhwa",
-      "community": 79,
+      "community": 57,
       "norm_label": "create_manhwa()"
     },
     {
@@ -1760,7 +1740,7 @@
       "source_location": "L239",
       "_origin": "ast",
       "id": "backend_main_update_manhwa",
-      "community": 79,
+      "community": 57,
       "norm_label": "update_manhwa()"
     },
     {
@@ -1890,7 +1870,7 @@
       "source_location": "L423",
       "_origin": "ast",
       "id": "backend_main_mark_previous_chapters_read",
-      "community": 79,
+      "community": 1,
       "norm_label": "_mark_previous_chapters_read()"
     },
     {
@@ -1900,7 +1880,7 @@
       "source_location": "L423",
       "_origin": "ast",
       "id": "manhwamodel",
-      "community": 79,
+      "community": 1,
       "norm_label": "manhwamodel"
     },
     {
@@ -1980,7 +1960,7 @@
       "source_location": "L685",
       "_origin": "ast",
       "id": "backend_main_persist_sync_updates",
-      "community": 14,
+      "community": 81,
       "norm_label": "_persist_sync_updates()"
     },
     {
@@ -1990,7 +1970,7 @@
       "source_location": "L735",
       "_origin": "ast",
       "id": "backend_main_download_all_manhwas",
-      "community": 14,
+      "community": 81,
       "norm_label": "download_all_manhwas()"
     },
     {
@@ -2000,7 +1980,7 @@
       "source_location": "L963",
       "_origin": "ast",
       "id": "backend_main_review_all_manhwas",
-      "community": 14,
+      "community": 81,
       "norm_label": "review_all_manhwas()"
     },
     {
@@ -2010,7 +1990,7 @@
       "source_location": "L1314",
       "_origin": "ast",
       "id": "backend_main_import_from_telegram",
-      "community": 57,
+      "community": 1,
       "norm_label": "import_from_telegram()"
     },
     {
@@ -2080,7 +2060,7 @@
       "source_location": "L167",
       "_origin": "ast",
       "id": "backend_main_rationale_167",
-      "community": 57,
+      "community": 81,
       "norm_label": "retorna uma instancia unica e conectada do scraper do telegram para evitar erro"
     },
     {
@@ -2120,7 +2100,7 @@
       "source_location": "L240",
       "_origin": "ast",
       "id": "backend_main_rationale_240",
-      "community": 79,
+      "community": 57,
       "norm_label": "atualiza um manhwa existente"
     },
     {
@@ -2220,7 +2200,7 @@
       "source_location": "L424",
       "_origin": "ast",
       "id": "backend_main_rationale_424",
-      "community": 79,
+      "community": 1,
       "norm_label": "registra como lidos todos os capitulos anteriores ao capitulo atual.      um c"
     },
     {
@@ -2290,7 +2270,7 @@
       "source_location": "L686",
       "_origin": "ast",
       "id": "backend_main_rationale_686",
-      "community": 14,
+      "community": 81,
       "norm_label": "persiste as alteracoes da sincronizacao numa sessao/conexao nova.      motivo:"
     },
     {
@@ -2300,7 +2280,7 @@
       "source_location": "L736",
       "_origin": "ast",
       "id": "backend_main_rationale_736",
-      "community": 14,
+      "community": 81,
       "norm_label": "sincroniza todos os manhwas em paralelo: baixa os .cbz de todos que possuem link"
     },
     {
@@ -2310,7 +2290,7 @@
       "source_location": "L964",
       "_origin": "ast",
       "id": "backend_main_rationale_964",
-      "community": 14,
+      "community": 81,
       "norm_label": "revisita todos os manhwas com link do telegram e recalcula os metadados do topic"
     },
     {
@@ -2320,7 +2300,7 @@
       "source_location": "L1315",
       "_origin": "ast",
       "id": "backend_main_rationale_1315",
-      "community": 57,
+      "community": 1,
       "norm_label": "importa manhwas de um canal do telegram          requer configuracao previa da"
     },
     {
@@ -3114,14 +3094,14 @@
       "norm_label": "cenarios()"
     },
     {
-      "label": "Grava um `updated_at` espec\u00edfico no manhwa.      Valor expl\u00edcito vence o `onupda",
+      "label": "Grava um `updated_at` espec\u00edfico no manhwa.      Valor expl\u00edcito vence o `onup",
       "file_type": "rationale",
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L46",
       "_origin": "ast",
       "id": "backend_test_timestamp_sync_rationale_46",
       "community": 62,
-      "norm_label": "grava um `updated_at` especifico no manhwa.      valor explicito vence o `onupda"
+      "norm_label": "grava um `updated_at` especifico no manhwa.      valor explicito vence o `onup"
     },
     {
       "label": ".eslintrc.json",
@@ -5010,7 +4990,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "mobile_src_app_layout_tsx_app_layout",
-      "community": 13,
+      "community": 64,
       "norm_label": "_layout.tsx"
     },
     {
@@ -5020,7 +5000,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "mobile_src_app_layout_tsx_app_layout_rootlayout",
-      "community": 13,
+      "community": 64,
       "norm_label": "rootlayout()"
     },
     {
@@ -5117,7 +5097,7 @@
       "label": "FILTERS",
       "file_type": "code",
       "source_file": "mobile/src/app/index.tsx",
-      "source_location": "L20",
+      "source_location": "L21",
       "_origin": "ast",
       "id": "app_index_filters",
       "community": 53,
@@ -5127,7 +5107,7 @@
       "label": "FilterId",
       "file_type": "code",
       "source_file": "mobile/src/app/index.tsx",
-      "source_location": "L28",
+      "source_location": "L29",
       "_origin": "ast",
       "id": "app_index_filterid",
       "community": 53,
@@ -5137,7 +5117,7 @@
       "label": "Checkbox",
       "file_type": "code",
       "source_file": "mobile/src/app/index.tsx",
-      "source_location": "L34",
+      "source_location": "L35",
       "_origin": "ast",
       "id": "app_index_checkbox",
       "community": 53,
@@ -5147,7 +5127,7 @@
       "label": "Home()",
       "file_type": "code",
       "source_file": "mobile/src/app/index.tsx",
-      "source_location": "L56",
+      "source_location": "L57",
       "_origin": "ast",
       "id": "app_index_home",
       "community": 53,
@@ -5157,7 +5137,7 @@
       "label": "styles",
       "file_type": "code",
       "source_file": "mobile/src/app/index.tsx",
-      "source_location": "L501",
+      "source_location": "L527",
       "_origin": "ast",
       "id": "app_index_styles",
       "community": 53,
@@ -5510,7 +5490,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "lib_background_download_setupdownloadnotificationpress",
-      "community": 13,
+      "community": 6,
       "norm_label": "setupdownloadnotificationpress()"
     },
     {
@@ -5880,7 +5860,7 @@
       "source_location": "L284",
       "_origin": "ast",
       "id": "lib_cache_downloadcover",
-      "community": 0,
+      "community": 64,
       "norm_label": "downloadcover()"
     },
     {
@@ -5940,7 +5920,7 @@
       "source_location": "L527",
       "_origin": "ast",
       "id": "lib_cache_getreadchaptersset",
-      "community": 64,
+      "community": 45,
       "norm_label": "getreadchaptersset()"
     },
     {
@@ -6000,7 +5980,7 @@
       "source_location": "L611",
       "_origin": "ast",
       "id": "lib_cache_loadscrollmap",
-      "community": 81,
+      "community": 0,
       "norm_label": "loadscrollmap()"
     },
     {
@@ -6010,7 +5990,7 @@
       "source_location": "L620",
       "_origin": "ast",
       "id": "lib_cache_savescrollmap",
-      "community": 81,
+      "community": 0,
       "norm_label": "savescrollmap()"
     },
     {
@@ -6020,7 +6000,7 @@
       "source_location": "L632",
       "_origin": "ast",
       "id": "lib_cache_savelocalscroll",
-      "community": 81,
+      "community": 0,
       "norm_label": "savelocalscroll()"
     },
     {
@@ -6030,7 +6010,7 @@
       "source_location": "L650",
       "_origin": "ast",
       "id": "lib_cache_getlocalscrollentry",
-      "community": 81,
+      "community": 0,
       "norm_label": "getlocalscrollentry()"
     },
     {
@@ -6040,7 +6020,7 @@
       "source_location": "L662",
       "_origin": "ast",
       "id": "lib_cache_getlocalscroll",
-      "community": 81,
+      "community": 0,
       "norm_label": "getlocalscroll()"
     },
     {
@@ -6050,7 +6030,7 @@
       "source_location": "L672",
       "_origin": "ast",
       "id": "lib_cache_clearlocalscrollfor",
-      "community": 81,
+      "community": 0,
       "norm_label": "clearlocalscrollfor()"
     },
     {
@@ -6060,7 +6040,7 @@
       "source_location": "L683",
       "_origin": "ast",
       "id": "lib_cache_removemanhwalocal",
-      "community": 81,
+      "community": 0,
       "norm_label": "removemanhwalocal()"
     },
     {
@@ -6100,7 +6080,7 @@
       "source_location": "L728",
       "_origin": "ast",
       "id": "lib_cache_savemanhwafiles",
-      "community": 64,
+      "community": 45,
       "norm_label": "savemanhwafiles()"
     },
     {
@@ -7707,7 +7687,7 @@
       "label": "0. Antes de come\u00e7ar \u2014 checklist r\u00e1pido no seu terminal",
       "file_type": "document",
       "source_file": "automation/SETUP.md",
-      "source_location": "L44",
+      "source_location": "L42",
       "_origin": "ast",
       "id": "automation_setup_0_antes_de_come\u00e7ar_checklist_r\u00e1pido_no_seu_terminal",
       "community": 50,
@@ -7717,7 +7697,7 @@
       "label": "1. Ajustar as listas do Trello",
       "file_type": "document",
       "source_file": "automation/SETUP.md",
-      "source_location": "L89",
+      "source_location": "L87",
       "_origin": "ast",
       "id": "automation_setup_1_ajustar_as_listas_do_trello",
       "community": 50,
@@ -7727,7 +7707,7 @@
       "label": "2. Credenciais do Trello",
       "file_type": "document",
       "source_file": "automation/SETUP.md",
-      "source_location": "L108",
+      "source_location": "L106",
       "_origin": "ast",
       "id": "automation_setup_2_credenciais_do_trello",
       "community": 50,
@@ -7737,7 +7717,7 @@
       "label": "3. Bot do Telegram (avisos)",
       "file_type": "document",
       "source_file": "automation/SETUP.md",
-      "source_location": "L120",
+      "source_location": "L118",
       "_origin": "ast",
       "id": "automation_setup_3_bot_do_telegram_avisos",
       "community": 50,
@@ -7747,7 +7727,7 @@
       "label": "4. Configurar o `.env`",
       "file_type": "document",
       "source_file": "automation/SETUP.md",
-      "source_location": "L132",
+      "source_location": "L130",
       "_origin": "ast",
       "id": "automation_setup_4_configurar_o_env",
       "community": 50,
@@ -7757,7 +7737,7 @@
       "label": "5. Rodar",
       "file_type": "document",
       "source_file": "automation/SETUP.md",
-      "source_location": "L166",
+      "source_location": "L164",
       "_origin": "ast",
       "id": "automation_setup_5_rodar",
       "community": 50,
@@ -7767,7 +7747,7 @@
       "label": "6. Uso no dia a dia",
       "file_type": "document",
       "source_file": "automation/SETUP.md",
-      "source_location": "L192",
+      "source_location": "L190",
       "_origin": "ast",
       "id": "automation_setup_6_uso_no_dia_a_dia",
       "community": 50,
@@ -7777,7 +7757,7 @@
       "label": "7. Limita\u00e7\u00f5es conhecidas (v1)",
       "file_type": "document",
       "source_file": "automation/SETUP.md",
-      "source_location": "L250",
+      "source_location": "L249",
       "_origin": "ast",
       "id": "automation_setup_7_limita\u00e7\u00f5es_conhecidas_v1",
       "community": 50,
@@ -7787,7 +7767,7 @@
       "label": "8. Troubleshooting r\u00e1pido",
       "file_type": "document",
       "source_file": "automation/SETUP.md",
-      "source_location": "L274",
+      "source_location": "L273",
       "_origin": "ast",
       "id": "automation_setup_8_troubleshooting_r\u00e1pido",
       "community": 50,
@@ -8084,10 +8064,30 @@
       "norm_label": "changelog (mobile)"
     },
     {
-      "label": "1.4.2",
+      "label": "1.5.1",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
       "source_location": "L7",
+      "_origin": "ast",
+      "id": "mobile_changelog_1_5_1",
+      "community": 5,
+      "norm_label": "1.5.1"
+    },
+    {
+      "label": "1.5.0",
+      "file_type": "document",
+      "source_file": "mobile/CHANGELOG.md",
+      "source_location": "L19",
+      "_origin": "ast",
+      "id": "mobile_changelog_1_5_0",
+      "community": 5,
+      "norm_label": "1.5.0"
+    },
+    {
+      "label": "1.4.2",
+      "file_type": "document",
+      "source_file": "mobile/CHANGELOG.md",
+      "source_location": "L28",
       "_origin": "ast",
       "id": "mobile_changelog_1_4_2",
       "community": 5,
@@ -8097,7 +8097,7 @@
       "label": "1.4.1",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L34",
+      "source_location": "L55",
       "_origin": "ast",
       "id": "mobile_changelog_1_4_1",
       "community": 5,
@@ -8107,7 +8107,7 @@
       "label": "1.4.0",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L41",
+      "source_location": "L62",
       "_origin": "ast",
       "id": "mobile_changelog_1_4_0",
       "community": 5,
@@ -8117,7 +8117,7 @@
       "label": "1.3.1",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L69",
+      "source_location": "L90",
       "_origin": "ast",
       "id": "mobile_changelog_1_3_1",
       "community": 5,
@@ -8127,7 +8127,7 @@
       "label": "1.3.0",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L88",
+      "source_location": "L109",
       "_origin": "ast",
       "id": "mobile_changelog_1_3_0",
       "community": 5,
@@ -8137,7 +8137,7 @@
       "label": "1.2.4",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L101",
+      "source_location": "L122",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_4",
       "community": 5,
@@ -8147,7 +8147,7 @@
       "label": "1.2.3",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L131",
+      "source_location": "L152",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_3",
       "community": 5,
@@ -8157,7 +8157,7 @@
       "label": "1.2.2",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L144",
+      "source_location": "L165",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_2",
       "community": 5,
@@ -8167,7 +8167,7 @@
       "label": "1.2.1",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L162",
+      "source_location": "L183",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_1",
       "community": 5,
@@ -8177,7 +8177,7 @@
       "label": "1.2.0",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L172",
+      "source_location": "L193",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_0",
       "community": 5,
@@ -8187,7 +8187,7 @@
       "label": "1.1.12",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L192",
+      "source_location": "L213",
       "_origin": "ast",
       "id": "mobile_changelog_1_1_12",
       "community": 5,
@@ -8197,7 +8197,7 @@
       "label": "1.1.11",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L201",
+      "source_location": "L222",
       "_origin": "ast",
       "id": "mobile_changelog_1_1_11",
       "community": 5,
@@ -8207,7 +8207,7 @@
       "label": "1.1.10",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L211",
+      "source_location": "L232",
       "_origin": "ast",
       "id": "mobile_changelog_1_1_10",
       "community": 5,
@@ -8361,7 +8361,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 82,
+      "community": 86,
       "norm_label": "mobile (expo / react native)",
       "id": "agent_instructions_mobile"
     },
@@ -8517,7 +8517,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 86,
+      "community": 65,
       "norm_label": "fastapi==0.109.0",
       "id": "backend_requirements_fastapi"
     },
@@ -10950,17 +10950,6 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "automation/watcher.py",
-      "source_location": "L342",
-      "weight": 1.0,
-      "source": "automation_watcher_check_test_for_new_comment",
-      "target": "automation_telegram_notify_send_telegram_message"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "automation/watcher.py",
       "source_location": "L112",
       "weight": 1.0,
       "source": "automation_watcher_handle_dev",
@@ -11454,16 +11443,6 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "automation/watcher.py",
-      "source_location": "L323",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "automation_watcher",
-      "target": "automation_watcher_check_test_for_new_comment"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "automation/watcher.py",
       "source_location": "L88",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -11559,17 +11538,6 @@
       "confidence_score": 1.0,
       "source": "automation_watcher_rationale_1",
       "target": "automation_watcher"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "automation/watcher.py",
-      "source_location": "L341",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "automation_watcher_check_test_for_new_comment",
-      "target": "automation_watcher_log"
     },
     {
       "relation": "calls",
@@ -11749,17 +11717,6 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "automation/watcher.py",
-      "source_location": "L323",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "automation_watcher_check_test_for_new_comment",
-      "target": "trelloclient"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "automation/watcher.py",
       "source_location": "L94",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -11824,11 +11781,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "automation/watcher.py",
-      "source_location": "L315",
+      "source_location": "L316",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "automation_watcher_rationale_315",
-      "target": "automation_watcher_handle_done"
+      "source": "automation_watcher_rationale_316",
+      "target": "automation_watcher_handle_done",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -11840,27 +11797,6 @@
       "confidence_score": 1.0,
       "source": "automation_watcher_tick",
       "target": "automation_watcher_handle_done"
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "automation/watcher.py",
-      "source_location": "L353",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "automation_watcher_rationale_353",
-      "target": "automation_watcher_check_test_for_new_comment"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "automation/watcher.py",
-      "source_location": "L390",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "automation_watcher_tick",
-      "target": "automation_watcher_check_test_for_new_comment"
     },
     {
       "relation": "calls",
@@ -18697,9 +18633,9 @@
       "source_file": "mobile/src/lib/background-download.ts",
       "source_location": "L193",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_background_download",
-      "target": "lib_background_download_clearnotiftimer",
-      "confidence_score": 1.0
+      "target": "lib_background_download_clearnotiftimer"
     },
     {
       "relation": "contains",
@@ -18757,9 +18693,9 @@
       "source_file": "mobile/src/lib/background-download.ts",
       "source_location": "L201",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_background_download",
-      "target": "lib_background_download_scheduleprogressnotification",
-      "confidence_score": 1.0
+      "target": "lib_background_download_scheduleprogressnotification"
     },
     {
       "relation": "contains",
@@ -18767,9 +18703,9 @@
       "source_file": "mobile/src/lib/background-download.ts",
       "source_location": "L93",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_background_download",
-      "target": "lib_background_download_settlewithin",
-      "confidence_score": 1.0
+      "target": "lib_background_download_settlewithin"
     },
     {
       "relation": "contains",
@@ -18927,9 +18863,9 @@
       "source_file": "mobile/src/lib/background-download.ts",
       "source_location": "L453",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_background_download_stopbackgrounddownload",
-      "target": "lib_background_download_settlewithin",
-      "confidence_score": 1.0
+      "target": "lib_background_download_settlewithin"
     },
     {
       "relation": "calls",
@@ -19004,9 +18940,9 @@
       "source_file": "mobile/src/lib/background-download.ts",
       "source_location": "L448",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_background_download_stopbackgrounddownload",
-      "target": "lib_background_download_clearnotiftimer",
-      "confidence_score": 1.0
+      "target": "lib_background_download_clearnotiftimer"
     },
     {
       "relation": "calls",
@@ -22134,9 +22070,9 @@
       "source_file": "mobile/AGENTS.md",
       "source_location": "L139",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "mobile_agents_download_src_lib_download_manager_ts_background_download_ts",
-      "target": "mobile_agents_contrato_do_foreground_service_registerforegroundservice_ler_antes_de_mexer",
-      "confidence_score": 1.0
+      "target": "mobile_agents_contrato_do_foreground_service_registerforegroundservice_ler_antes_de_mexer"
     },
     {
       "relation": "references",
@@ -22294,8 +22230,28 @@
       "source_file": "mobile/CHANGELOG.md",
       "source_location": "L7",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "mobile_changelog_changelog_mobile",
-      "target": "mobile_changelog_1_4_2",
+      "target": "mobile_changelog_1_4_2"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "mobile/CHANGELOG.md",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "mobile_changelog_changelog_mobile",
+      "target": "mobile_changelog_1_5_0",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "mobile/CHANGELOG.md",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "mobile_changelog_changelog_mobile",
+      "target": "mobile_changelog_1_5_1",
       "confidence_score": 1.0
     },
     {
@@ -23668,5 +23624,5 @@
       "source_file": ".claude/skills/graphify/references/query.md"
     }
   ],
-  "built_at_commit": "6ec483b3ebc865ec05789273166536a5651d7b4c"
+  "built_at_commit": "8629ba2d30a04cf551a3c15f8bd784fad4f6c784"
 }
