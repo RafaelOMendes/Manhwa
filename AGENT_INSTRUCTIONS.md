@@ -179,6 +179,9 @@ O projeto Manhwa Tracker é composto por três partes principais:
      número nenhum; marcar esses como lidos seria chute, então o filtro é `0 < chapter_number < X`.
   5. A resposta ganhou o campo aditivo **`chapters_marked_read`** (quantos registros novos entraram).
      Os dois clients só olham `res.ok`, então nada quebrou — mas é o número a conferir ao depurar.
+  6. ⚠️ **Essas linhas zeradas têm `updated_at` de agora**, e por isso são tratadas como exceção na
+     comparação de timestamps da sincronização — ver "🕒 Comparação de timestamps" na seção do Mobile.
+     Ao mexer aqui, considere o efeito lá.
   - **Helpers extraídos para uso compartilhado** (antes eram lógica duplicada/aninhada em cada rota):
     `_manhwa_download_dir(title)` (saneamento do nome igual ao do scraper), `_extract_chapter_number(filename)`
     (agora no nível do módulo, não mais dentro de `list_manhwa_files`) e `_list_cbz_files_async(dir)`
@@ -280,6 +283,53 @@ A posição de scroll dentro de um capítulo é salva tanto **local** (`AsyncSto
   - **Offline** → usa só o local; o `drainQueue` envia depois (chamado no app start, foreground e sync).
 - **Ao sair / trocar de capítulo**, o cleanup do `useEffect` flusha o último offset pendente (debounce de 500ms é engolido senão).
 - Implementado em `src/components/CbzReader.tsx`; fila offline em `src/lib/sync-queue.ts`.
+
+#### 🕒 Comparação de timestamps na sincronização (app offline ↔ banco)
+Dado gerado offline pode chegar ao servidor **depois** de o banco já ter mudado (leitura pela web, por
+exemplo). A regra é **last-write-wins pelo `updated_at`**: quem gerou o dado por último ganha, e o
+`updated_at` do banco é a fonte de verdade.
+
+**Backend** (`backend/main.py`) — `PATCH /api/manhwas/{id}/current-chapter` e
+`PUT /api/manhwas/{id}/read/{filename}/scroll`:
+- Os dois aceitam `updated_at` (ISO-8601) **opcional** no corpo. **Sem ele, a escrita é aplicada direto,
+  como sempre foi** — é o que mantém a web (`frontend/components/CbzReader.tsx`, que não manda
+  timestamp) e builds antigas do app funcionando sem alteração.
+- Com ele, `_cliente_esta_velho()` compara com o `updated_at` da linha. **Empate conta como banco mais
+  recente.** Timestamp malformado → `_parse_client_ts` devolve `None` → aplica sem comparar (um
+  timestamp ilegível não pode custar o dado do usuário).
+- Rejeição responde **HTTP 200** com `{"success": false, "reason": "stale", ...}` + o valor atual do
+  banco. **Não use 409:** clientes antigos olham só o `res.ok` e um erro HTTP faria a operação voltar
+  pra fila offline pra sempre.
+- Ambos devolvem `updated_at` do servidor no sucesso; o `GET .../scroll` também.
+- Só rejeita quando a escrita **mudaria** algo: se o valor do cliente já é o que está no banco, não há
+  disputa e o fluxo normal segue.
+- ⚠️ **`scroll_position == 0` nunca vence a comparação.** O `_mark_previous_chapters_read` cria
+  `ChapterProgress` zerado com data de *agora*; sem essa exceção, um scroll lido offline (data mais
+  velha) chegando depois seria descartado em favor do 0.
+- ⚠️ **`manhwas.updated_at` é bumpado por QUALQUER edição da linha** (título, status, nota, rating),
+  não só pelo `current_chapter`. Então editar um manhwa na web pode fazer uma leitura offline anterior
+  ainda não sincronizada ser rejeitada. Aceitável no uso atual (1 cliente por banco, sem auth); a
+  correção definitiva seria uma coluna `chapter_updated_at` dedicada — exige migração no Postgres.
+
+**Mobile** (`mobile/src/lib/sync-queue.ts`):
+- Cada operação da fila já guardava `at` (quando o dado nasceu no celular); ele vai como `updated_at`.
+- Rejeição (`success: false`) → o app **adota o valor do servidor** e **tira o item da fila**. Reenviar
+  um dado que já perdeu a disputa só o deixaria preso na fila pra sempre. Só falha de **rede** mantém
+  o item pra próxima tentativa. `DrainResult` tem `rejected` além de `sent`/`failed`/`remaining`.
+- Adoção: `adoptServerCurrentChapter()` (em `cache.ts`, reconcilia o set de lidos pro valor do servidor)
+  e `saveLocalScroll(..., at)` — este carimba com o `updated_at` **do servidor**, não com `now`, senão o
+  valor local venceria a próxima comparação sem merecer.
+- ⚠️ **O `drainQueue` manda os scrolls ANTES dos chapterReads, de propósito.** O PATCH de
+  current-chapter cria as linhas zeradas descritas acima; na ordem inversa, os scrolls da própria fila
+  chegariam depois e perderiam pra elas.
+- **Só o drain manda `updated_at`.** As escritas ao vivo do leitor (usuário lendo, online) são
+  incondicionais: o dado acabou de nascer, é sempre o mais novo, e mandar timestamp ali só exporia
+  essas escritas a diferença de relógio entre celular e servidor.
+- A regra de restaurar scroll ao abrir um capítulo continua sendo **max(local, servidor)** — ver seção
+  acima. Ela é deliberada (nunca perder posição de leitura) e não foi trocada por timestamp.
+
+**Teste:** `backend/test_timestamp_sync.py` (SQLite em memória, não precisa de Postgres nem do servidor
+no ar): `cd backend && venv/Scripts/python.exe test_timestamp_sync.py`.
 
 - **❗ AVISO CRÍTICO PARA O MOBILE:** O Expo mudou. Verifique sempre o arquivo `/mobile/AGENTS.md` (e a documentação oficial da versão correta da SDK) antes de alterar rotas ou configurações.
 

@@ -4,6 +4,34 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.4.0
+
+- **Sincronização por comparação de timestamps (app offline ↔ banco).** Cada operação da fila offline
+  (`sync-queue.ts`) já carregava um `at` — o momento em que o dado nasceu no celular. Agora ele vai pro
+  servidor como `updated_at`, e o backend compara com o `updated_at` da linha antes de gravar:
+  **quem gerou o dado por último ganha**. Se o dado da fila já nasceu velho (o banco mudou depois, ex.:
+  leitura pela web), o servidor responde `success: false` + o valor atual, o app **adota o valor do
+  servidor** e tira o item da fila — antes ele sobrescrevia o banco às cegas, e um dado offline antigo
+  podia regredir um progresso mais novo.
+- **Item rejeitado sai da fila; só falha de rede é que faz retry.** Reenviar um dado que já perdeu a
+  disputa o deixaria preso na fila pra sempre. O `DrainResult` ganhou `rejected` (aparece no log de
+  sincronização, junto de `sent`/`remaining`).
+- **O drain manda os scrolls ANTES das leituras de capítulo.** O `PATCH /current-chapter` faz o backend
+  criar registros dos capítulos anteriores com `scroll_position=0` e data de *agora*; na ordem antiga,
+  os scrolls da própria fila (gerados offline, portanto mais velhos) chegavam depois e perdiam a
+  comparação pra essas linhas zeradas — o app adotaria 0 e jogaria fora a posição real lida offline.
+  O backend também passou a nunca deixar um `scroll_position=0` vencer uma comparação, como rede de
+  segurança pro mesmo caso.
+- **Valor vindo do servidor é carimbado com a data DELE.** `saveLocalScroll` aceita o `at` do servidor
+  (o `GET .../scroll` agora devolve `updated_at`); datar com `now` faria o local vencer a próxima
+  comparação sem merecer.
+- **Escritas ao vivo do leitor continuam incondicionais.** Com o usuário lendo e online, o dado acabou
+  de nascer e é sempre o mais novo — mandar timestamp ali só exporia essas escritas a diferença de
+  relógio entre celular e servidor. E restaurar o scroll ao abrir um capítulo continua sendo
+  **max(local, servidor)**, que é a regra que garante nunca perder posição de leitura.
+- Retrocompatível: sem `updated_at` no corpo (web, builds antigas do app) o backend aplica a escrita
+  direto, exatamente como antes.
+
 ## 1.3.1
 
 - **Corrige o travamento ao terminar um download.** Quando um download acabava, a tela de Downloads

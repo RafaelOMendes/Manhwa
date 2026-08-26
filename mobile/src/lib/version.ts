@@ -5,4 +5,4 @@
 // NÃO toque no `expo.version` do app.json em updates OTA — ele faz parte do
 // fingerprint/runtimeVersion e mudá-lo impede o update de chegar nos APKs
 // instalados. Ver mobile/AGENTS.md.
-export const APP_VERSION = '1.3.1';
+export const APP_VERSION = '1.4.0';

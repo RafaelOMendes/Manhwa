@@ -205,7 +205,10 @@ export default function Home() {
             // 0. Drena a fila offline (leituras feitas sem internet) antes de qualquer coisa
             console.log('[sync] 📨 Drenando fila offline...');
             const drain = await drainQueue();
-            console.log(`[sync]   ↪ enviadas ${drain.sent}, ${drain.remaining} pendentes`);
+            console.log(
+                `[sync]   ↪ enviadas ${drain.sent}, ${drain.rejected} descartadas (banco mais novo), ` +
+                `${drain.remaining} pendentes`
+            );
 
             // 1. Sincroniza APENAS no servidor (baixa do Telegram pro D:\Manhwas),
             //    igual à web. NÃO baixa nada no celular — isso é feito na tela de

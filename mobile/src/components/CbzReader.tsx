@@ -251,6 +251,9 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                 // - Offline: usa local; a fila já cuida do push ao reconectar.
                 const localScroll = (await getLocalScroll(manhwaId, filename)) ?? 0;
                 let serverScroll: number | null = null;
+                // `updated_at` do banco: usado pra carimbar o valor local quando
+                // adotamos o do servidor (ver saveLocalScroll).
+                let serverScrollAt: string | null = null;
                 try {
                     const scrollRes = await fetch(
                         `${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/scroll`
@@ -258,6 +261,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                     if (scrollRes.ok) {
                         const scrollData = await scrollRes.json();
                         serverScroll = scrollData.scroll_position ?? 0;
+                        serverScrollAt = scrollData.updated_at ?? null;
                     }
                 } catch {
                     serverScroll = null;
@@ -267,7 +271,9 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                     if (localScroll > 0) setSavedScrollOffset(localScroll);
                 } else if (serverScroll > localScroll) {
                     setSavedScrollOffset(serverScroll);
-                    saveLocalScroll(manhwaId, filename, serverScroll).catch(() => {});
+                    // Carimba com a data do SERVIDOR: o valor é dele, e datar com
+                    // `now` faria o local vencer comparações futuras sem merecer.
+                    saveLocalScroll(manhwaId, filename, serverScroll, serverScrollAt ?? undefined).catch(() => {});
                 } else if (localScroll > serverScroll) {
                     setSavedScrollOffset(localScroll);
                     try {

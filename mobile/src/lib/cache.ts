@@ -558,6 +558,28 @@ export async function reconcileReadsWithServer(
     });
 }
 
+/**
+ * Adota o `current_chapter` que o servidor devolveu quando ele REJEITOU uma
+ * leitura da fila offline por ser velha (ver sync-queue/drainQueue).
+ *
+ * Usa o snapshot local da lista completa de capítulos (`loadManhwaFiles`) porque
+ * o drain roda fora de qualquer tela — não há lista fresca em mãos. Sem snapshot
+ * não dá pra mapear posição→filename, então não mexe em nada: o próximo sync
+ * online reconcilia com dados frescos de qualquer forma.
+ *
+ * Nunca propaga erro: o chamador precisa remover o item da fila mesmo se a
+ * gravação local falhar, senão a operação rejeitada ficaria em loop eterno.
+ */
+export async function adoptServerCurrentChapter(manhwaId: number, currentChapter: number): Promise<void> {
+    try {
+        const files = await loadManhwaFiles(manhwaId);
+        if (!files || files.length === 0) return;
+        await reconcileReadsWithServer(manhwaId, currentChapter, files);
+    } catch (e) {
+        console.warn('[cache] adoptServerCurrentChapter:', e);
+    }
+}
+
 // ============================================================
 // Scroll position (persistido localmente pra leitura offline)
 // ============================================================
@@ -582,15 +604,41 @@ async function saveScrollMap(map: ScrollMap): Promise<void> {
     await AsyncStorage.setItem(SCROLL_KEY, JSON.stringify(map));
 }
 
-export async function saveLocalScroll(manhwaId: number, filename: string, position: number): Promise<void> {
+/**
+ * Persiste a posição de scroll local.
+ *
+ * `at` sobrescreve o timestamp gravado. Quem adota um valor VINDO do servidor
+ * deve passar o `updated_at` que o servidor devolveu — carimbar com `now` faria
+ * o dado local parecer mais novo do que é e ele venceria a próxima comparação
+ * de timestamps indevidamente.
+ */
+export async function saveLocalScroll(
+    manhwaId: number,
+    filename: string,
+    position: number,
+    at?: string
+): Promise<void> {
     try {
         const map = await loadScrollMap();
         const key = String(manhwaId);
         if (!map[key]) map[key] = {};
-        map[key][filename] = { position, at: new Date().toISOString() };
+        map[key][filename] = { position, at: at ?? new Date().toISOString() };
         await saveScrollMap(map);
     } catch (e) {
         console.warn('[cache] saveLocalScroll:', e);
+    }
+}
+
+/** Posição + timestamp locais de um capítulo (null se nunca houve scroll salvo). */
+export async function getLocalScrollEntry(
+    manhwaId: number,
+    filename: string
+): Promise<{ position: number; at: string } | null> {
+    try {
+        const map = await loadScrollMap();
+        return map[String(manhwaId)]?.[filename] ?? null;
+    } catch {
+        return null;
     }
 }
 

@@ -229,7 +229,7 @@
       "source_file": "automation/claude_runner.py",
       "source_location": "L145",
       "_origin": "ast",
-      "id": "automation_claude_runner_py_datetime",
+      "id": "datetime",
       "community": 42,
       "norm_label": "datetime"
     },
@@ -1190,7 +1190,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_bench_review_parallelism",
-      "community": 77,
+      "community": 80,
       "norm_label": "bench_review_parallelism.py"
     },
     {
@@ -1200,7 +1200,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "backend_bench_review_parallelism_legacyscraper",
-      "community": 77,
+      "community": 80,
       "norm_label": "legacyscraper"
     },
     {
@@ -1210,7 +1210,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "backend_bench_review_parallelism_legacyscraper_resolve_entity",
-      "community": 77,
+      "community": 80,
       "norm_label": "._resolve_entity()"
     },
     {
@@ -1220,7 +1220,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "backend_bench_review_parallelism_carregar_amostra",
-      "community": 77,
+      "community": 80,
       "norm_label": "carregar_amostra()"
     },
     {
@@ -1230,7 +1230,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "backend_bench_review_parallelism_medir",
-      "community": 77,
+      "community": 80,
       "norm_label": "medir()"
     },
     {
@@ -1240,7 +1240,7 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "backend_bench_review_parallelism_main",
-      "community": 77,
+      "community": 80,
       "norm_label": "main()"
     },
     {
@@ -1250,7 +1250,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "backend_bench_review_parallelism_rationale_23",
-      "community": 77,
+      "community": 80,
       "norm_label": "reproduz o comportamento antigo: get_dialogs() + get_entity() a cada topico."
     },
     {
@@ -1260,7 +1260,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "backend_bench_review_parallelism_rationale_36",
-      "community": 77,
+      "community": 80,
       "norm_label": "select read-only: pega os primeiros n manhwas com link do telegram."
     },
     {
@@ -1620,7 +1620,7 @@
       "source_location": "L118",
       "_origin": "ast",
       "id": "backend_main_manhwabase",
-      "community": 1,
+      "community": 57,
       "norm_label": "manhwabase"
     },
     {
@@ -1640,7 +1640,7 @@
       "source_location": "L130",
       "_origin": "ast",
       "id": "backend_main_manhwacreate",
-      "community": 1,
+      "community": 57,
       "norm_label": "manhwacreate"
     },
     {
@@ -1650,7 +1650,7 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "backend_main_manhwaupdate",
-      "community": 1,
+      "community": 57,
       "norm_label": "manhwaupdate"
     },
     {
@@ -1660,7 +1660,7 @@
       "source_location": "L136",
       "_origin": "ast",
       "id": "backend_main_manhwa",
-      "community": 1,
+      "community": 57,
       "norm_label": "manhwa"
     },
     {
@@ -1670,7 +1670,7 @@
       "source_location": "L143",
       "_origin": "ast",
       "id": "backend_main_telegramimportrequest",
-      "community": 81,
+      "community": 1,
       "norm_label": "telegramimportrequest"
     },
     {
@@ -1740,7 +1740,7 @@
       "source_location": "L217",
       "_origin": "ast",
       "id": "backend_main_get_manhwa",
-      "community": 57,
+      "community": 79,
       "norm_label": "get_manhwa()"
     },
     {
@@ -1750,7 +1750,7 @@
       "source_location": "L228",
       "_origin": "ast",
       "id": "backend_main_create_manhwa",
-      "community": 79,
+      "community": 57,
       "norm_label": "create_manhwa()"
     },
     {
@@ -1810,7 +1810,7 @@
       "source_location": "L324",
       "_origin": "ast",
       "id": "backend_main_list_cbz_files_async",
-      "community": 79,
+      "community": 62,
       "norm_label": "_list_cbz_files_async()"
     },
     {
@@ -1824,60 +1824,10 @@
       "norm_label": "list_manhwa_files()"
     },
     {
-      "label": "_parse_client_ts()",
-      "file_type": "code",
-      "source_file": "backend/main.py",
-      "source_location": "L368",
-      "_origin": "ast",
-      "id": "backend_main_parse_client_ts",
-      "community": 48,
-      "norm_label": "_parse_client_ts()"
-    },
-    {
-      "label": "datetime",
-      "file_type": "code",
-      "source_file": "backend/main.py",
-      "source_location": "L368",
-      "_origin": "ast",
-      "id": "backend_main_py_datetime",
-      "community": 48,
-      "norm_label": "datetime"
-    },
-    {
-      "label": "_to_utc()",
-      "file_type": "code",
-      "source_file": "backend/main.py",
-      "source_location": "L389",
-      "_origin": "ast",
-      "id": "backend_main_to_utc",
-      "community": 48,
-      "norm_label": "_to_utc()"
-    },
-    {
-      "label": "_iso_utc()",
-      "file_type": "code",
-      "source_file": "backend/main.py",
-      "source_location": "L398",
-      "_origin": "ast",
-      "id": "backend_main_iso_utc",
-      "community": 48,
-      "norm_label": "_iso_utc()"
-    },
-    {
-      "label": "_cliente_esta_velho()",
-      "file_type": "code",
-      "source_file": "backend/main.py",
-      "source_location": "L404",
-      "_origin": "ast",
-      "id": "backend_main_cliente_esta_velho",
-      "community": 48,
-      "norm_label": "_cliente_esta_velho()"
-    },
-    {
       "label": "UpdateCurrentChapter",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L416",
+      "source_location": "L355",
       "_origin": "ast",
       "id": "backend_main_updatecurrentchapter",
       "community": 1,
@@ -1887,37 +1837,37 @@
       "label": "_mark_previous_chapters_read()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L423",
+      "source_location": "L359",
       "_origin": "ast",
       "id": "backend_main_mark_previous_chapters_read",
-      "community": 79,
+      "community": 62,
       "norm_label": "_mark_previous_chapters_read()"
     },
     {
       "label": "ManhwaModel",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L423",
+      "source_location": "L359",
       "_origin": "ast",
       "id": "manhwamodel",
-      "community": 79,
+      "community": 62,
       "norm_label": "manhwamodel"
     },
     {
       "label": "update_current_chapter()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L463",
+      "source_location": "L399",
       "_origin": "ast",
       "id": "backend_main_update_current_chapter",
-      "community": 48,
+      "community": 1,
       "norm_label": "update_current_chapter()"
     },
     {
       "label": "ScrollUpdate",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L521",
+      "source_location": "L434",
       "_origin": "ast",
       "id": "backend_main_scrollupdate",
       "community": 1,
@@ -1927,27 +1877,27 @@
       "label": "update_scroll()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L528",
+      "source_location": "L438",
       "_origin": "ast",
       "id": "backend_main_update_scroll",
-      "community": 48,
+      "community": 1,
       "norm_label": "update_scroll()"
     },
     {
       "label": "get_scroll()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L575",
+      "source_location": "L456",
       "_origin": "ast",
       "id": "backend_main_get_scroll",
-      "community": 48,
+      "community": 79,
       "norm_label": "get_scroll()"
     },
     {
       "label": "get_cbz_info()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L593",
+      "source_location": "L467",
       "_origin": "ast",
       "id": "backend_main_get_cbz_info",
       "community": 79,
@@ -1957,7 +1907,7 @@
       "label": "download_cbz_file()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L619",
+      "source_location": "L493",
       "_origin": "ast",
       "id": "backend_main_download_cbz_file",
       "community": 79,
@@ -1967,7 +1917,7 @@
       "label": "get_cbz_page()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L644",
+      "source_location": "L518",
       "_origin": "ast",
       "id": "backend_main_get_cbz_page",
       "community": 79,
@@ -1977,7 +1927,7 @@
       "label": "_persist_sync_updates()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L685",
+      "source_location": "L559",
       "_origin": "ast",
       "id": "backend_main_persist_sync_updates",
       "community": 81,
@@ -1987,7 +1937,7 @@
       "label": "download_all_manhwas()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L735",
+      "source_location": "L609",
       "_origin": "ast",
       "id": "backend_main_download_all_manhwas",
       "community": 81,
@@ -1997,7 +1947,7 @@
       "label": "review_all_manhwas()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L963",
+      "source_location": "L837",
       "_origin": "ast",
       "id": "backend_main_review_all_manhwas",
       "community": 81,
@@ -2007,17 +1957,17 @@
       "label": "import_from_telegram()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L1314",
+      "source_location": "L1188",
       "_origin": "ast",
       "id": "backend_main_import_from_telegram",
-      "community": 81,
+      "community": 62,
       "norm_label": "import_from_telegram()"
     },
     {
       "label": "test_telegram_config()",
       "file_type": "code",
       "source_file": "backend/main.py",
-      "source_location": "L1455",
+      "source_location": "L1329",
       "_origin": "ast",
       "id": "backend_main_test_telegram_config",
       "community": 57,
@@ -2110,7 +2060,7 @@
       "source_location": "L218",
       "_origin": "ast",
       "id": "backend_main_rationale_218",
-      "community": 57,
+      "community": 79,
       "norm_label": "retorna um manhwa especifico"
     },
     {
@@ -2160,7 +2110,7 @@
       "source_location": "L325",
       "_origin": "ast",
       "id": "backend_main_rationale_325",
-      "community": 79,
+      "community": 62,
       "norm_label": "versao nao-bloqueante de `_scan_cbz_files`.      o ganho aqui nao e paraleliza"
     },
     {
@@ -2174,92 +2124,52 @@
       "norm_label": "lista os arquivos .cbz baixados de um manhwa em d:\\\\manhwas\\\\{titulo}\\\\"
     },
     {
-      "label": "Converte o `updated_at` mandado pelo cliente (ISO-8601) em datetime aware.",
-      "file_type": "rationale",
-      "source_file": "backend/main.py",
-      "source_location": "L369",
-      "_origin": "ast",
-      "id": "backend_main_rationale_369",
-      "community": 48,
-      "norm_label": "converte o `updated_at` mandado pelo cliente (iso-8601) em datetime aware."
-    },
-    {
-      "label": "Normaliza pra UTC aware. Datetime naive \u00e9 assumido como UTC.",
-      "file_type": "rationale",
-      "source_file": "backend/main.py",
-      "source_location": "L390",
-      "_origin": "ast",
-      "id": "backend_main_rationale_390",
-      "community": 48,
-      "norm_label": "normaliza pra utc aware. datetime naive e assumido como utc."
-    },
-    {
-      "label": "Serializa um datetime do banco como ISO-8601 com timezone (UTC).",
-      "file_type": "rationale",
-      "source_file": "backend/main.py",
-      "source_location": "L399",
-      "_origin": "ast",
-      "id": "backend_main_rationale_399",
-      "community": 48,
-      "norm_label": "serializa um datetime do banco como iso-8601 com timezone (utc)."
-    },
-    {
-      "label": "True quando o banco foi tocado DEPOIS do dado que o cliente est\u00e1 mandando.",
-      "file_type": "rationale",
-      "source_file": "backend/main.py",
-      "source_location": "L405",
-      "_origin": "ast",
-      "id": "backend_main_rationale_405",
-      "community": 48,
-      "norm_label": "true quando o banco foi tocado depois do dado que o cliente esta mandando."
-    },
-    {
       "label": "Registra como lidos todos os cap\u00edtulos anteriores ao cap\u00edtulo atual.      Um c",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L424",
+      "source_location": "L360",
       "_origin": "ast",
-      "id": "backend_main_rationale_424",
-      "community": 79,
+      "id": "backend_main_rationale_360",
+      "community": 62,
       "norm_label": "registra como lidos todos os capitulos anteriores ao capitulo atual.      um c"
     },
     {
       "label": "Atualiza o current_chapter de um manhwa (chamado ao terminar de ler um cap\u00edtulo)",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L464",
+      "source_location": "L400",
       "_origin": "ast",
-      "id": "backend_main_rationale_464",
-      "community": 48,
+      "id": "backend_main_rationale_400",
+      "community": 1,
       "norm_label": "atualiza o current_chapter de um manhwa (chamado ao terminar de ler um capitulo)"
     },
     {
-      "label": "Salva a posi\u00e7\u00e3o de rolagem de um cap\u00edtulo espec\u00edfico.      Com `updated_at` no",
+      "label": "Salva a posi\u00e7\u00e3o de rolagem de um cap\u00edtulo espec\u00edfico",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L529",
+      "source_location": "L439",
       "_origin": "ast",
-      "id": "backend_main_rationale_529",
-      "community": 48,
-      "norm_label": "salva a posicao de rolagem de um capitulo especifico.      com `updated_at` no"
+      "id": "backend_main_rationale_439",
+      "community": 1,
+      "norm_label": "salva a posicao de rolagem de um capitulo especifico"
     },
     {
-      "label": "Retorna a posi\u00e7\u00e3o de rolagem salva de um cap\u00edtulo espec\u00edfico.      Devolve jun",
+      "label": "Retorna a posi\u00e7\u00e3o de rolagem salva de um cap\u00edtulo espec\u00edfico",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L576",
+      "source_location": "L457",
       "_origin": "ast",
-      "id": "backend_main_rationale_576",
-      "community": 48,
-      "norm_label": "retorna a posicao de rolagem salva de um capitulo especifico.      devolve jun"
+      "id": "backend_main_rationale_457",
+      "community": 79,
+      "norm_label": "retorna a posicao de rolagem salva de um capitulo especifico"
     },
     {
       "label": "Retorna informa\u00e7\u00f5es do CBZ (n\u00famero de p\u00e1ginas)",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L594",
+      "source_location": "L468",
       "_origin": "ast",
-      "id": "backend_main_rationale_594",
+      "id": "backend_main_rationale_468",
       "community": 79,
       "norm_label": "retorna informacoes do cbz (numero de paginas)"
     },
@@ -2267,9 +2177,9 @@
       "label": "Serve o .cbz inteiro pra download (usado pelo cache local do mobile).",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L620",
+      "source_location": "L494",
       "_origin": "ast",
-      "id": "backend_main_rationale_620",
+      "id": "backend_main_rationale_494",
       "community": 79,
       "norm_label": "serve o .cbz inteiro pra download (usado pelo cache local do mobile)."
     },
@@ -2277,9 +2187,9 @@
       "label": "Serve uma p\u00e1gina individual do CBZ como imagem",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L645",
+      "source_location": "L519",
       "_origin": "ast",
-      "id": "backend_main_rationale_645",
+      "id": "backend_main_rationale_519",
       "community": 79,
       "norm_label": "serve uma pagina individual do cbz como imagem"
     },
@@ -2287,9 +2197,9 @@
       "label": "Persiste as altera\u00e7\u00f5es da sincroniza\u00e7\u00e3o numa sess\u00e3o/conex\u00e3o NOVA.      Motivo:",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L686",
+      "source_location": "L560",
       "_origin": "ast",
-      "id": "backend_main_rationale_686",
+      "id": "backend_main_rationale_560",
       "community": 81,
       "norm_label": "persiste as alteracoes da sincronizacao numa sessao/conexao nova.      motivo:"
     },
@@ -2297,9 +2207,9 @@
       "label": "Sincroniza todos os manhwas em paralelo: baixa os .cbz de todos que possuem link",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L736",
+      "source_location": "L610",
       "_origin": "ast",
-      "id": "backend_main_rationale_736",
+      "id": "backend_main_rationale_610",
       "community": 81,
       "norm_label": "sincroniza todos os manhwas em paralelo: baixa os .cbz de todos que possuem link"
     },
@@ -2307,9 +2217,9 @@
       "label": "Revisita todos os manhwas com link do Telegram e recalcula os metadados do t\u00f3pic",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L964",
+      "source_location": "L838",
       "_origin": "ast",
-      "id": "backend_main_rationale_964",
+      "id": "backend_main_rationale_838",
       "community": 81,
       "norm_label": "revisita todos os manhwas com link do telegram e recalcula os metadados do topic"
     },
@@ -2317,19 +2227,19 @@
       "label": "Importa manhwas de um canal do Telegram          Requer configura\u00e7\u00e3o pr\u00e9via da",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L1315",
+      "source_location": "L1189",
       "_origin": "ast",
-      "id": "backend_main_rationale_1315",
-      "community": 81,
+      "id": "backend_main_rationale_1189",
+      "community": 62,
       "norm_label": "importa manhwas de um canal do telegram          requer configuracao previa da"
     },
     {
       "label": "Testa se as configura\u00e7\u00f5es do Telegram est\u00e3o corretas",
       "file_type": "rationale",
       "source_file": "backend/main.py",
-      "source_location": "L1456",
+      "source_location": "L1330",
       "_origin": "ast",
-      "id": "backend_main_rationale_1456",
+      "id": "backend_main_rationale_1330",
       "community": 57,
       "norm_label": "testa se as configuracoes do telegram estao corretas"
     },
@@ -2430,7 +2340,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_telegram_scraper",
-      "community": 77,
+      "community": 78,
       "norm_label": "telegram_scraper.py"
     },
     {
@@ -2440,7 +2350,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "backend_telegram_scraper_classify_telegram_error",
-      "community": 77,
+      "community": 78,
       "norm_label": "classify_telegram_error()"
     },
     {
@@ -2450,7 +2360,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "backend_telegram_scraper_py_baseexception",
-      "community": 77,
+      "community": 78,
       "norm_label": "baseexception"
     },
     {
@@ -2460,7 +2370,7 @@
       "source_location": "L97",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper",
-      "community": 77,
+      "community": 78,
       "norm_label": "telegrammanhwascraper"
     },
     {
@@ -2470,7 +2380,7 @@
       "source_location": "L98",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_init",
-      "community": 77,
+      "community": 78,
       "norm_label": ".__init__()"
     },
     {
@@ -2480,7 +2390,7 @@
       "source_location": "L123",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_wait_flood_gate",
-      "community": 77,
+      "community": 78,
       "norm_label": "._wait_flood_gate()"
     },
     {
@@ -2490,7 +2400,7 @@
       "source_location": "L130",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_open_flood_gate_in",
-      "community": 77,
+      "community": 78,
       "norm_label": "._open_flood_gate_in()"
     },
     {
@@ -2500,7 +2410,7 @@
       "source_location": "L135",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_fetch_entity",
-      "community": 77,
+      "community": 78,
       "norm_label": "._fetch_entity()"
     },
     {
@@ -2510,7 +2420,7 @@
       "source_location": "L156",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_resolve_entity",
-      "community": 77,
+      "community": 78,
       "norm_label": "._resolve_entity()"
     },
     {
@@ -2520,7 +2430,7 @@
       "source_location": "L192",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_connect",
-      "community": 77,
+      "community": 78,
       "norm_label": ".connect()"
     },
     {
@@ -2530,7 +2440,7 @@
       "source_location": "L195",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_disconnect",
-      "community": 77,
+      "community": 78,
       "norm_label": ".disconnect()"
     },
     {
@@ -2540,7 +2450,7 @@
       "source_location": "L198",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_parse_telegram_link",
-      "community": 77,
+      "community": 78,
       "norm_label": "._parse_telegram_link()"
     },
     {
@@ -2550,7 +2460,7 @@
       "source_location": "L215",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_get_topic_stats",
-      "community": 77,
+      "community": 78,
       "norm_label": "._get_topic_stats()"
     },
     {
@@ -2560,7 +2470,7 @@
       "source_location": "L310",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_download_cbz_from_topic",
-      "community": 77,
+      "community": 78,
       "norm_label": ".download_cbz_from_topic()"
     },
     {
@@ -2570,7 +2480,7 @@
       "source_location": "L432",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_scrape_manhwa_topic",
-      "community": 77,
+      "community": 78,
       "norm_label": ".scrape_manhwa_topic()"
     },
     {
@@ -2580,7 +2490,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "backend_telegram_scraper_rationale_51",
-      "community": 77,
+      "community": 78,
       "norm_label": "traduz uma excecao do telethon num `(error_type, error_message, retry_after)`."
     },
     {
@@ -2590,7 +2500,7 @@
       "source_location": "L124",
       "_origin": "ast",
       "id": "backend_telegram_scraper_rationale_124",
-      "community": 77,
+      "community": 78,
       "norm_label": "segura a requisicao enquanto durar um flood wait pedido pelo telegram."
     },
     {
@@ -2600,7 +2510,7 @@
       "source_location": "L131",
       "_origin": "ast",
       "id": "backend_telegram_scraper_rationale_131",
-      "community": 77,
+      "community": 78,
       "norm_label": "registra um flood wait para que todas as leituras paralelas recuem juntas."
     },
     {
@@ -2610,7 +2520,7 @@
       "source_location": "L157",
       "_origin": "ast",
       "id": "backend_telegram_scraper_rationale_157",
-      "community": 77,
+      "community": 78,
       "norm_label": "resolve (e memoriza) o chat de um link.          antes, cada leitura de topico"
     },
     {
@@ -2620,7 +2530,7 @@
       "source_location": "L216",
       "_origin": "ast",
       "id": "backend_telegram_scraper_rationale_216",
-      "community": 77,
+      "community": 78,
       "norm_label": "entra em um topico do telegram e retorna:         - cbz_count: quantos arquivos"
     },
     {
@@ -2630,7 +2540,7 @@
       "source_location": "L311",
       "_origin": "ast",
       "id": "backend_telegram_scraper_rationale_311",
-      "community": 77,
+      "community": 78,
       "norm_label": "baixa todos os arquivos .cbz de um topico do telegram em paralelo.         salv"
     },
     {
@@ -2640,7 +2550,7 @@
       "source_location": "L433",
       "_origin": "ast",
       "id": "backend_telegram_scraper_rationale_433",
-      "community": 77,
+      "community": 78,
       "norm_label": "le apenas um topico. o nome do manhwa e o nome do topico.         a partir da p"
     },
     {
@@ -2750,7 +2660,7 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "backend_test_review_all_partial_fakemessage",
-      "community": 77,
+      "community": 78,
       "norm_label": "fakemessage"
     },
     {
@@ -2760,7 +2670,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "backend_test_review_all_partial_fakemessage_init",
-      "community": 77,
+      "community": 78,
       "norm_label": ".__init__()"
     },
     {
@@ -3002,126 +2912,6 @@
       "id": "backend_test_review_all_partial_rationale_262",
       "community": 77,
       "norm_label": "recria o sqlite de teste com o cenario acima."
-    },
-    {
-      "label": "test_timestamp_sync.py",
-      "file_type": "code",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "backend_test_timestamp_sync",
-      "community": 62,
-      "norm_label": "test_timestamp_sync.py"
-    },
-    {
-      "label": "check()",
-      "file_type": "code",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L37",
-      "_origin": "ast",
-      "id": "backend_test_timestamp_sync_check",
-      "community": 62,
-      "norm_label": "check()"
-    },
-    {
-      "label": "forcar_updated_at()",
-      "file_type": "code",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L45",
-      "_origin": "ast",
-      "id": "backend_test_timestamp_sync_forcar_updated_at",
-      "community": 62,
-      "norm_label": "forcar_updated_at()"
-    },
-    {
-      "label": "datetime",
-      "file_type": "code",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L45",
-      "_origin": "ast",
-      "id": "backend_test_timestamp_sync_py_datetime",
-      "community": 62,
-      "norm_label": "datetime"
-    },
-    {
-      "label": "forcar_updated_at_scroll()",
-      "file_type": "code",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L60",
-      "_origin": "ast",
-      "id": "backend_test_timestamp_sync_forcar_updated_at_scroll",
-      "community": 62,
-      "norm_label": "forcar_updated_at_scroll()"
-    },
-    {
-      "label": "ler_manhwa()",
-      "file_type": "code",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L70",
-      "_origin": "ast",
-      "id": "backend_test_timestamp_sync_ler_manhwa",
-      "community": 62,
-      "norm_label": "ler_manhwa()"
-    },
-    {
-      "label": "patch_chapter()",
-      "file_type": "code",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L76",
-      "_origin": "ast",
-      "id": "backend_test_timestamp_sync_patch_chapter",
-      "community": 62,
-      "norm_label": "patch_chapter()"
-    },
-    {
-      "label": "put_scroll()",
-      "file_type": "code",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L83",
-      "_origin": "ast",
-      "id": "backend_test_timestamp_sync_put_scroll",
-      "community": 62,
-      "norm_label": "put_scroll()"
-    },
-    {
-      "label": "get_scroll()",
-      "file_type": "code",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L90",
-      "_origin": "ast",
-      "id": "backend_test_timestamp_sync_get_scroll",
-      "community": 62,
-      "norm_label": "get_scroll()"
-    },
-    {
-      "label": "rodar()",
-      "file_type": "code",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L97",
-      "_origin": "ast",
-      "id": "backend_test_timestamp_sync_rodar",
-      "community": 62,
-      "norm_label": "rodar()"
-    },
-    {
-      "label": "cenarios()",
-      "file_type": "code",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L115",
-      "_origin": "ast",
-      "id": "backend_test_timestamp_sync_cenarios",
-      "community": 62,
-      "norm_label": "cenarios()"
-    },
-    {
-      "label": "Grava um `updated_at` espec\u00edfico no manhwa.      Valor expl\u00edcito vence o `onupda",
-      "file_type": "rationale",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L46",
-      "_origin": "ast",
-      "id": "backend_test_timestamp_sync_rationale_46",
-      "community": 62,
-      "norm_label": "grava um `updated_at` especifico no manhwa.      valor explicito vence o `onupda"
     },
     {
       "label": ".eslintrc.json",
@@ -4350,7 +4140,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "mobile_package",
-      "community": 87,
+      "community": 11,
       "norm_label": "package.json"
     },
     {
@@ -4360,7 +4150,7 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "mobile_package_name",
-      "community": 87,
+      "community": 11,
       "norm_label": "name"
     },
     {
@@ -4370,7 +4160,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "mobile_package_main",
-      "community": 87,
+      "community": 11,
       "norm_label": "main"
     },
     {
@@ -4380,7 +4170,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "mobile_package_version",
-      "community": 87,
+      "community": 11,
       "norm_label": "version"
     },
     {
@@ -4830,7 +4620,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "mobile_package_devdependencies",
-      "community": 85,
+      "community": 11,
       "norm_label": "devdependencies"
     },
     {
@@ -4840,7 +4630,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "mobile_package_devdependencies_expo_ngrok",
-      "community": 85,
+      "community": 11,
       "norm_label": "@expo/ngrok"
     },
     {
@@ -4850,7 +4640,7 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "mobile_package_devdependencies_types_react",
-      "community": 85,
+      "community": 11,
       "norm_label": "@types/react"
     },
     {
@@ -4860,7 +4650,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "mobile_package_devdependencies_eslint",
-      "community": 85,
+      "community": 11,
       "norm_label": "eslint"
     },
     {
@@ -4870,7 +4660,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "mobile_package_devdependencies_eslint_config_expo",
-      "community": 85,
+      "community": 11,
       "norm_label": "eslint-config-expo"
     },
     {
@@ -4880,7 +4670,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "mobile_package_devdependencies_typescript",
-      "community": 85,
+      "community": 11,
       "norm_label": "typescript"
     },
     {
@@ -4890,7 +4680,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "mobile_package_private",
-      "community": 87,
+      "community": 11,
       "norm_label": "private"
     },
     {
@@ -5010,7 +4800,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "mobile_src_app_layout_tsx_app_layout",
-      "community": 64,
+      "community": 13,
       "norm_label": "_layout.tsx"
     },
     {
@@ -5020,7 +4810,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "mobile_src_app_layout_tsx_app_layout_rootlayout",
-      "community": 64,
+      "community": 13,
       "norm_label": "rootlayout()"
     },
     {
@@ -5157,7 +4947,7 @@
       "label": "styles",
       "file_type": "code",
       "source_file": "mobile/src/app/index.tsx",
-      "source_location": "L501",
+      "source_location": "L498",
       "_origin": "ast",
       "id": "app_index_styles",
       "community": 53,
@@ -5287,7 +5077,7 @@
       "label": "styles",
       "file_type": "code",
       "source_file": "mobile/src/components/CbzReader.tsx",
-      "source_location": "L988",
+      "source_location": "L982",
       "_origin": "ast",
       "id": "components_cbzreader_styles",
       "community": 9,
@@ -5510,7 +5300,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "lib_background_download_setupdownloadnotificationpress",
-      "community": 6,
+      "community": 13,
       "norm_label": "setupdownloadnotificationpress()"
     },
     {
@@ -5620,7 +5410,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "lib_cache_deletechapterdirasync",
-      "community": 0,
+      "community": 64,
       "norm_label": "deletechapterdirasync()"
     },
     {
@@ -5730,7 +5520,7 @@
       "source_location": "L118",
       "_origin": "ast",
       "id": "lib_cache_chapterdir",
-      "community": 0,
+      "community": 64,
       "norm_label": "chapterdir()"
     },
     {
@@ -5740,7 +5530,7 @@
       "source_location": "L122",
       "_origin": "ast",
       "id": "lib_cache_pagefile",
-      "community": 0,
+      "community": 64,
       "norm_label": "pagefile()"
     },
     {
@@ -5820,7 +5610,7 @@
       "source_location": "L201",
       "_origin": "ast",
       "id": "lib_cache_downloadchapter",
-      "community": 0,
+      "community": 64,
       "norm_label": "downloadchapter()"
     },
     {
@@ -5934,20 +5724,10 @@
       "norm_label": "reconcilereadswithserver()"
     },
     {
-      "label": "adoptServerCurrentChapter()",
-      "file_type": "code",
-      "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L573",
-      "_origin": "ast",
-      "id": "lib_cache_adoptservercurrentchapter",
-      "community": 45,
-      "norm_label": "adoptservercurrentchapter()"
-    },
-    {
       "label": "ScrollEntry",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L587",
+      "source_location": "L565",
       "_origin": "ast",
       "id": "lib_cache_scrollentry",
       "community": 0,
@@ -5957,7 +5737,7 @@
       "label": "ScrollMap",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L592",
+      "source_location": "L570",
       "_origin": "ast",
       "id": "lib_cache_scrollmap",
       "community": 0,
@@ -5967,7 +5747,7 @@
       "label": "loadScrollMap()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L594",
+      "source_location": "L572",
       "_origin": "ast",
       "id": "lib_cache_loadscrollmap",
       "community": 0,
@@ -5977,7 +5757,7 @@
       "label": "saveScrollMap()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L603",
+      "source_location": "L581",
       "_origin": "ast",
       "id": "lib_cache_savescrollmap",
       "community": 0,
@@ -5987,27 +5767,17 @@
       "label": "saveLocalScroll()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L615",
+      "source_location": "L585",
       "_origin": "ast",
       "id": "lib_cache_savelocalscroll",
       "community": 0,
       "norm_label": "savelocalscroll()"
     },
     {
-      "label": "getLocalScrollEntry()",
-      "file_type": "code",
-      "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L633",
-      "_origin": "ast",
-      "id": "lib_cache_getlocalscrollentry",
-      "community": 0,
-      "norm_label": "getlocalscrollentry()"
-    },
-    {
       "label": "getLocalScroll()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L645",
+      "source_location": "L597",
       "_origin": "ast",
       "id": "lib_cache_getlocalscroll",
       "community": 0,
@@ -6017,7 +5787,7 @@
       "label": "clearLocalScrollFor()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L655",
+      "source_location": "L607",
       "_origin": "ast",
       "id": "lib_cache_clearlocalscrollfor",
       "community": 0,
@@ -6027,17 +5797,17 @@
       "label": "removeManhwaLocal()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L666",
+      "source_location": "L618",
       "_origin": "ast",
       "id": "lib_cache_removemanhwalocal",
-      "community": 0,
+      "community": 64,
       "norm_label": "removemanhwalocal()"
     },
     {
       "label": "CbzFileSnapshot",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L688",
+      "source_location": "L640",
       "_origin": "ast",
       "id": "lib_cache_cbzfilesnapshot",
       "community": 0,
@@ -6047,7 +5817,7 @@
       "label": "saveManhwaList()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L694",
+      "source_location": "L646",
       "_origin": "ast",
       "id": "lib_cache_savemanhwalist",
       "community": 53,
@@ -6057,7 +5827,7 @@
       "label": "loadManhwaList()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L702",
+      "source_location": "L654",
       "_origin": "ast",
       "id": "lib_cache_loadmanhwalist",
       "community": 45,
@@ -6067,7 +5837,7 @@
       "label": "saveManhwaFiles()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L711",
+      "source_location": "L663",
       "_origin": "ast",
       "id": "lib_cache_savemanhwafiles",
       "community": 45,
@@ -6077,7 +5847,7 @@
       "label": "loadManhwaFiles()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L722",
+      "source_location": "L674",
       "_origin": "ast",
       "id": "lib_cache_loadmanhwafiles",
       "community": 45,
@@ -6087,7 +5857,7 @@
       "label": "dirSizeBytes()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L750",
+      "source_location": "L702",
       "_origin": "ast",
       "id": "lib_cache_dirsizebytes",
       "community": 0,
@@ -6097,7 +5867,7 @@
       "label": "storageCache",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L764",
+      "source_location": "L716",
       "_origin": "ast",
       "id": "lib_cache_storagecache",
       "community": 0,
@@ -6107,17 +5877,17 @@
       "label": "invalidateStorageCache()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L771",
+      "source_location": "L723",
       "_origin": "ast",
       "id": "lib_cache_invalidatestoragecache",
-      "community": 0,
+      "community": 64,
       "norm_label": "invalidatestoragecache()"
     },
     {
       "label": "getStorageUsage()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L778",
+      "source_location": "L730",
       "_origin": "ast",
       "id": "lib_cache_getstorageusage",
       "community": 0,
@@ -6127,7 +5897,7 @@
       "label": "getManhwaStorage()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L786",
+      "source_location": "L738",
       "_origin": "ast",
       "id": "lib_cache_getmanhwastorage",
       "community": 0,
@@ -6137,7 +5907,7 @@
       "label": "getManhwasWithLocalData()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L796",
+      "source_location": "L748",
       "_origin": "ast",
       "id": "lib_cache_getmanhwaswithlocaldata",
       "community": 64,
@@ -6147,7 +5917,7 @@
       "label": "cleanupCorrupted()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L816",
+      "source_location": "L768",
       "_origin": "ast",
       "id": "lib_cache_cleanupcorrupted",
       "community": 64,
@@ -6157,7 +5927,7 @@
       "label": "cleanupExpired()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L887",
+      "source_location": "L839",
       "_origin": "ast",
       "id": "lib_cache_cleanupexpired",
       "community": 64,
@@ -6497,7 +6267,7 @@
       "label": "ChapterReadOp",
       "file_type": "code",
       "source_file": "mobile/src/lib/sync-queue.ts",
-      "source_location": "L28",
+      "source_location": "L14",
       "_origin": "ast",
       "id": "lib_sync_queue_chapterreadop",
       "community": 9,
@@ -6507,7 +6277,7 @@
       "label": "ScrollOp",
       "file_type": "code",
       "source_file": "mobile/src/lib/sync-queue.ts",
-      "source_location": "L34",
+      "source_location": "L19",
       "_origin": "ast",
       "id": "lib_sync_queue_scrollop",
       "community": 9,
@@ -6517,7 +6287,7 @@
       "label": "QueueShape",
       "file_type": "code",
       "source_file": "mobile/src/lib/sync-queue.ts",
-      "source_location": "L40",
+      "source_location": "L24",
       "_origin": "ast",
       "id": "lib_sync_queue_queueshape",
       "community": 9,
@@ -6527,7 +6297,7 @@
       "label": "loadQueue()",
       "file_type": "code",
       "source_file": "mobile/src/lib/sync-queue.ts",
-      "source_location": "L47",
+      "source_location": "L31",
       "_origin": "ast",
       "id": "lib_sync_queue_loadqueue",
       "community": 9,
@@ -6537,7 +6307,7 @@
       "label": "saveQueue()",
       "file_type": "code",
       "source_file": "mobile/src/lib/sync-queue.ts",
-      "source_location": "L61",
+      "source_location": "L45",
       "_origin": "ast",
       "id": "lib_sync_queue_savequeue",
       "community": 9,
@@ -6547,7 +6317,7 @@
       "label": "enqueueChapterRead()",
       "file_type": "code",
       "source_file": "mobile/src/lib/sync-queue.ts",
-      "source_location": "L65",
+      "source_location": "L49",
       "_origin": "ast",
       "id": "lib_sync_queue_enqueuechapterread",
       "community": 9,
@@ -6557,7 +6327,7 @@
       "label": "enqueueScroll()",
       "file_type": "code",
       "source_file": "mobile/src/lib/sync-queue.ts",
-      "source_location": "L75",
+      "source_location": "L59",
       "_origin": "ast",
       "id": "lib_sync_queue_enqueuescroll",
       "community": 9,
@@ -6567,37 +6337,17 @@
       "label": "DrainResult",
       "file_type": "code",
       "source_file": "mobile/src/lib/sync-queue.ts",
-      "source_location": "L83",
+      "source_location": "L67",
       "_origin": "ast",
       "id": "lib_sync_queue_drainresult",
       "community": 9,
       "norm_label": "drainresult"
     },
     {
-      "label": "SyncResponse",
-      "file_type": "code",
-      "source_file": "mobile/src/lib/sync-queue.ts",
-      "source_location": "L92",
-      "_origin": "ast",
-      "id": "lib_sync_queue_syncresponse",
-      "community": 9,
-      "norm_label": "syncresponse"
-    },
-    {
-      "label": "parseSyncResponse()",
-      "file_type": "code",
-      "source_file": "mobile/src/lib/sync-queue.ts",
-      "source_location": "L105",
-      "_origin": "ast",
-      "id": "lib_sync_queue_parsesyncresponse",
-      "community": 9,
-      "norm_label": "parsesyncresponse()"
-    },
-    {
       "label": "drainQueue()",
       "file_type": "code",
       "source_file": "mobile/src/lib/sync-queue.ts",
-      "source_location": "L120",
+      "source_location": "L76",
       "_origin": "ast",
       "id": "lib_sync_queue_drainqueue",
       "community": 45,
@@ -6607,7 +6357,7 @@
       "label": "queueSize()",
       "file_type": "code",
       "source_file": "mobile/src/lib/sync-queue.ts",
-      "source_location": "L213",
+      "source_location": "L131",
       "_origin": "ast",
       "id": "lib_sync_queue_queuesize",
       "community": 9,
@@ -7407,7 +7157,7 @@
       "label": "2. Frontend (Next.js / React Web)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L200",
+      "source_location": "L197",
       "_origin": "ast",
       "id": "agent_instructions_2_frontend_next_js_react_web",
       "community": 47,
@@ -7417,7 +7167,7 @@
       "label": "3. Mobile (Expo / React Native)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L209",
+      "source_location": "L206",
       "_origin": "ast",
       "id": "agent_instructions_3_mobile_expo_react_native",
       "community": 47,
@@ -7427,7 +7177,7 @@
       "label": "\ud83d\udcc1 Estrutura Interna (`/mobile`)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L215",
+      "source_location": "L212",
       "_origin": "ast",
       "id": "agent_instructions_estrutura_interna_mobile",
       "community": 47,
@@ -7437,7 +7187,7 @@
       "label": "\u2699\ufe0f Configura\u00e7\u00f5es Importantes",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L244",
+      "source_location": "L241",
       "_origin": "ast",
       "id": "agent_instructions_configura\u00e7\u00f5es_importantes",
       "community": 47,
@@ -7447,7 +7197,7 @@
       "label": "\ud83d\udcf6 Detec\u00e7\u00e3o de conectividade / modo offline",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L249",
+      "source_location": "L246",
       "_origin": "ast",
       "id": "agent_instructions_detec\u00e7\u00e3o_de_conectividade_modo_offline",
       "community": 47,
@@ -7457,7 +7207,7 @@
       "label": "\ud83d\udda5\ufe0f Modo Tela Cheia (Imersivo) \u2014 apenas no leitor CBZ",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L266",
+      "source_location": "L263",
       "_origin": "ast",
       "id": "agent_instructions_modo_tela_cheia_imersivo_apenas_no_leitor_cbz",
       "community": 47,
@@ -7467,27 +7217,17 @@
       "label": "\ud83d\udccc Persist\u00eancia de progresso de leitura (scroll por cap\u00edtulo)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L278",
+      "source_location": "L275",
       "_origin": "ast",
       "id": "agent_instructions_persist\u00eancia_de_progresso_de_leitura_scroll_por_cap\u00edtulo",
       "community": 47,
       "norm_label": "\ud83d\udccc persistencia de progresso de leitura (scroll por capitulo)"
     },
     {
-      "label": "\ud83d\udd52 Compara\u00e7\u00e3o de timestamps na sincroniza\u00e7\u00e3o (app offline \u2194 banco)",
-      "file_type": "document",
-      "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L287",
-      "_origin": "ast",
-      "id": "agent_instructions_compara\u00e7\u00e3o_de_timestamps_na_sincroniza\u00e7\u00e3o_app_offline_banco",
-      "community": 47,
-      "norm_label": "\ud83d\udd52 comparacao de timestamps na sincronizacao (app offline \u2194 banco)"
-    },
-    {
       "label": "4. Automa\u00e7\u00e3o Trello \u2194 Claude Code",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L336",
+      "source_location": "L286",
       "_origin": "ast",
       "id": "agent_instructions_4_automa\u00e7\u00e3o_trello_claude_code",
       "community": 47,
@@ -7497,7 +7237,7 @@
       "label": "\ud83d\udd0d Como se Orientar (Instru\u00e7\u00f5es para Agentes)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L400",
+      "source_location": "L350",
       "_origin": "ast",
       "id": "agent_instructions_como_se_orientar_instru\u00e7\u00f5es_para_agentes",
       "community": 47,
@@ -7507,7 +7247,7 @@
       "label": "\ud83c\udfaf Pr\u00f3ximos Passos (Para a IA)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L421",
+      "source_location": "L371",
       "_origin": "ast",
       "id": "agent_instructions_pr\u00f3ximos_passos_para_a_ia",
       "community": 47,
@@ -7517,7 +7257,7 @@
       "label": "\ud83d\udcdd Manuten\u00e7\u00e3o deste Arquivo (Obrigat\u00f3rio para Agentes)",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L434",
+      "source_location": "L384",
       "_origin": "ast",
       "id": "agent_instructions_manuten\u00e7\u00e3o_deste_arquivo_obrigat\u00f3rio_para_agentes",
       "community": 47,
@@ -7527,7 +7267,7 @@
       "label": "Como editar este arquivo corretamente",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L438",
+      "source_location": "L388",
       "_origin": "ast",
       "id": "agent_instructions_como_editar_este_arquivo_corretamente",
       "community": 47,
@@ -7537,7 +7277,7 @@
       "label": "Exemplo de fluxo",
       "file_type": "document",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L446",
+      "source_location": "L396",
       "_origin": "ast",
       "id": "agent_instructions_exemplo_de_fluxo",
       "community": 47,
@@ -7570,7 +7310,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "readme",
-      "community": 78,
+      "community": 5,
       "norm_label": "readme.md"
     },
     {
@@ -7580,7 +7320,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "readme_manhwa_tracker",
-      "community": 78,
+      "community": 5,
       "norm_label": "\ud83d\udcda manhwa tracker"
     },
     {
@@ -7590,7 +7330,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "readme_tecnologias",
-      "community": 78,
+      "community": 5,
       "norm_label": "tecnologias"
     },
     {
@@ -7600,7 +7340,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "readme_funcionalidades",
-      "community": 78,
+      "community": 5,
       "norm_label": "funcionalidades"
     },
     {
@@ -7610,7 +7350,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "readme_setup",
-      "community": 78,
+      "community": 5,
       "norm_label": "setup"
     },
     {
@@ -7620,7 +7360,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "readme_estrutura_do_projeto",
-      "community": 78,
+      "community": 5,
       "norm_label": "estrutura do projeto"
     },
     {
@@ -7630,7 +7370,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "readme_api_resumo",
-      "community": 78,
+      "community": 5,
       "norm_label": "api (resumo)"
     },
     {
@@ -7640,7 +7380,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "readme_licen\u00e7a",
-      "community": 78,
+      "community": 5,
       "norm_label": "licenca"
     },
     {
@@ -7650,7 +7390,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "readme_autor",
-      "community": 78,
+      "community": 5,
       "norm_label": "autor"
     },
     {
@@ -8030,7 +7770,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "mobile_changelog",
-      "community": 82,
+      "community": 5,
       "norm_label": "changelog.md"
     },
     {
@@ -8044,20 +7784,10 @@
       "norm_label": "changelog (mobile)"
     },
     {
-      "label": "1.4.0",
-      "file_type": "document",
-      "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L7",
-      "_origin": "ast",
-      "id": "mobile_changelog_1_4_0",
-      "community": 5,
-      "norm_label": "1.4.0"
-    },
-    {
       "label": "1.3.1",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L35",
+      "source_location": "L7",
       "_origin": "ast",
       "id": "mobile_changelog_1_3_1",
       "community": 5,
@@ -8067,7 +7797,7 @@
       "label": "1.3.0",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L54",
+      "source_location": "L26",
       "_origin": "ast",
       "id": "mobile_changelog_1_3_0",
       "community": 5,
@@ -8077,7 +7807,7 @@
       "label": "1.2.4",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L67",
+      "source_location": "L39",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_4",
       "community": 5,
@@ -8087,7 +7817,7 @@
       "label": "1.2.3",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L97",
+      "source_location": "L69",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_3",
       "community": 5,
@@ -8097,7 +7827,7 @@
       "label": "1.2.2",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L110",
+      "source_location": "L82",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_2",
       "community": 5,
@@ -8107,7 +7837,7 @@
       "label": "1.2.1",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L128",
+      "source_location": "L100",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_1",
       "community": 5,
@@ -8117,7 +7847,7 @@
       "label": "1.2.0",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L138",
+      "source_location": "L110",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_0",
       "community": 5,
@@ -8127,7 +7857,7 @@
       "label": "1.1.12",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L158",
+      "source_location": "L130",
       "_origin": "ast",
       "id": "mobile_changelog_1_1_12",
       "community": 5,
@@ -8137,7 +7867,7 @@
       "label": "1.1.11",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L167",
+      "source_location": "L139",
       "_origin": "ast",
       "id": "mobile_changelog_1_1_11",
       "community": 5,
@@ -8147,7 +7877,7 @@
       "label": "1.1.10",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L177",
+      "source_location": "L149",
       "_origin": "ast",
       "id": "mobile_changelog_1_1_10",
       "community": 5,
@@ -8262,7 +7992,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 86,
+      "community": 5,
       "norm_label": "manhwa tracker architecture overview",
       "id": "agent_instructions_overview"
     },
@@ -8275,7 +8005,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 86,
+      "community": 5,
       "norm_label": "backend (fastapi / python)",
       "id": "agent_instructions_backend"
     },
@@ -8288,7 +8018,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 86,
+      "community": 5,
       "norm_label": "frontend (next.js / react web)",
       "id": "agent_instructions_frontend"
     },
@@ -8301,7 +8031,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 82,
+      "community": 5,
       "norm_label": "mobile (expo / react native)",
       "id": "agent_instructions_mobile"
     },
@@ -8314,7 +8044,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 82,
+      "community": 5,
       "norm_label": "modo tela cheia (imersivo) no leitor cbz",
       "id": "agent_instructions_immersive_mode"
     },
@@ -8327,7 +8057,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 82,
+      "community": 5,
       "norm_label": "persistencia de progresso de leitura (scroll por capitulo)",
       "id": "agent_instructions_scroll_persistence"
     },
@@ -8340,7 +8070,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 86,
+      "community": 5,
       "norm_label": "sincronizacao manual de tipagens (backend/frontend/mobile)",
       "id": "agent_instructions_type_sync"
     },
@@ -8353,7 +8083,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 78,
+      "community": 5,
       "norm_label": "api endpoints (resumido)",
       "id": "readme_api_endpoints"
     },
@@ -8366,7 +8096,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 65,
+      "community": 5,
       "norm_label": "integracao / importacao telegram",
       "id": "readme_telegram_integration"
     },
@@ -8379,7 +8109,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 82,
+      "community": 5,
       "norm_label": "leitor .cbz integrado (web e mobile)",
       "id": "readme_cbz_reader_feature"
     },
@@ -8392,7 +8122,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 65,
+      "community": 5,
       "norm_label": "manhwa tracker backend (setup e endpoints)",
       "id": "backend_readme_setup"
     },
@@ -8405,7 +8135,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 65,
+      "community": 5,
       "norm_label": "schema do banco (tabela manhwas)",
       "id": "backend_readme_db_schema"
     },
@@ -8418,7 +8148,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 65,
+      "community": 5,
       "norm_label": "postgresql",
       "id": "backend_readme_postgresql"
     },
@@ -8431,7 +8161,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 65,
+      "community": 5,
       "norm_label": "telethon (cliente telegram)",
       "id": "backend_readme_telethon"
     },
@@ -8444,7 +8174,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 65,
+      "community": 5,
       "norm_label": "backend python requirements",
       "id": "backend_requirements"
     },
@@ -8457,7 +8187,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 86,
+      "community": 5,
       "norm_label": "fastapi==0.109.0",
       "id": "backend_requirements_fastapi"
     },
@@ -8470,7 +8200,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 65,
+      "community": 5,
       "norm_label": "sqlalchemy==2.0.36",
       "id": "backend_requirements_sqlalchemy"
     },
@@ -8483,7 +8213,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 65,
+      "community": 5,
       "norm_label": "asyncpg==0.29.0",
       "id": "backend_requirements_asyncpg"
     },
@@ -8496,7 +8226,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 65,
+      "community": 5,
       "norm_label": "telethon==1.34.0",
       "id": "backend_requirements_telethon"
     },
@@ -8509,7 +8239,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 65,
+      "community": 5,
       "norm_label": "uvicorn[standard]==0.27.0",
       "id": "backend_requirements_uvicorn"
     },
@@ -8522,7 +8252,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 65,
+      "community": 5,
       "norm_label": "pydantic==2.5.3",
       "id": "backend_requirements_pydantic"
     },
@@ -8535,7 +8265,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 80,
+      "community": 5,
       "norm_label": "expo sdk 54 (mobile)",
       "id": "mobile_agents_sdk54"
     },
@@ -8548,7 +8278,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 80,
+      "community": 5,
       "norm_label": "versionamento do app + ota (app_version vs fingerprint)",
       "id": "mobile_agents_versioning_ota"
     },
@@ -8561,7 +8291,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 80,
+      "community": 5,
       "norm_label": "arquitetura do app mobile (leitura offline)",
       "id": "mobile_agents_architecture"
     },
@@ -8574,7 +8304,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 82,
+      "community": 5,
       "norm_label": "leitor (cbzreader + reader-store + readerhost)",
       "id": "mobile_agents_reader"
     },
@@ -8587,7 +8317,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 80,
+      "community": 5,
       "norm_label": "cache local / leitura cumulativa",
       "id": "mobile_agents_cache"
     },
@@ -8600,7 +8330,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 80,
+      "community": 5,
       "norm_label": "download (download-manager + background-download)",
       "id": "mobile_agents_download"
     },
@@ -8613,7 +8343,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 82,
+      "community": 5,
       "norm_label": "fila offline (sync-queue)",
       "id": "mobile_agents_sync_queue"
     },
@@ -8626,7 +8356,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 80,
+      "community": 5,
       "norm_label": "nativo / build (notifee, eas build vs update)",
       "id": "mobile_agents_native_build"
     },
@@ -8639,7 +8369,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 80,
+      "community": 5,
       "norm_label": "entrega via eas update (procedimento)",
       "id": "mobile_agents_eas_update_delivery"
     },
@@ -8652,7 +8382,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 82,
+      "community": 5,
       "norm_label": "pre-calculo de layout do leitor (1.2.0-1.2.2)",
       "id": "mobile_changelog_layout_precompute"
     },
@@ -8665,7 +8395,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 80,
+      "community": 5,
       "norm_label": "mobile/claude.md (aponta para agents.md)",
       "id": "mobile_claude_agents_pointer"
     },
@@ -8678,7 +8408,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 80,
+      "community": 5,
       "norm_label": "welcome to your expo app (readme starter)",
       "id": "mobile_readme_expo_starter"
     },
@@ -9740,17 +9470,6 @@
       "target": "automation_claude_runner_parse_usage_limit_reset"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "automation/claude_runner.py",
-      "source_location": "L65",
-      "weight": 1.0,
-      "source": "automation_claude_runner",
-      "target": "automation_claude_runner_py_datetime",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "automation/claude_runner.py",
@@ -9769,6 +9488,17 @@
       "confidence_score": 1.0,
       "source": "automation_claude_runner",
       "target": "automation_claude_runner_run_once"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "automation/claude_runner.py",
+      "source_location": "L65",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "automation_claude_runner",
+      "target": "datetime"
     },
     {
       "relation": "rationale_for",
@@ -9840,11 +9570,11 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "automation/claude_runner.py",
-      "source_location": "L145",
+      "source_location": "L122",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "automation_claude_runner_parse_usage_limit_reset",
-      "target": "automation_claude_runner_py_datetime",
-      "confidence_score": 1.0
+      "target": "datetime"
     },
     {
       "relation": "rationale_for",
@@ -9866,6 +9596,39 @@
       "confidence_score": 1.0,
       "source": "automation_claude_runner_run_claude_code",
       "target": "automation_claude_runner_parse_usage_limit_reset"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/error_logger.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "backend_error_logger",
+      "target": "datetime"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/main.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "backend_main",
+      "target": "datetime"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/models.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "backend_models",
+      "target": "datetime"
     },
     {
       "relation": "references",
@@ -12368,16 +12131,6 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L404",
-      "weight": 1.0,
-      "source": "backend_main",
-      "target": "backend_main_cliente_esta_velho",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
       "source_location": "L158",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -12508,16 +12261,6 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L398",
-      "weight": 1.0,
-      "source": "backend_main",
-      "target": "backend_main_iso_utc",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
       "source_location": "L44",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -12608,16 +12351,6 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L368",
-      "weight": 1.0,
-      "source": "backend_main",
-      "target": "backend_main_parse_client_ts",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
       "source_location": "L439",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -12633,17 +12366,6 @@
       "confidence_score": 1.0,
       "source": "backend_main",
       "target": "backend_main_ping"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L9",
-      "weight": 1.0,
-      "source": "backend_main",
-      "target": "backend_main_py_datetime",
-      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -12714,16 +12436,6 @@
       "confidence_score": 1.0,
       "source": "backend_main",
       "target": "backend_main_test_telegram_config"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L389",
-      "weight": 1.0,
-      "source": "backend_main",
-      "target": "backend_main_to_utc",
-      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -13735,230 +13447,6 @@
     },
     {
       "relation": "references",
-      "context": "generic_arg",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L368",
-      "weight": 1.0,
-      "source": "backend_main_parse_client_ts",
-      "target": "backend_main_py_datetime",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L386",
-      "weight": 1.0,
-      "source": "backend_main_parse_client_ts",
-      "target": "backend_main_to_utc",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L369",
-      "weight": 1.0,
-      "source": "backend_main_rationale_369",
-      "target": "backend_main_parse_client_ts",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L482",
-      "weight": 1.0,
-      "source": "backend_main_update_current_chapter",
-      "target": "backend_main_parse_client_ts",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L549",
-      "weight": 1.0,
-      "source": "backend_main_update_scroll",
-      "target": "backend_main_parse_client_ts",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "generic_arg",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L404",
-      "weight": 1.0,
-      "source": "backend_main_cliente_esta_velho",
-      "target": "backend_main_py_datetime",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "generic_arg",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L398",
-      "weight": 1.0,
-      "source": "backend_main_iso_utc",
-      "target": "backend_main_py_datetime",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/main.py",
-      "source_location": "L23",
-      "weight": 0.8,
-      "source": "backend_main_py_datetime",
-      "target": "backend_models_chapterprogress",
-      "confidence_score": 0.5
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/main.py",
-      "source_location": "L23",
-      "weight": 0.8,
-      "source": "backend_main_py_datetime",
-      "target": "backend_models_manhwa",
-      "confidence_score": 0.5
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/main.py",
-      "source_location": "L169",
-      "weight": 0.8,
-      "source": "backend_main_py_datetime",
-      "target": "backend_telegram_scraper_telegrammanhwascraper",
-      "confidence_score": 0.5
-    },
-    {
-      "relation": "references",
-      "context": "generic_arg",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L389",
-      "weight": 1.0,
-      "source": "backend_main_to_utc",
-      "target": "backend_main_py_datetime",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L410",
-      "weight": 1.0,
-      "source": "backend_main_cliente_esta_velho",
-      "target": "backend_main_to_utc",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L400",
-      "weight": 1.0,
-      "source": "backend_main_iso_utc",
-      "target": "backend_main_to_utc",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L390",
-      "weight": 1.0,
-      "source": "backend_main_rationale_390",
-      "target": "backend_main_to_utc",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L589",
-      "weight": 1.0,
-      "source": "backend_main_get_scroll",
-      "target": "backend_main_iso_utc",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L399",
-      "weight": 1.0,
-      "source": "backend_main_rationale_399",
-      "target": "backend_main_iso_utc",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L493",
-      "weight": 1.0,
-      "source": "backend_main_update_current_chapter",
-      "target": "backend_main_iso_utc",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L556",
-      "weight": 1.0,
-      "source": "backend_main_update_scroll",
-      "target": "backend_main_iso_utc",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L405",
-      "weight": 1.0,
-      "source": "backend_main_rationale_405",
-      "target": "backend_main_cliente_esta_velho",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L482",
-      "weight": 1.0,
-      "source": "backend_main_update_current_chapter",
-      "target": "backend_main_cliente_esta_velho",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/main.py",
-      "source_location": "L549",
-      "weight": 1.0,
-      "source": "backend_main_update_scroll",
-      "target": "backend_main_cliente_esta_velho",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
@@ -14024,11 +13512,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L424",
+      "source_location": "L360",
       "weight": 1.0,
-      "source": "backend_main_rationale_424",
-      "target": "backend_main_mark_previous_chapters_read",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_360",
+      "target": "backend_main_mark_previous_chapters_read"
     },
     {
       "relation": "calls",
@@ -14075,17 +13563,6 @@
       "target": "manhwamodel"
     },
     {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L121",
-      "weight": 1.0,
-      "source": "backend_test_timestamp_sync_cenarios",
-      "target": "manhwamodel"
-    },
-    {
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "backend/main.py",
@@ -14119,11 +13596,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L464",
+      "source_location": "L400",
       "weight": 1.0,
-      "source": "backend_main_rationale_464",
-      "target": "backend_main_update_current_chapter",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_400",
+      "target": "backend_main_update_current_chapter"
     },
     {
       "relation": "uses",
@@ -14170,11 +13647,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L529",
+      "source_location": "L439",
       "weight": 1.0,
-      "source": "backend_main_rationale_529",
-      "target": "backend_main_update_scroll",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_439",
+      "target": "backend_main_update_scroll"
     },
     {
       "relation": "calls",
@@ -14191,41 +13668,41 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L576",
+      "source_location": "L457",
       "weight": 1.0,
-      "source": "backend_main_rationale_576",
-      "target": "backend_main_get_scroll",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_457",
+      "target": "backend_main_get_scroll"
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L594",
+      "source_location": "L468",
       "weight": 1.0,
-      "source": "backend_main_rationale_594",
-      "target": "backend_main_get_cbz_info",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_468",
+      "target": "backend_main_get_cbz_info"
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L620",
+      "source_location": "L494",
       "weight": 1.0,
-      "source": "backend_main_rationale_620",
-      "target": "backend_main_download_cbz_file",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_494",
+      "target": "backend_main_download_cbz_file"
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L645",
+      "source_location": "L519",
       "weight": 1.0,
-      "source": "backend_main_rationale_645",
-      "target": "backend_main_get_cbz_page",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_519",
+      "target": "backend_main_get_cbz_page"
     },
     {
       "relation": "calls",
@@ -14242,11 +13719,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L686",
+      "source_location": "L560",
       "weight": 1.0,
-      "source": "backend_main_rationale_686",
-      "target": "backend_main_persist_sync_updates",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_560",
+      "target": "backend_main_persist_sync_updates"
     },
     {
       "relation": "calls",
@@ -14263,41 +13740,41 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L736",
+      "source_location": "L610",
       "weight": 1.0,
-      "source": "backend_main_rationale_736",
-      "target": "backend_main_download_all_manhwas",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_610",
+      "target": "backend_main_download_all_manhwas"
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L964",
+      "source_location": "L838",
       "weight": 1.0,
-      "source": "backend_main_rationale_964",
-      "target": "backend_main_review_all_manhwas",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_838",
+      "target": "backend_main_review_all_manhwas"
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L1315",
+      "source_location": "L1189",
       "weight": 1.0,
-      "source": "backend_main_rationale_1315",
-      "target": "backend_main_import_from_telegram",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_1189",
+      "target": "backend_main_import_from_telegram"
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/main.py",
-      "source_location": "L1456",
+      "source_location": "L1330",
       "weight": 1.0,
-      "source": "backend_main_rationale_1456",
-      "target": "backend_main_test_telegram_config",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "backend_main_rationale_1330",
+      "target": "backend_main_test_telegram_config"
     },
     {
       "relation": "contains",
@@ -14410,16 +13887,6 @@
       "target": "backend_models_manhwa"
     },
     {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L26",
-      "weight": 0.8,
-      "source": "backend_test_timestamp_sync_py_datetime",
-      "target": "backend_models_manhwa",
-      "confidence_score": 0.5
-    },
-    {
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "backend/models.py",
@@ -14448,16 +13915,6 @@
       "confidence_score": 1.0,
       "source": "backend_models_rationale_49",
       "target": "backend_models_chapterprogress"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L26",
-      "weight": 0.8,
-      "source": "backend_test_timestamp_sync_py_datetime",
-      "target": "backend_models_chapterprogress",
-      "confidence_score": 0.5
     },
     {
       "relation": "contains",
@@ -15389,238 +14846,6 @@
       "confidence_score": 1.0,
       "source": "backend_test_review_all_partial_main_async",
       "target": "backend_test_review_all_partial_testar_falha_de_persistencia"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L115",
-      "weight": 1.0,
-      "source": "backend_test_timestamp_sync",
-      "target": "backend_test_timestamp_sync_cenarios",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L37",
-      "weight": 1.0,
-      "source": "backend_test_timestamp_sync",
-      "target": "backend_test_timestamp_sync_check",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L45",
-      "weight": 1.0,
-      "source": "backend_test_timestamp_sync",
-      "target": "backend_test_timestamp_sync_forcar_updated_at",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L60",
-      "weight": 1.0,
-      "source": "backend_test_timestamp_sync",
-      "target": "backend_test_timestamp_sync_forcar_updated_at_scroll",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L90",
-      "weight": 1.0,
-      "source": "backend_test_timestamp_sync",
-      "target": "backend_test_timestamp_sync_get_scroll",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L70",
-      "weight": 1.0,
-      "source": "backend_test_timestamp_sync",
-      "target": "backend_test_timestamp_sync_ler_manhwa",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L76",
-      "weight": 1.0,
-      "source": "backend_test_timestamp_sync",
-      "target": "backend_test_timestamp_sync_patch_chapter",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L83",
-      "weight": 1.0,
-      "source": "backend_test_timestamp_sync",
-      "target": "backend_test_timestamp_sync_put_scroll",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L19",
-      "weight": 1.0,
-      "source": "backend_test_timestamp_sync",
-      "target": "backend_test_timestamp_sync_py_datetime",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L97",
-      "weight": 1.0,
-      "source": "backend_test_timestamp_sync",
-      "target": "backend_test_timestamp_sync_rodar",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L133",
-      "weight": 1.0,
-      "source": "backend_test_timestamp_sync_cenarios",
-      "target": "backend_test_timestamp_sync_check",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L164",
-      "weight": 1.0,
-      "source": "backend_test_timestamp_sync_cenarios",
-      "target": "backend_test_timestamp_sync_forcar_updated_at",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L45",
-      "weight": 1.0,
-      "source": "backend_test_timestamp_sync_forcar_updated_at",
-      "target": "backend_test_timestamp_sync_py_datetime",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L46",
-      "weight": 1.0,
-      "source": "backend_test_timestamp_sync_rationale_46",
-      "target": "backend_test_timestamp_sync_forcar_updated_at",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L135",
-      "weight": 1.0,
-      "source": "backend_test_timestamp_sync_cenarios",
-      "target": "backend_test_timestamp_sync_py_datetime",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L60",
-      "weight": 1.0,
-      "source": "backend_test_timestamp_sync_forcar_updated_at_scroll",
-      "target": "backend_test_timestamp_sync_py_datetime",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L217",
-      "weight": 1.0,
-      "source": "backend_test_timestamp_sync_cenarios",
-      "target": "backend_test_timestamp_sync_forcar_updated_at_scroll",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L168",
-      "weight": 1.0,
-      "source": "backend_test_timestamp_sync_cenarios",
-      "target": "backend_test_timestamp_sync_ler_manhwa",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L157",
-      "weight": 1.0,
-      "source": "backend_test_timestamp_sync_cenarios",
-      "target": "backend_test_timestamp_sync_patch_chapter",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L210",
-      "weight": 1.0,
-      "source": "backend_test_timestamp_sync_cenarios",
-      "target": "backend_test_timestamp_sync_put_scroll",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L229",
-      "weight": 1.0,
-      "source": "backend_test_timestamp_sync_cenarios",
-      "target": "backend_test_timestamp_sync_get_scroll",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/test_timestamp_sync.py",
-      "source_location": "L109",
-      "weight": 1.0,
-      "source": "backend_test_timestamp_sync_rodar",
-      "target": "backend_test_timestamp_sync_cenarios",
-      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17503,9 +16728,9 @@
       "source_file": "mobile/src/app/downloads.tsx",
       "source_location": "L59",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "app_downloads",
-      "target": "app_downloads_resolvecoveruri"
+      "target": "app_downloads_resolvecoveruri",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -17721,9 +16946,9 @@
       "source_file": "mobile/src/app/downloads.tsx",
       "source_location": "L115",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "app_downloads_buildrow",
-      "target": "app_downloads_resolvecoveruri"
+      "target": "app_downloads_resolvecoveruri",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -17732,9 +16957,9 @@
       "source_file": "mobile/src/app/downloads.tsx",
       "source_location": "L60",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "app_downloads_resolvecoveruri",
-      "target": "lib_cache_getlocalcoveruri"
+      "target": "lib_cache_getlocalcoveruri",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -18944,16 +18169,6 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L573",
-      "weight": 1.0,
-      "source": "lib_cache",
-      "target": "lib_cache_adoptservercurrentchapter",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "mobile/src/lib/cache.ts",
       "source_location": "L480",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -19144,16 +18359,6 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L633",
-      "weight": 1.0,
-      "source": "lib_cache",
-      "target": "lib_cache_getlocalscrollentry",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "mobile/src/lib/cache.ts",
       "source_location": "L666",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -19216,9 +18421,9 @@
       "source_file": "mobile/src/lib/cache.ts",
       "source_location": "L723",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lib_cache",
-      "target": "lib_cache_invalidatestoragecache"
+      "target": "lib_cache_invalidatestoragecache",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -19426,9 +18631,9 @@
       "source_file": "mobile/src/lib/cache.ts",
       "source_location": "L716",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lib_cache",
-      "target": "lib_cache_storagecache"
+      "target": "lib_cache_storagecache",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -19502,17 +18707,6 @@
       "target": "lib_cache"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "mobile/src/lib/sync-queue.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "source": "lib_sync_queue",
-      "target": "lib_cache",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -19530,9 +18724,9 @@
       "source_file": "mobile/src/lib/cache.ts",
       "source_location": "L16",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lib_cache_deletechapterdirasync",
-      "target": "lib_cache_invalidatestoragecache"
+      "target": "lib_cache_invalidatestoragecache",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -19915,9 +19109,9 @@
       "source_file": "mobile/src/lib/cache.ts",
       "source_location": "L202",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lib_cache_downloadchapter",
-      "target": "lib_cache_invalidatestoragecache"
+      "target": "lib_cache_invalidatestoragecache",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -19937,9 +19131,9 @@
       "source_file": "mobile/src/lib/cache.ts",
       "source_location": "L276",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lib_cache_downloadcover",
-      "target": "lib_cache_invalidatestoragecache"
+      "target": "lib_cache_invalidatestoragecache",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -20023,39 +19217,6 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L577",
-      "weight": 1.0,
-      "source": "lib_cache_adoptservercurrentchapter",
-      "target": "lib_cache_reconcilereadswithserver",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L575",
-      "weight": 1.0,
-      "source": "lib_cache_adoptservercurrentchapter",
-      "target": "lib_cache_loadmanhwafiles",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "mobile/src/lib/sync-queue.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "source": "lib_sync_queue",
-      "target": "lib_cache_adoptservercurrentchapter",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "mobile/src/lib/cache.ts",
       "source_location": "L563",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -20072,17 +19233,6 @@
       "confidence_score": 1.0,
       "source": "lib_cache_getlocalscroll",
       "target": "lib_cache_loadscrollmap"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L638",
-      "weight": 1.0,
-      "source": "lib_cache_getlocalscrollentry",
-      "target": "lib_cache_loadscrollmap",
-      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -20118,17 +19268,6 @@
       "target": "lib_cache_savescrollmap"
     },
     {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "mobile/src/lib/sync-queue.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "source": "lib_sync_queue",
-      "target": "lib_cache_savelocalscroll",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -20146,9 +19285,9 @@
       "source_file": "mobile/src/lib/cache.ts",
       "source_location": "L625",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "lib_cache_removemanhwalocal",
-      "target": "lib_cache_invalidatestoragecache"
+      "target": "lib_cache_invalidatestoragecache",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -20625,16 +19764,6 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "mobile/src/lib/sync-queue.ts",
-      "source_location": "L105",
-      "weight": 1.0,
-      "source": "lib_sync_queue",
-      "target": "lib_sync_queue_parsesyncresponse",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "mobile/src/lib/sync-queue.ts",
       "source_location": "L24",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -20670,16 +19799,6 @@
       "confidence_score": 1.0,
       "source": "lib_sync_queue",
       "target": "lib_sync_queue_scrollop"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "mobile/src/lib/sync-queue.ts",
-      "source_location": "L92",
-      "weight": 1.0,
-      "source": "lib_sync_queue",
-      "target": "lib_sync_queue_syncresponse",
-      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -21440,16 +20559,6 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "AGENT_INSTRUCTIONS.md",
-      "source_location": "L287",
-      "weight": 1.0,
-      "source": "agent_instructions_3_mobile_expo_react_native",
-      "target": "agent_instructions_compara\u00e7\u00e3o_de_timestamps_na_sincroniza\u00e7\u00e3o_app_offline_banco",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "AGENT_INSTRUCTIONS.md",
       "source_location": "L93",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -22142,18 +21251,8 @@
       "source_file": "mobile/CHANGELOG.md",
       "source_location": "L7",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "mobile_changelog_changelog_mobile",
-      "target": "mobile_changelog_1_3_1"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L7",
-      "weight": 1.0,
-      "source": "mobile_changelog_changelog_mobile",
-      "target": "mobile_changelog_1_4_0",
+      "target": "mobile_changelog_1_3_1",
       "confidence_score": 1.0
     },
     {
@@ -23526,5 +22625,5 @@
       "source_file": ".claude/skills/graphify/references/query.md"
     }
   ],
-  "built_at_commit": "a4a447402ee14be01210c8e094eada10c974045d"
+  "built_at_commit": "0e611af9f4d9d5867aa87faed45c72a28f8689b6"
 }

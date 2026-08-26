@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from typing import List, Optional
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 import os
@@ -352,8 +352,72 @@ async def list_manhwa_files(manhwa_id: int, db: AsyncSession = Depends(get_db)):
         "current_chapter": manhwa.current_chapter or 0,
     }
 
+# ============================================================
+# Comparação de timestamps (sincronização app offline ↔ banco)
+# ============================================================
+# O app mobile enfileira escritas feitas offline (ver mobile/src/lib/sync-queue.ts)
+# e as drena quando volta a ter rede. Nesse meio-tempo o banco pode ter sido
+# alterado por outro cliente (a web), então uma escrita da fila pode chegar já
+# velha. A regra é last-write-wins pelo `updated_at`: quem gerou o dado por
+# último ganha. O `updated_at` do banco é a fonte de verdade.
+#
+# `updated_at` é OPCIONAL no corpo: sem ele (a web, builds antigas do app) a
+# escrita é aplicada direto, exatamente como antes — a mudança é retrocompatível.
+
+
+def _parse_client_ts(valor: Optional[str]) -> Optional[datetime]:
+    """Converte o `updated_at` mandado pelo cliente (ISO-8601) em datetime aware.
+
+    Devolve None quando vem vazio ou malformado; nesse caso o chamador cai no
+    comportamento antigo (aplica sem comparar), em vez de rejeitar a escrita —
+    um timestamp que não dá pra interpretar não pode custar o dado do usuário.
+    """
+    if not valor:
+        return None
+    texto = valor.strip()
+    # `new Date().toISOString()` do JS termina em "Z", que o fromisoformat só
+    # aceita a partir do Python 3.11.
+    if texto.endswith(("Z", "z")):
+        texto = texto[:-1] + "+00:00"
+    try:
+        dt = datetime.fromisoformat(texto)
+    except ValueError:
+        return None
+    return _to_utc(dt)
+
+
+def _to_utc(dt: Optional[datetime]) -> Optional[datetime]:
+    """Normaliza pra UTC aware. Datetime naive é assumido como UTC."""
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
+def _iso_utc(dt: Optional[datetime]) -> Optional[str]:
+    """Serializa um datetime do banco como ISO-8601 com timezone (UTC)."""
+    normalizado = _to_utc(dt)
+    return normalizado.isoformat() if normalizado else None
+
+
+def _cliente_esta_velho(server_dt: Optional[datetime], client_ts: Optional[datetime]) -> bool:
+    """True quando o banco foi tocado DEPOIS do dado que o cliente está mandando.
+
+    Empate conta como banco mais recente (o dado do cliente não acrescenta nada).
+    Sem timestamp de um dos lados não há comparação possível → False (aplica).
+    """
+    server_ts = _to_utc(server_dt)
+    if client_ts is None or server_ts is None:
+        return False
+    return server_ts >= client_ts
+
+
 class UpdateCurrentChapter(BaseModel):
     current_chapter: int
+    # ISO-8601 de quando o CLIENTE gerou esse dado (ex.: a leitura offline).
+    # Opcional: ver bloco acima.
+    updated_at: Optional[str] = None
 
 
 async def _mark_previous_chapters_read(db: AsyncSession, manhwa: ManhwaModel, current_chapter: int) -> int:
@@ -401,11 +465,33 @@ async def update_current_chapter(manhwa_id: int, body: UpdateCurrentChapter, db:
 
     Também marca automaticamente como lidos todos os capítulos anteriores ao
     informado — quem pula direto pro 50 não fica com 1..49 aparecendo como não lidos.
+
+    Se o corpo trouxer `updated_at`, ele é comparado com o `updated_at` da linha
+    no banco: o dado só entra se for mais novo que o que já está lá. Ver o bloco
+    "Comparação de timestamps" acima.
     """
     result = await db.execute(select(ManhwaModel).where(ManhwaModel.id == manhwa_id))
     manhwa = result.scalar_one_or_none()
     if not manhwa:
         raise HTTPException(status_code=404, detail="Manhwa não encontrado")
+
+    # Rejeita dado velho — mas só quando ele de fato mudaria algo; se o capítulo
+    # já é o mesmo, não há disputa e seguimos o fluxo normal (que ainda pode
+    # marcar anteriores como lidos).
+    if (
+        _cliente_esta_velho(manhwa.updated_at, _parse_client_ts(body.updated_at))
+        and manhwa.current_chapter != body.current_chapter
+    ):
+        # 200 (e não 409) de propósito: clientes antigos olham só o `res.ok` e
+        # um erro HTTP faria a operação voltar pra fila offline pra sempre.
+        return {
+            "success": False,
+            "reason": "stale",
+            "current_chapter": manhwa.current_chapter or 0,
+            "status": manhwa.status,
+            "chapters_marked_read": 0,
+            "updated_at": _iso_utc(manhwa.updated_at),
+        }
 
     updated = False
     # Atualiza o capítulo atual para o capítulo que acabou de ser lido (permite regressão)
@@ -429,14 +515,23 @@ async def update_current_chapter(manhwa_id: int, body: UpdateCurrentChapter, db:
         "current_chapter": manhwa.current_chapter,
         "status": manhwa.status,
         "chapters_marked_read": marcados,
+        "updated_at": _iso_utc(manhwa.updated_at),
     }
 
 class ScrollUpdate(BaseModel):
     scroll_position: int
+    # ISO-8601 de quando o cliente gerou a posição. Opcional — ver o bloco
+    # "Comparação de timestamps".
+    updated_at: Optional[str] = None
 
 @app.put("/api/manhwas/{manhwa_id}/read/{filename}/scroll")
 async def update_scroll(manhwa_id: int, filename: str, body: ScrollUpdate, db: AsyncSession = Depends(get_db)):
-    """Salva a posição de rolagem de um capítulo específico"""
+    """Salva a posição de rolagem de um capítulo específico.
+
+    Com `updated_at` no corpo, compara com o `updated_at` da linha e só grava se
+    o cliente for mais recente; senão devolve `success: false` + a posição que
+    está no banco, pra o cliente adotar ela.
+    """
     result = await db.execute(select(ChapterProgress).where(
         (ChapterProgress.manhwa_id == manhwa_id) &
         (ChapterProgress.filename == filename)
@@ -444,24 +539,55 @@ async def update_scroll(manhwa_id: int, filename: str, body: ScrollUpdate, db: A
     progress = result.scalar_one_or_none()
 
     if progress:
+        # `scroll_position == 0` é indistinguível de "sem progresso nenhum" — o
+        # GET devolve 0 nos dois casos, e na prática essas linhas nascem do
+        # _mark_previous_chapters_read (que grava 0 com data de agora), não de
+        # leitura real. Deixar uma linha dessas vencer por timestamp descartaria
+        # a posição real que o usuário leu offline em troca de nada.
+        if (
+            progress.scroll_position != 0
+            and _cliente_esta_velho(progress.updated_at, _parse_client_ts(body.updated_at))
+            and progress.scroll_position != body.scroll_position
+        ):
+            return {
+                "success": False,
+                "reason": "stale",
+                "scroll_position": progress.scroll_position,
+                "updated_at": _iso_utc(progress.updated_at),
+            }
         progress.scroll_position = body.scroll_position
     else:
+        # Linha nova: não há o que comparar, o dado do cliente é o único que existe.
         progress = ChapterProgress(manhwa_id=manhwa_id, filename=filename, scroll_position=body.scroll_position)
         db.add(progress)
-        
+
     await db.commit()
-    return {"success": True}
+    # `updated_at` vem de server_default/onupdate — só existe no objeto depois
+    # de reler do banco.
+    await db.refresh(progress)
+    return {
+        "success": True,
+        "scroll_position": progress.scroll_position,
+        "updated_at": _iso_utc(progress.updated_at),
+    }
 
 @app.get("/api/manhwas/{manhwa_id}/read/{filename}/scroll")
 async def get_scroll(manhwa_id: int, filename: str, db: AsyncSession = Depends(get_db)):
-    """Retorna a posição de rolagem salva de um capítulo específico"""
+    """Retorna a posição de rolagem salva de um capítulo específico.
+
+    Devolve junto o `updated_at` da linha (None se nunca houve progresso), pra o
+    cliente saber quando o banco recebeu esse valor.
+    """
     result = await db.execute(select(ChapterProgress).where(
         (ChapterProgress.manhwa_id == manhwa_id) &
         (ChapterProgress.filename == filename)
     ))
     progress = result.scalar_one_or_none()
 
-    return {"scroll_position": progress.scroll_position if progress else 0}
+    return {
+        "scroll_position": progress.scroll_position if progress else 0,
+        "updated_at": _iso_utc(progress.updated_at) if progress else None,
+    }
 
 @app.get("/api/manhwas/{manhwa_id}/read/{filename}")
 async def get_cbz_info(manhwa_id: int, filename: str, db: AsyncSession = Depends(get_db)):
