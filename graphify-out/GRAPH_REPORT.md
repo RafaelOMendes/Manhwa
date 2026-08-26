@@ -1,16 +1,16 @@
 # Graph Report - Manhwa  (2026-08-25)
 
 ## Corpus Check
-- 90 files · ~84,190 words
+- 90 files · ~84,776 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 883 nodes · 1277 edges · 83 communities (61 shown, 22 thin omitted)
+- 887 nodes · 1287 edges · 82 communities (60 shown, 22 thin omitted)
 - Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 113 edges (avg confidence: 0.67)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `f26e88d8`
+- Built from commit: `0e611af9`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -55,7 +55,6 @@
 - [[_COMMUNITY_Community 45|Community 45]]
 - [[_COMMUNITY_Community 46|Community 46]]
 - [[_COMMUNITY_Community 47|Community 47]]
-- [[_COMMUNITY_Community 48|Community 48]]
 - [[_COMMUNITY_Community 49|Community 49]]
 - [[_COMMUNITY_Community 50|Community 50]]
 - [[_COMMUNITY_Community 51|Community 51]]
@@ -125,11 +124,11 @@
 - **Graph Database / Format Exports** — exports_neo4j_export, exports_falkordb_export, exports_graphml_export, exports_svg_export, exports_mcp_server [INFERRED 0.85]
 - **Graph Query/Navigation Flows** — query_query_flow, query_path_flow, query_explain_flow, query_networkx_fallback, query_save_result [EXTRACTED 0.85]
 
-## Communities (83 total, 22 thin omitted)
+## Communities (82 total, 22 thin omitted)
 
 ### Community 0 - "Mobile App Screens & Cache"
-Cohesion: 0.10
-Nodes (26): CachedEntry, CacheIndex, CbzFileSnapshot, chapterDir(), chapterNumberFor(), clearLocalScrollFor(), deleteChapterDirAsync(), dirSizeBytes() (+18 more)
+Cohesion: 0.11
+Nodes (22): CachedEntry, CacheIndex, CbzFileSnapshot, chapterNumberFor(), clearLocalScrollFor(), dirSizeBytes(), extractChapterNumberFromFilename(), getLocalScroll() (+14 more)
 
 ### Community 1 - "Backend API & Models"
 Cohesion: 0.16
@@ -149,11 +148,11 @@ Nodes (37): dependencies, expo, expo-build-properties, expo-constants, expo-devi
 
 ### Community 5 - "Project Architecture Docs"
 Cohesion: 0.05
-Nodes (51): Backend (FastAPI / Python), Frontend (Next.js / React Web), Modo Tela Cheia (Imersivo) no Leitor CBZ, Mobile (Expo / React Native), Manhwa Tracker Architecture Overview, Persistência de progresso de leitura (scroll por capítulo), Sincronização manual de tipagens (backend/frontend/mobile), Schema do Banco (tabela manhwas) (+43 more)
+Nodes (52): Backend (FastAPI / Python), Frontend (Next.js / React Web), Modo Tela Cheia (Imersivo) no Leitor CBZ, Mobile (Expo / React Native), Manhwa Tracker Architecture Overview, Persistência de progresso de leitura (scroll por capítulo), Sincronização manual de tipagens (backend/frontend/mobile), Schema do Banco (tabela manhwas) (+44 more)
 
 ### Community 6 - "Background Download & Notifications"
 Cohesion: 0.10
-Nodes (29): aggregate(), AndroidForegroundServiceType, AndroidImportance, currentQueue, drainQueue(), ensureChannel(), EventType, inFlight (+21 more)
+Nodes (28): aggregate(), AndroidForegroundServiceType, AndroidImportance, currentQueue, drainQueue(), ensureChannel(), EventType, inFlight (+20 more)
 
 ### Community 7 - "Frontend Dependencies"
 Cohesion: 0.08
@@ -164,8 +163,8 @@ Cohesion: 0.10
 Nodes (19): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+11 more)
 
 ### Community 9 - "Mobile CBZ Reader & Sync Queue"
-Cohesion: 0.18
-Nodes (11): ReaderPage, ReaderPageProps, ScrollToken, styles, { width: SCREEN_WIDTH }, getLocalChapter(), markManhwaRead(), CbzReader() (+3 more)
+Cohesion: 0.14
+Nodes (18): ReaderPage, ReaderPageProps, ScrollToken, styles, { width: SCREEN_WIDTH }, ChapterReadOp, DrainResult, enqueueChapterRead() (+10 more)
 
 ### Community 10 - "Frontend Web UI"
 Cohesion: 0.13
@@ -180,8 +179,8 @@ Cohesion: 0.24
 Nodes (12): MCP stdio Server, graph.json, Fast Path - Existing Graph Query, Native CLAUDE.md Integration, BFS Traversal Mode, DFS Traversal Mode, /graphify explain (Node Explanation), NetworkX Inline Traversal Fallback (+4 more)
 
 ### Community 13 - "Mobile Reader Store"
-Cohesion: 0.22
-Nodes (10): ReaderHost(), closeReader(), emit(), listeners, navigateReader(), openReader(), ReaderFile, ReaderRequest (+2 more)
+Cohesion: 0.18
+Nodes (11): ReaderHost(), setupDownloadNotificationPress(), closeReader(), emit(), listeners, navigateReader(), openReader(), ReaderFile (+3 more)
 
 ### Community 14 - "Backend Database Setup"
 Cohesion: 0.14
@@ -217,7 +216,7 @@ Nodes (27): automation_version(), branch_exists(), branch_name_for_card(), chang
 
 ### Community 45 - "Community 45"
 Cohesion: 0.17
-Nodes (16): buildRow(), Downloads(), RowInfo, Unit, getLocalChaptersSet(), getLocalCoverUri(), getManhwasWithLocalData(), getReadChaptersSet() (+8 more)
+Nodes (17): buildRow(), Downloads(), resolveCoverUri(), RowInfo, Unit, getLocalChaptersSet(), getLocalCoverUri(), getReadChaptersSet() (+9 more)
 
 ### Community 46 - "Community 46"
 Cohesion: 0.15
@@ -226,10 +225,6 @@ Nodes (11): _build_session(), Any, Cliente fino para a API REST do Trello (https
 ### Community 47 - "Community 47"
 Cohesion: 0.12
 Nodes (16): 1. Backend (FastAPI / Python), 2. Frontend (Next.js / React Web), 3. Mobile (Expo / React Native), 4. Automação Trello ↔ Claude Code, Como editar este arquivo corretamente, 🔍 Como se Orientar (Instruções para Agentes), ⚙️ Configurações Importantes, 📶 Detecção de conectividade / modo offline (+8 more)
-
-### Community 48 - "Community 48"
-Cohesion: 0.31
-Nodes (9): ChapterReadOp, DrainResult, enqueueChapterRead(), enqueueScroll(), loadQueue(), QueueShape, queueSize(), saveQueue() (+1 more)
 
 ### Community 49 - "Community 49"
 Cohesion: 0.17
@@ -288,8 +283,8 @@ Cohesion: 0.53
 Nodes (5): check(), patch_chapter(), Filenames com ChapterProgress gravado (lista, pra detectar duplicata)., registros(), rodar()
 
 ### Community 64 - "Community 64"
-Cohesion: 0.32
-Nodes (12): applyReadReconcile(), cleanupCorrupted(), cleanupExpired(), loadIndex(), markChapterReadLocal(), reconcileReadsWithServer(), removeManhwaLocal(), saveIndex() (+4 more)
+Cohesion: 0.19
+Nodes (20): applyReadReconcile(), chapterDir(), cleanupCorrupted(), cleanupExpired(), deleteChapterDirAsync(), downloadChapter(), downloadCover(), getLocalChapter() (+12 more)
 
 ### Community 66 - "Community 66"
 Cohesion: 0.50
@@ -309,11 +304,11 @@ Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphif
 
 ### Community 77 - "Community 77"
 Cohesion: 0.11
-Nodes (18): BareScraper, check(), FakeClient, FakeFilenameAttr, FakeMessage, FakeScraper, instalar_scraper_falso(), ler_banco() (+10 more)
+Nodes (17): BareScraper, check(), FakeClient, FakeFilenameAttr, FakeScraper, instalar_scraper_falso(), ler_banco(), main_async() (+9 more)
 
 ### Community 78 - "Community 78"
-Cohesion: 0.13
-Nodes (10): classify_telegram_error(), BaseException, Segura a requisição enquanto durar um flood wait pedido pelo Telegram., Registra um flood wait para que todas as leituras paralelas recuem juntas., Resolve (e memoriza) o chat de um link.          Antes, CADA leitura de tópico, Entra em um tópico do Telegram e retorna:         - cbz_count: quantos arquivos, Baixa todos os arquivos .cbz de um tópico do Telegram em paralelo.         Salv, Lê apenas um tópico. O nome do manhwa é o nome do tópico.         A partir da p (+2 more)
+Cohesion: 0.12
+Nodes (11): classify_telegram_error(), BaseException, Segura a requisição enquanto durar um flood wait pedido pelo Telegram., Registra um flood wait para que todas as leituras paralelas recuem juntas., Resolve (e memoriza) o chat de um link.          Antes, CADA leitura de tópico, Entra em um tópico do Telegram e retorna:         - cbz_count: quantos arquivos, Baixa todos os arquivos .cbz de um tópico do Telegram em paralelo.         Salv, Lê apenas um tópico. O nome do manhwa é o nome do tópico.         A partir da p (+3 more)
 
 ### Community 79 - "Community 79"
 Cohesion: 0.13
@@ -332,7 +327,7 @@ Cohesion: 0.33
 Nodes (6): Garante corpo JSON consistente para qualquer exceção não tratada.      Sem iss, Exige o token quando API_TOKEN está definido.      Aceita via header `Authoriz, unhandled_exception_handler(), verify_token(), Exception, Request
 
 ## Knowledge Gaps
-- **323 isolated node(s):** `Session`, `BaseException`, `BaseException`, `BaseException`, `extends` (+318 more)
+- **325 isolated node(s):** `Session`, `BaseException`, `BaseException`, `BaseException`, `extends` (+320 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **22 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -352,4 +347,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Are the 15 inferred relationships involving `ChapterProgress` (e.g. with `AsyncSession` and `Manhwa`) actually correct?**
   _`ChapterProgress` has 15 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Usa o próprio Claude Code CLI (headless, -p) para transformar um card do Trello`, `Chamada curta e focada só nessa decisão (sem ferramentas, resposta de duas`, `Invoca o Claude Code CLI local (o mesmo `claude` que você já usa manualmente nes` to the rest of the system?**
-  _412 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _414 weakly-connected nodes found - possible documentation gaps or missing edges._

@@ -2660,7 +2660,7 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "backend_test_review_all_partial_fakemessage",
-      "community": 77,
+      "community": 78,
       "norm_label": "fakemessage"
     },
     {
@@ -2670,7 +2670,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "backend_test_review_all_partial_fakemessage_init",
-      "community": 77,
+      "community": 78,
       "norm_label": ".__init__()"
     },
     {
@@ -4800,7 +4800,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "mobile_src_app_layout_tsx_app_layout",
-      "community": 64,
+      "community": 13,
       "norm_label": "_layout.tsx"
     },
     {
@@ -4810,7 +4810,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "mobile_src_app_layout_tsx_app_layout_rootlayout",
-      "community": 64,
+      "community": 13,
       "norm_label": "rootlayout()"
     },
     {
@@ -4847,7 +4847,7 @@
       "label": "formatBytes()",
       "file_type": "code",
       "source_file": "mobile/src/app/downloads.tsx",
-      "source_location": "L35",
+      "source_location": "L39",
       "_origin": "ast",
       "id": "app_downloads_formatbytes",
       "community": 45,
@@ -4857,17 +4857,27 @@
       "label": "poolMap()",
       "file_type": "code",
       "source_file": "mobile/src/app/downloads.tsx",
-      "source_location": "L42",
+      "source_location": "L46",
       "_origin": "ast",
       "id": "app_downloads_poolmap",
       "community": 45,
       "norm_label": "poolmap()"
     },
     {
+      "label": "resolveCoverUri()",
+      "file_type": "code",
+      "source_file": "mobile/src/app/downloads.tsx",
+      "source_location": "L59",
+      "_origin": "ast",
+      "id": "app_downloads_resolvecoveruri",
+      "community": 45,
+      "norm_label": "resolvecoveruri()"
+    },
+    {
       "label": "buildRow()",
       "file_type": "code",
       "source_file": "mobile/src/app/downloads.tsx",
-      "source_location": "L56",
+      "source_location": "L67",
       "_origin": "ast",
       "id": "app_downloads_buildrow",
       "community": 45,
@@ -4877,7 +4887,7 @@
       "label": "Downloads()",
       "file_type": "code",
       "source_file": "mobile/src/app/downloads.tsx",
-      "source_location": "L107",
+      "source_location": "L119",
       "_origin": "ast",
       "id": "app_downloads_downloads",
       "community": 45,
@@ -5290,7 +5300,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "lib_background_download_setupdownloadnotificationpress",
-      "community": 6,
+      "community": 13,
       "norm_label": "setupdownloadnotificationpress()"
     },
     {
@@ -5400,14 +5410,14 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "lib_cache_deletechapterdirasync",
-      "community": 0,
+      "community": 64,
       "norm_label": "deletechapterdirasync()"
     },
     {
       "label": "PendingEntry",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L24",
+      "source_location": "L28",
       "_origin": "ast",
       "id": "lib_cache_pendingentry",
       "community": 0,
@@ -5417,7 +5427,7 @@
       "label": "CachedEntry",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L30",
+      "source_location": "L34",
       "_origin": "ast",
       "id": "lib_cache_cachedentry",
       "community": 0,
@@ -5427,7 +5437,7 @@
       "label": "extractChapterNumberFromFilename()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L38",
+      "source_location": "L42",
       "_origin": "ast",
       "id": "lib_cache_extractchapternumberfromfilename",
       "community": 0,
@@ -5437,7 +5447,7 @@
       "label": "chapterNumberFor()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L46",
+      "source_location": "L50",
       "_origin": "ast",
       "id": "lib_cache_chapternumberfor",
       "community": 0,
@@ -5447,7 +5457,7 @@
       "label": "ManhwaCache",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L50",
+      "source_location": "L54",
       "_origin": "ast",
       "id": "lib_cache_manhwacache",
       "community": 0,
@@ -5457,7 +5467,7 @@
       "label": "CacheIndex",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L59",
+      "source_location": "L63",
       "_origin": "ast",
       "id": "lib_cache_cacheindex",
       "community": 0,
@@ -5467,7 +5477,7 @@
       "label": "loadIndex()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L71",
+      "source_location": "L75",
       "_origin": "ast",
       "id": "lib_cache_loadindex",
       "community": 64,
@@ -5477,7 +5487,7 @@
       "label": "saveIndex()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L95",
+      "source_location": "L99",
       "_origin": "ast",
       "id": "lib_cache_saveindex",
       "community": 64,
@@ -5487,7 +5497,7 @@
       "label": "indexQueue",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L107",
+      "source_location": "L111",
       "_origin": "ast",
       "id": "lib_cache_indexqueue",
       "community": 0,
@@ -5497,7 +5507,7 @@
       "label": "withIndexLock()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L108",
+      "source_location": "L112",
       "_origin": "ast",
       "id": "lib_cache_withindexlock",
       "community": 64,
@@ -5507,27 +5517,27 @@
       "label": "chapterDir()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L114",
+      "source_location": "L118",
       "_origin": "ast",
       "id": "lib_cache_chapterdir",
-      "community": 0,
+      "community": 64,
       "norm_label": "chapterdir()"
     },
     {
       "label": "pageFile()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L118",
+      "source_location": "L122",
       "_origin": "ast",
       "id": "lib_cache_pagefile",
-      "community": 0,
+      "community": 64,
       "norm_label": "pagefile()"
     },
     {
       "label": "LocalChapterInfo",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L122",
+      "source_location": "L126",
       "_origin": "ast",
       "id": "lib_cache_localchapterinfo",
       "community": 0,
@@ -5537,17 +5547,17 @@
       "label": "getLocalChapter()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L129",
+      "source_location": "L133",
       "_origin": "ast",
       "id": "lib_cache_getlocalchapter",
-      "community": 9,
+      "community": 64,
       "norm_label": "getlocalchapter()"
     },
     {
       "label": "getLocalChaptersSet()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L143",
+      "source_location": "L147",
       "_origin": "ast",
       "id": "lib_cache_getlocalchaptersset",
       "community": 45,
@@ -5557,7 +5567,7 @@
       "label": "trimCached()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L155",
+      "source_location": "L159",
       "_origin": "ast",
       "id": "lib_cache_trimcached",
       "community": 64,
@@ -5567,7 +5577,7 @@
       "label": "trimAllCached()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L170",
+      "source_location": "L174",
       "_origin": "ast",
       "id": "lib_cache_trimallcached",
       "community": 64,
@@ -5577,7 +5587,7 @@
       "label": "IMAGE_EXTS",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L183",
+      "source_location": "L187",
       "_origin": "ast",
       "id": "lib_cache_image_exts",
       "community": 0,
@@ -5587,7 +5597,7 @@
       "label": "isImageEntry()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L185",
+      "source_location": "L189",
       "_origin": "ast",
       "id": "lib_cache_isimageentry",
       "community": 0,
@@ -5597,17 +5607,17 @@
       "label": "downloadChapter()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L197",
+      "source_location": "L201",
       "_origin": "ast",
       "id": "lib_cache_downloadchapter",
-      "community": 0,
+      "community": 64,
       "norm_label": "downloadchapter()"
     },
     {
       "label": "SyncResult",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L242",
+      "source_location": "L250",
       "_origin": "ast",
       "id": "lib_cache_syncresult",
       "community": 0,
@@ -5617,7 +5627,7 @@
       "label": "SyncProgress",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L249",
+      "source_location": "L257",
       "_origin": "ast",
       "id": "lib_cache_syncprogress",
       "community": 6,
@@ -5627,17 +5637,17 @@
       "label": "downloadCover()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L259",
+      "source_location": "L267",
       "_origin": "ast",
       "id": "lib_cache_downloadcover",
-      "community": 0,
+      "community": 64,
       "norm_label": "downloadcover()"
     },
     {
       "label": "getLocalCoverUri()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L274",
+      "source_location": "L283",
       "_origin": "ast",
       "id": "lib_cache_getlocalcoveruri",
       "community": 45,
@@ -5647,7 +5657,7 @@
       "label": "syncManhwaLocal()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L286",
+      "source_location": "L295",
       "_origin": "ast",
       "id": "lib_cache_syncmanhwalocal",
       "community": 64,
@@ -5657,7 +5667,7 @@
       "label": "markChapterReadLocal()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L443",
+      "source_location": "L452",
       "_origin": "ast",
       "id": "lib_cache_markchapterreadlocal",
       "community": 64,
@@ -5667,17 +5677,17 @@
       "label": "markManhwaRead()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L481",
+      "source_location": "L490",
       "_origin": "ast",
       "id": "lib_cache_markmanhwaread",
-      "community": 9,
+      "community": 64,
       "norm_label": "markmanhwaread()"
     },
     {
       "label": "getLastReadMap()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L491",
+      "source_location": "L500",
       "_origin": "ast",
       "id": "lib_cache_getlastreadmap",
       "community": 53,
@@ -5687,7 +5697,7 @@
       "label": "getReadChaptersSet()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L501",
+      "source_location": "L510",
       "_origin": "ast",
       "id": "lib_cache_getreadchaptersset",
       "community": 45,
@@ -5697,7 +5707,7 @@
       "label": "applyReadReconcile()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L515",
+      "source_location": "L524",
       "_origin": "ast",
       "id": "lib_cache_applyreadreconcile",
       "community": 64,
@@ -5707,17 +5717,17 @@
       "label": "reconcileReadsWithServer()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L537",
+      "source_location": "L546",
       "_origin": "ast",
       "id": "lib_cache_reconcilereadswithserver",
-      "community": 64,
+      "community": 45,
       "norm_label": "reconcilereadswithserver()"
     },
     {
       "label": "ScrollEntry",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L556",
+      "source_location": "L565",
       "_origin": "ast",
       "id": "lib_cache_scrollentry",
       "community": 0,
@@ -5727,7 +5737,7 @@
       "label": "ScrollMap",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L561",
+      "source_location": "L570",
       "_origin": "ast",
       "id": "lib_cache_scrollmap",
       "community": 0,
@@ -5737,7 +5747,7 @@
       "label": "loadScrollMap()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L563",
+      "source_location": "L572",
       "_origin": "ast",
       "id": "lib_cache_loadscrollmap",
       "community": 0,
@@ -5747,7 +5757,7 @@
       "label": "saveScrollMap()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L572",
+      "source_location": "L581",
       "_origin": "ast",
       "id": "lib_cache_savescrollmap",
       "community": 0,
@@ -5757,7 +5767,7 @@
       "label": "saveLocalScroll()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L576",
+      "source_location": "L585",
       "_origin": "ast",
       "id": "lib_cache_savelocalscroll",
       "community": 0,
@@ -5767,7 +5777,7 @@
       "label": "getLocalScroll()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L588",
+      "source_location": "L597",
       "_origin": "ast",
       "id": "lib_cache_getlocalscroll",
       "community": 0,
@@ -5777,7 +5787,7 @@
       "label": "clearLocalScrollFor()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L598",
+      "source_location": "L607",
       "_origin": "ast",
       "id": "lib_cache_clearlocalscrollfor",
       "community": 0,
@@ -5787,7 +5797,7 @@
       "label": "removeManhwaLocal()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L609",
+      "source_location": "L618",
       "_origin": "ast",
       "id": "lib_cache_removemanhwalocal",
       "community": 64,
@@ -5797,7 +5807,7 @@
       "label": "CbzFileSnapshot",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L630",
+      "source_location": "L640",
       "_origin": "ast",
       "id": "lib_cache_cbzfilesnapshot",
       "community": 0,
@@ -5807,7 +5817,7 @@
       "label": "saveManhwaList()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L636",
+      "source_location": "L646",
       "_origin": "ast",
       "id": "lib_cache_savemanhwalist",
       "community": 53,
@@ -5817,7 +5827,7 @@
       "label": "loadManhwaList()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L644",
+      "source_location": "L654",
       "_origin": "ast",
       "id": "lib_cache_loadmanhwalist",
       "community": 45,
@@ -5827,7 +5837,7 @@
       "label": "saveManhwaFiles()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L653",
+      "source_location": "L663",
       "_origin": "ast",
       "id": "lib_cache_savemanhwafiles",
       "community": 45,
@@ -5837,7 +5847,7 @@
       "label": "loadManhwaFiles()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L664",
+      "source_location": "L674",
       "_origin": "ast",
       "id": "lib_cache_loadmanhwafiles",
       "community": 45,
@@ -5847,17 +5857,37 @@
       "label": "dirSizeBytes()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L679",
+      "source_location": "L702",
       "_origin": "ast",
       "id": "lib_cache_dirsizebytes",
       "community": 0,
       "norm_label": "dirsizebytes()"
     },
     {
+      "label": "storageCache",
+      "file_type": "code",
+      "source_file": "mobile/src/lib/cache.ts",
+      "source_location": "L716",
+      "_origin": "ast",
+      "id": "lib_cache_storagecache",
+      "community": 0,
+      "norm_label": "storagecache"
+    },
+    {
+      "label": "invalidateStorageCache()",
+      "file_type": "code",
+      "source_file": "mobile/src/lib/cache.ts",
+      "source_location": "L723",
+      "_origin": "ast",
+      "id": "lib_cache_invalidatestoragecache",
+      "community": 64,
+      "norm_label": "invalidatestoragecache()"
+    },
+    {
       "label": "getStorageUsage()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L698",
+      "source_location": "L730",
       "_origin": "ast",
       "id": "lib_cache_getstorageusage",
       "community": 0,
@@ -5867,7 +5897,7 @@
       "label": "getManhwaStorage()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L705",
+      "source_location": "L738",
       "_origin": "ast",
       "id": "lib_cache_getmanhwastorage",
       "community": 0,
@@ -5877,17 +5907,17 @@
       "label": "getManhwasWithLocalData()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L712",
+      "source_location": "L748",
       "_origin": "ast",
       "id": "lib_cache_getmanhwaswithlocaldata",
-      "community": 45,
+      "community": 64,
       "norm_label": "getmanhwaswithlocaldata()"
     },
     {
       "label": "cleanupCorrupted()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L732",
+      "source_location": "L768",
       "_origin": "ast",
       "id": "lib_cache_cleanupcorrupted",
       "community": 64,
@@ -5897,7 +5927,7 @@
       "label": "cleanupExpired()",
       "file_type": "code",
       "source_file": "mobile/src/lib/cache.ts",
-      "source_location": "L802",
+      "source_location": "L839",
       "_origin": "ast",
       "id": "lib_cache_cleanupexpired",
       "community": 64,
@@ -6230,7 +6260,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_sync_queue",
-      "community": 48,
+      "community": 9,
       "norm_label": "sync-queue.ts"
     },
     {
@@ -6240,7 +6270,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "lib_sync_queue_chapterreadop",
-      "community": 48,
+      "community": 9,
       "norm_label": "chapterreadop"
     },
     {
@@ -6250,7 +6280,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "lib_sync_queue_scrollop",
-      "community": 48,
+      "community": 9,
       "norm_label": "scrollop"
     },
     {
@@ -6260,7 +6290,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "lib_sync_queue_queueshape",
-      "community": 48,
+      "community": 9,
       "norm_label": "queueshape"
     },
     {
@@ -6270,7 +6300,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "lib_sync_queue_loadqueue",
-      "community": 48,
+      "community": 9,
       "norm_label": "loadqueue()"
     },
     {
@@ -6280,7 +6310,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "lib_sync_queue_savequeue",
-      "community": 48,
+      "community": 9,
       "norm_label": "savequeue()"
     },
     {
@@ -6290,7 +6320,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "lib_sync_queue_enqueuechapterread",
-      "community": 48,
+      "community": 9,
       "norm_label": "enqueuechapterread()"
     },
     {
@@ -6300,7 +6330,7 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "lib_sync_queue_enqueuescroll",
-      "community": 48,
+      "community": 9,
       "norm_label": "enqueuescroll()"
     },
     {
@@ -6310,7 +6340,7 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "lib_sync_queue_drainresult",
-      "community": 48,
+      "community": 9,
       "norm_label": "drainresult"
     },
     {
@@ -6330,7 +6360,7 @@
       "source_location": "L131",
       "_origin": "ast",
       "id": "lib_sync_queue_queuesize",
-      "community": 48,
+      "community": 9,
       "norm_label": "queuesize()"
     },
     {
@@ -7687,7 +7717,7 @@
       "label": "Download (`src/lib/download-manager.ts` + `background-download.ts`)",
       "file_type": "document",
       "source_file": "mobile/AGENTS.md",
-      "source_location": "L112",
+      "source_location": "L121",
       "_origin": "ast",
       "id": "mobile_agents_download_src_lib_download_manager_ts_background_download_ts",
       "community": 49,
@@ -7697,7 +7727,7 @@
       "label": "Fila offline (`src/lib/sync-queue.ts`)",
       "file_type": "document",
       "source_file": "mobile/AGENTS.md",
-      "source_location": "L134",
+      "source_location": "L143",
       "_origin": "ast",
       "id": "mobile_agents_fila_offline_src_lib_sync_queue_ts",
       "community": 49,
@@ -7707,7 +7737,7 @@
       "label": "Nativo / build",
       "file_type": "document",
       "source_file": "mobile/AGENTS.md",
-      "source_location": "L138",
+      "source_location": "L147",
       "_origin": "ast",
       "id": "mobile_agents_nativo_build",
       "community": 49,
@@ -7717,7 +7747,7 @@
       "label": "Performance",
       "file_type": "document",
       "source_file": "mobile/AGENTS.md",
-      "source_location": "L148",
+      "source_location": "L157",
       "_origin": "ast",
       "id": "mobile_agents_performance",
       "community": 49,
@@ -7727,7 +7757,7 @@
       "label": "Entregar via `eas update` (autorizado pro Claude)",
       "file_type": "document",
       "source_file": "mobile/AGENTS.md",
-      "source_location": "L152",
+      "source_location": "L161",
       "_origin": "ast",
       "id": "mobile_agents_entregar_via_eas_update_autorizado_pro_claude",
       "community": 49,
@@ -7754,10 +7784,20 @@
       "norm_label": "changelog (mobile)"
     },
     {
-      "label": "1.3.0",
+      "label": "1.3.1",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
       "source_location": "L7",
+      "_origin": "ast",
+      "id": "mobile_changelog_1_3_1",
+      "community": 5,
+      "norm_label": "1.3.1"
+    },
+    {
+      "label": "1.3.0",
+      "file_type": "document",
+      "source_file": "mobile/CHANGELOG.md",
+      "source_location": "L26",
       "_origin": "ast",
       "id": "mobile_changelog_1_3_0",
       "community": 5,
@@ -7767,7 +7807,7 @@
       "label": "1.2.4",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L20",
+      "source_location": "L39",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_4",
       "community": 5,
@@ -7777,7 +7817,7 @@
       "label": "1.2.3",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L50",
+      "source_location": "L69",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_3",
       "community": 5,
@@ -7787,7 +7827,7 @@
       "label": "1.2.2",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L63",
+      "source_location": "L82",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_2",
       "community": 5,
@@ -7797,7 +7837,7 @@
       "label": "1.2.1",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L81",
+      "source_location": "L100",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_1",
       "community": 5,
@@ -7807,7 +7847,7 @@
       "label": "1.2.0",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L91",
+      "source_location": "L110",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_0",
       "community": 5,
@@ -7817,7 +7857,7 @@
       "label": "1.1.12",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L111",
+      "source_location": "L130",
       "_origin": "ast",
       "id": "mobile_changelog_1_1_12",
       "community": 5,
@@ -7827,7 +7867,7 @@
       "label": "1.1.11",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L120",
+      "source_location": "L139",
       "_origin": "ast",
       "id": "mobile_changelog_1_1_11",
       "community": 5,
@@ -7837,7 +7877,7 @@
       "label": "1.1.10",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L130",
+      "source_location": "L149",
       "_origin": "ast",
       "id": "mobile_changelog_1_1_10",
       "community": 5,
@@ -12323,9 +12363,9 @@
       "source_file": "backend/main.py",
       "source_location": "L196",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main",
-      "target": "backend_main_ping",
-      "confidence_score": 1.0
+      "target": "backend_main_ping"
     },
     {
       "relation": "contains",
@@ -12484,9 +12524,9 @@
       "source_file": "backend/main.py",
       "source_location": "L53",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_53",
-      "target": "backend_main_verify_token",
-      "confidence_score": 1.0
+      "target": "backend_main_verify_token"
     },
     {
       "relation": "references",
@@ -12557,9 +12597,9 @@
       "source_file": "backend/main.py",
       "source_location": "L73",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_73",
-      "target": "backend_main_lifespan",
-      "confidence_score": 1.0
+      "target": "backend_main_lifespan"
     },
     {
       "relation": "imports_from",
@@ -12608,9 +12648,9 @@
       "source_file": "backend/main.py",
       "source_location": "L100",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_100",
-      "target": "backend_main_unhandled_exception_handler",
-      "confidence_score": 1.0
+      "target": "backend_main_unhandled_exception_handler"
     },
     {
       "relation": "references",
@@ -12922,9 +12962,9 @@
       "source_file": "backend/main.py",
       "source_location": "L149",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_149",
-      "target": "backend_main_syncresponse",
-      "confidence_score": 1.0
+      "target": "backend_main_syncresponse"
     },
     {
       "relation": "uses",
@@ -12995,9 +13035,9 @@
       "source_file": "backend/main.py",
       "source_location": "L167",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_167",
-      "target": "backend_main_get_telegram_scraper",
-      "confidence_score": 1.0
+      "target": "backend_main_get_telegram_scraper"
     },
     {
       "relation": "calls",
@@ -13016,9 +13056,9 @@
       "source_file": "backend/main.py",
       "source_location": "L197",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_197",
-      "target": "backend_main_ping",
-      "confidence_score": 1.0
+      "target": "backend_main_ping"
     },
     {
       "relation": "references",
@@ -13037,9 +13077,9 @@
       "source_file": "backend/main.py",
       "source_location": "L206",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_206",
-      "target": "backend_main_get_manhwas",
-      "confidence_score": 1.0
+      "target": "backend_main_get_manhwas"
     },
     {
       "relation": "uses",
@@ -13242,9 +13282,9 @@
       "source_file": "backend/main.py",
       "source_location": "L218",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_218",
-      "target": "backend_main_get_manhwa",
-      "confidence_score": 1.0
+      "target": "backend_main_get_manhwa"
     },
     {
       "relation": "calls",
@@ -13263,9 +13303,9 @@
       "source_file": "backend/main.py",
       "source_location": "L240",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_240",
-      "target": "backend_main_update_manhwa",
-      "confidence_score": 1.0
+      "target": "backend_main_update_manhwa"
     },
     {
       "relation": "calls",
@@ -13328,9 +13368,9 @@
       "source_file": "backend/main.py",
       "source_location": "L271",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_271",
-      "target": "backend_main_manhwa_download_dir",
-      "confidence_score": 1.0
+      "target": "backend_main_manhwa_download_dir"
     },
     {
       "relation": "rationale_for",
@@ -13338,9 +13378,9 @@
       "source_file": "backend/main.py",
       "source_location": "L277",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_277",
-      "target": "backend_main_extract_chapter_number",
-      "confidence_score": 1.0
+      "target": "backend_main_extract_chapter_number"
     },
     {
       "relation": "calls",
@@ -13359,9 +13399,9 @@
       "source_file": "backend/main.py",
       "source_location": "L290",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_290",
-      "target": "backend_main_scan_cbz_files",
-      "confidence_score": 1.0
+      "target": "backend_main_scan_cbz_files"
     },
     {
       "relation": "calls",
@@ -13391,9 +13431,9 @@
       "source_file": "backend/main.py",
       "source_location": "L325",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_325",
-      "target": "backend_main_list_cbz_files_async",
-      "confidence_score": 1.0
+      "target": "backend_main_list_cbz_files_async"
     },
     {
       "relation": "rationale_for",
@@ -13401,9 +13441,9 @@
       "source_file": "backend/main.py",
       "source_location": "L338",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_338",
-      "target": "backend_main_list_manhwa_files",
-      "confidence_score": 1.0
+      "target": "backend_main_list_manhwa_files"
     },
     {
       "relation": "references",
@@ -13474,9 +13514,9 @@
       "source_file": "backend/main.py",
       "source_location": "L360",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_360",
-      "target": "backend_main_mark_previous_chapters_read",
-      "confidence_score": 1.0
+      "target": "backend_main_mark_previous_chapters_read"
     },
     {
       "relation": "calls",
@@ -13558,9 +13598,9 @@
       "source_file": "backend/main.py",
       "source_location": "L400",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_400",
-      "target": "backend_main_update_current_chapter",
-      "confidence_score": 1.0
+      "target": "backend_main_update_current_chapter"
     },
     {
       "relation": "uses",
@@ -13609,9 +13649,9 @@
       "source_file": "backend/main.py",
       "source_location": "L439",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_439",
-      "target": "backend_main_update_scroll",
-      "confidence_score": 1.0
+      "target": "backend_main_update_scroll"
     },
     {
       "relation": "calls",
@@ -13630,9 +13670,9 @@
       "source_file": "backend/main.py",
       "source_location": "L457",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_457",
-      "target": "backend_main_get_scroll",
-      "confidence_score": 1.0
+      "target": "backend_main_get_scroll"
     },
     {
       "relation": "rationale_for",
@@ -13640,9 +13680,9 @@
       "source_file": "backend/main.py",
       "source_location": "L468",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_468",
-      "target": "backend_main_get_cbz_info",
-      "confidence_score": 1.0
+      "target": "backend_main_get_cbz_info"
     },
     {
       "relation": "rationale_for",
@@ -13650,9 +13690,9 @@
       "source_file": "backend/main.py",
       "source_location": "L494",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_494",
-      "target": "backend_main_download_cbz_file",
-      "confidence_score": 1.0
+      "target": "backend_main_download_cbz_file"
     },
     {
       "relation": "rationale_for",
@@ -13660,9 +13700,9 @@
       "source_file": "backend/main.py",
       "source_location": "L519",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_519",
-      "target": "backend_main_get_cbz_page",
-      "confidence_score": 1.0
+      "target": "backend_main_get_cbz_page"
     },
     {
       "relation": "calls",
@@ -13681,9 +13721,9 @@
       "source_file": "backend/main.py",
       "source_location": "L560",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_560",
-      "target": "backend_main_persist_sync_updates",
-      "confidence_score": 1.0
+      "target": "backend_main_persist_sync_updates"
     },
     {
       "relation": "calls",
@@ -13702,9 +13742,9 @@
       "source_file": "backend/main.py",
       "source_location": "L610",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_610",
-      "target": "backend_main_download_all_manhwas",
-      "confidence_score": 1.0
+      "target": "backend_main_download_all_manhwas"
     },
     {
       "relation": "rationale_for",
@@ -13712,9 +13752,9 @@
       "source_file": "backend/main.py",
       "source_location": "L838",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_838",
-      "target": "backend_main_review_all_manhwas",
-      "confidence_score": 1.0
+      "target": "backend_main_review_all_manhwas"
     },
     {
       "relation": "rationale_for",
@@ -13722,9 +13762,9 @@
       "source_file": "backend/main.py",
       "source_location": "L1189",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_1189",
-      "target": "backend_main_import_from_telegram",
-      "confidence_score": 1.0
+      "target": "backend_main_import_from_telegram"
     },
     {
       "relation": "rationale_for",
@@ -13732,9 +13772,9 @@
       "source_file": "backend/main.py",
       "source_location": "L1330",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_1330",
-      "target": "backend_main_test_telegram_config",
-      "confidence_score": 1.0
+      "target": "backend_main_test_telegram_config"
     },
     {
       "relation": "contains",
@@ -16686,6 +16726,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "mobile/src/app/downloads.tsx",
+      "source_location": "L59",
+      "weight": 1.0,
+      "source": "app_downloads",
+      "target": "app_downloads_resolvecoveruri",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "mobile/src/app/downloads.tsx",
       "source_location": "L25",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -16894,6 +16944,28 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "mobile/src/app/downloads.tsx",
+      "source_location": "L115",
+      "weight": 1.0,
+      "source": "app_downloads_buildrow",
+      "target": "app_downloads_resolvecoveruri",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "mobile/src/app/downloads.tsx",
+      "source_location": "L60",
+      "weight": 1.0,
+      "source": "app_downloads_resolvecoveruri",
+      "target": "lib_cache_getlocalcoveruri",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "mobile/src/app/downloads.tsx",
       "source_location": "L58",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -17067,9 +17139,9 @@
       "source_file": "mobile/src/app/index.tsx",
       "source_location": "L17",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "app_index",
-      "target": "lib_connectivity",
-      "confidence_score": 1.0
+      "target": "lib_connectivity"
     },
     {
       "relation": "imports",
@@ -17078,9 +17150,9 @@
       "source_file": "mobile/src/app/index.tsx",
       "source_location": "L17",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "app_index",
-      "target": "lib_connectivity_checkconnectivity",
-      "confidence_score": 1.0
+      "target": "lib_connectivity_checkconnectivity"
     },
     {
       "relation": "imports_from",
@@ -18347,6 +18419,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "mobile/src/lib/cache.ts",
+      "source_location": "L723",
+      "weight": 1.0,
+      "source": "lib_cache",
+      "target": "lib_cache_invalidatestoragecache",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "mobile/src/lib/cache.ts",
       "source_location": "L168",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -18547,6 +18629,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "mobile/src/lib/cache.ts",
+      "source_location": "L716",
+      "weight": 1.0,
+      "source": "lib_cache",
+      "target": "lib_cache_storagecache",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "mobile/src/lib/cache.ts",
       "source_location": "L269",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -18624,6 +18716,17 @@
       "confidence_score": 1.0,
       "source": "lib_cache_deletechapterdirasync",
       "target": "lib_cache_chapterdir"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "mobile/src/lib/cache.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "lib_cache_deletechapterdirasync",
+      "target": "lib_cache_invalidatestoragecache",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -19000,6 +19103,17 @@
       "target": "lib_cache_trimcached"
     },
     {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "mobile/src/lib/cache.ts",
+      "source_location": "L202",
+      "weight": 1.0,
+      "source": "lib_cache_downloadchapter",
+      "target": "lib_cache_invalidatestoragecache",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -19009,6 +19123,17 @@
       "confidence_score": 1.0,
       "source": "lib_download_manager",
       "target": "lib_cache_syncprogress"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "mobile/src/lib/cache.ts",
+      "source_location": "L276",
+      "weight": 1.0,
+      "source": "lib_cache_downloadcover",
+      "target": "lib_cache_invalidatestoragecache",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -19158,6 +19283,17 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "mobile/src/lib/cache.ts",
+      "source_location": "L625",
+      "weight": 1.0,
+      "source": "lib_cache_removemanhwalocal",
+      "target": "lib_cache_invalidatestoragecache",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "mobile/src/lib/cache.ts",
       "source_location": "L669",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -19181,9 +19317,9 @@
       "source_file": "mobile/src/lib/connectivity.ts",
       "source_location": "L14",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_connectivity",
-      "target": "lib_connectivity_checkconnectivity",
-      "confidence_score": 1.0
+      "target": "lib_connectivity_checkconnectivity"
     },
     {
       "relation": "contains",
@@ -20435,9 +20571,9 @@
       "source_file": "AGENT_INSTRUCTIONS.md",
       "source_location": "L246",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agent_instructions_3_mobile_expo_react_native",
-      "target": "agent_instructions_detec\u00e7\u00e3o_de_conectividade_modo_offline",
-      "confidence_score": 1.0
+      "target": "agent_instructions_detec\u00e7\u00e3o_de_conectividade_modo_offline"
     },
     {
       "relation": "contains",
@@ -21105,8 +21241,18 @@
       "source_file": "mobile/CHANGELOG.md",
       "source_location": "L7",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "mobile_changelog_changelog_mobile",
-      "target": "mobile_changelog_1_3_0",
+      "target": "mobile_changelog_1_3_0"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "mobile/CHANGELOG.md",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "mobile_changelog_changelog_mobile",
+      "target": "mobile_changelog_1_3_1",
       "confidence_score": 1.0
     },
     {
@@ -22479,5 +22625,5 @@
       "source_file": ".claude/skills/graphify/references/query.md"
     }
   ],
-  "built_at_commit": "f26e88d8387be239542660d83f70e5e63695f5de"
+  "built_at_commit": "0e611af9f4d9d5867aa87faed45c72a28f8689b6"
 }

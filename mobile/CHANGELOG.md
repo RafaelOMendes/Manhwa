@@ -4,6 +4,25 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.3.1
+
+- **Corrige o travamento ao terminar um download.** Quando um download acabava, a tela de Downloads
+  recalculava a linha (`buildRow`) e chamava `getManhwaStorage()`, que varria o diretório do manhwa
+  **em JS e de forma síncrona** (`dir.list()` recursivo + `entry.size`). Com dezenas de capítulos ×
+  dezenas de páginas isso vira milhares de chamadas JSI seguidas e segura a thread principal por
+  segundos — o app inteiro congelava. A soma recursiva passou a sair do
+  `LegacyFS.getInfoAsync(uri)`, que faz o `walk` no nativo dentro de um `AsyncFunction`: uma única
+  chamada, fora da thread JS, e a UI continua respondendo. Mesma abordagem já usada no
+  `deleteChapterDirAsync`.
+- **Tamanho por manhwa agora é memorizado em memória** (`storageCache`). Guarda a *Promise*, então
+  chamadas concorrentes pro mesmo manhwa compartilham uma única varredura. O valor é descartado por
+  `invalidateStorageCache(manhwaId?)` em tudo que mexe no disco (`downloadChapter`, `downloadCover`,
+  `deleteChapterDirAsync`, `removeManhwaLocal`, `cleanupCorrupted`, `cleanupExpired`), então os
+  números continuam corretos sem re-varrer o disco a cada refresh de linha.
+- **Cover da linha resolvida no `buildRow`, não no render.** `getLocalCoverUri()` é uma checagem de
+  disco síncrona e rodava uma vez por linha a **cada** render — e as linhas re-renderizam a cada tick
+  de progresso do download. Agora vem pronta no `RowInfo`.
+
 ## 1.3.0
 
 - **Detecção de conectividade no startup (`src/lib/connectivity.ts`).** A home agora faz um ping curto

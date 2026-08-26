@@ -107,7 +107,16 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
   offline ainda não enviada). Ler um cap anterior faz o progresso regredir (igual ao back).
 - **Número do capítulo = POSIÇÃO na lista completa**, nunca o índice da lista filtrada (offline só tem
   os baixados). Offline a posição vem do índice no snapshot completo (`saveManhwaFiles`/`loadManhwaFiles`).
-- `getStorageUsage()`/`getManhwaStorage()` varrem o disco (síncrono); evite chamar em excesso.
+- **`getStorageUsage()`/`getManhwaStorage()` são assíncronas e NÃO tocam a thread JS.** A soma
+  recursiva sai do `LegacyFS.getInfoAsync(uri)` — que faz o `walk` no nativo, dentro de um
+  `AsyncFunction`. A versão antiga varria a árvore em JS (`dir.list()` + `entry.size`, ambos
+  síncronos = milhares de chamadas JSI) e **congelava o app** justamente quando um download
+  terminava e a tela de Downloads recalculava a linha. Mesma lógica do `deleteChapterDirAsync`:
+  **operação de disco em massa vai pra API legacy assíncrona, nunca pra API nova síncrona.**
+- O resultado fica memorizado por manhwa (`storageCache`, guarda a *Promise* → chamadas
+  concorrentes compartilham uma varredura). Quem mexe no disco tem que chamar
+  `invalidateStorageCache(manhwaId?)` — já é feito em `downloadChapter`, `downloadCover`,
+  `deleteChapterDirAsync`, `removeManhwaLocal`, `cleanupCorrupted` e `cleanupExpired`.
 
 ## Download (`src/lib/download-manager.ts` + `background-download.ts`)
 - `download-manager`: store observável (`useDownloadProgress`) de progresso por manhwa (caps + MB).

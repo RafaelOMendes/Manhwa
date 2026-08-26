@@ -165,9 +165,9 @@
     "semantic_hash": "44fdedb73d3aa1295377b23746d0e9cf"
   },
   "mobile/src/app/downloads.tsx": {
-    "mtime": 1779371142.7729607,
-    "ast_hash": "43e79d98675f7c8df85c6be62ce90d3c",
-    "semantic_hash": "43e79d98675f7c8df85c6be62ce90d3c"
+    "mtime": 1787707237.8839104,
+    "ast_hash": "cf20ac5b530406439f186347903d0d27",
+    "semantic_hash": ""
   },
   "mobile/src/app/index.tsx": {
     "mtime": 1787706685.8614242,
@@ -225,8 +225,8 @@
     "semantic_hash": "f08dcb29bf681c84b7d43416710dff1c"
   },
   "mobile/src/lib/cache.ts": {
-    "mtime": 1787705642.0897987,
-    "ast_hash": "fe1b2d1b91208ad6be60ce66a4cd807c",
+    "mtime": 1787707219.7008562,
+    "ast_hash": "4b18c71ef251376abdc1468eed8fb931",
     "semantic_hash": ""
   },
   "mobile/src/lib/download-manager.ts": {
@@ -245,8 +245,8 @@
     "semantic_hash": "451ca3a53df68a0fd3e1cbfe8b210980"
   },
   "mobile/src/lib/version.ts": {
-    "mtime": 1787706813.6324413,
-    "ast_hash": "f1d967d8dc62b02324dfacce34a8cd23",
+    "mtime": 1787707287.8644226,
+    "ast_hash": "bc10cf9b0ecde5e7524fe2514d331429",
     "semantic_hash": ""
   },
   "mobile/src/nativewind-env.d.ts": {
@@ -350,13 +350,13 @@
     "semantic_hash": "2d3a37a405a8f9ffb72ff12bdd3b0adf"
   },
   "mobile/AGENTS.md": {
-    "mtime": 1787706456.4386718,
-    "ast_hash": "f2bc4a356136ea43600f4c0ca038ab9d",
+    "mtime": 1787707282.4816594,
+    "ast_hash": "2e146a94e7ed479422d9e83ed07c75f3",
     "semantic_hash": ""
   },
   "mobile/CHANGELOG.md": {
-    "mtime": 1787706821.9952354,
-    "ast_hash": "aeced3b0157b3cb2da35d88245c0d55a",
+    "mtime": 1787707297.9709587,
+    "ast_hash": "3bd506d0ae69f323fa464eaec4c5e622",
     "semantic_hash": ""
   },
   "mobile/CLAUDE.md": {

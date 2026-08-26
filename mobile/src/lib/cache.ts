@@ -13,9 +13,13 @@ import { API_BASE } from './api';
 function deleteChapterDirAsync(manhwaId: number, filename: string): void {
     try {
         const uri = chapterDir(manhwaId, filename).uri;
-        LegacyFS.deleteAsync(uri, { idempotent: true }).catch((e: unknown) =>
-            console.warn(`[cache] delete async ${filename}:`, e)
-        );
+        invalidateStorageCache(manhwaId);
+        LegacyFS.deleteAsync(uri, { idempotent: true })
+            .catch((e: unknown) => console.warn(`[cache] delete async ${filename}:`, e))
+            // A deleção é fire-and-forget: invalida de novo no fim, senão uma
+            // leitura de tamanho iniciada no meio do caminho ficaria memorizada
+            // com os bytes que ainda não tinham sido apagados.
+            .finally(() => invalidateStorageCache(manhwaId));
     } catch (e) {
         console.warn(`[cache] delete async ${filename}:`, e);
     }
@@ -195,6 +199,7 @@ function isImageEntry(name: string): boolean {
  * Retorna o número de páginas extraídas.
  */
 async function downloadChapter(manhwaId: number, filename: string): Promise<number> {
+    invalidateStorageCache(manhwaId);
     const t0 = Date.now();
     console.log(`[download] ⬇️  #${manhwaId}/${filename} iniciando...`);
 
@@ -236,6 +241,9 @@ async function downloadChapter(manhwaId: number, filename: string): Promise<numb
         try { if (cbzTemp.exists) cbzTemp.delete(); } catch {}
         try { if (dir.exists) dir.delete(); } catch {}
         throw e;
+    } finally {
+        // Sucesso ou falha, o diretório do manhwa mudou de tamanho.
+        invalidateStorageCache(manhwaId);
     }
 }
 
@@ -265,6 +273,7 @@ export async function downloadCover(manhwaId: number, coverUrl: string | null | 
     const url = coverUrl.startsWith('/') ? `${API_BASE}${coverUrl}` : coverUrl;
     try {
         await File.downloadFileAsync(url, coverFile, { idempotent: true });
+        invalidateStorageCache(manhwaId);
     } catch (e) {
         console.warn(`[cache] download cover falhou pra ${manhwaId}:`, e);
     }
@@ -613,6 +622,7 @@ export async function removeManhwaLocal(manhwaId: number): Promise<void> {
     } catch (e) {
         console.warn(`[cache] erro ao apagar diretório do manhwa ${manhwaId}:`, e);
     }
+    invalidateStorageCache(manhwaId);
     await withIndexLock(async () => {
         const index = await loadIndex();
         if (index[manhwaId]) {
@@ -676,36 +686,62 @@ export async function loadManhwaFiles(manhwaId: number): Promise<CbzFileSnapshot
 // Uso de armazenamento (bytes em disco)
 // ============================================================
 
-function dirSizeBytes(dir: Directory): number {
-    let total = 0;
-    let entries: (File | Directory)[];
+/**
+ * Bytes de um diretório (recursivo) SEM travar a thread JS.
+ *
+ * A versão antiga varria a árvore em JS (`dir.list()` recursivo + `entry.size`,
+ * ambos síncronos): com dezenas de capítulos × dezenas de páginas isso vira
+ * milhares de chamadas JSI seguidas e congela o app inteiro. Era o travamento
+ * que aparecia exatamente quando um download terminava — a tela de Downloads
+ * recalcula a linha nesse momento.
+ *
+ * `LegacyFS.getInfoAsync` faz a soma recursiva no nativo (Android
+ * `getFileSize`, iOS `getFileSize:attributes:`) dentro de um `AsyncFunction`,
+ * ou seja, fora da thread JS: uma única chamada e a UI continua respondendo.
+ */
+async function dirSizeBytes(uri: string): Promise<number> {
     try {
-        entries = dir.list();
+        const info = await LegacyFS.getInfoAsync(uri);
+        return info.exists ? info.size : 0;
     } catch {
         return 0;
     }
-    for (const entry of entries) {
-        if (entry instanceof File) {
-            try { total += entry.size ?? 0; } catch {}
-        } else if (entry instanceof Directory) {
-            total += dirSizeBytes(entry);
-        }
-    }
-    return total;
+}
+
+/**
+ * Cache em memória dos bytes já calculados (guarda a Promise, então chamadas
+ * concorrentes pro mesmo manhwa compartilham UMA varredura). Só é recalculado
+ * depois de algo mexer no disco — ver `invalidateStorageCache`.
+ */
+const storageCache = new Map<number, Promise<number>>();
+let rootStorageCache: Promise<number> | null = null;
+
+/**
+ * Descarta o tamanho memorizado. Chamar sempre que o disco muda (download,
+ * remoção, limpeza). Sem `manhwaId`, invalida tudo.
+ */
+export function invalidateStorageCache(manhwaId?: number): void {
+    if (manhwaId === undefined) storageCache.clear();
+    else storageCache.delete(manhwaId);
+    rootStorageCache = null;
 }
 
 /** Bytes totais ocupados por tudo que foi baixado (todos os manhwas). */
 export async function getStorageUsage(): Promise<number> {
-    const root = new Directory(Paths.document, 'manhwas');
-    if (!root.exists) return 0;
-    return dirSizeBytes(root);
+    if (!rootStorageCache) {
+        rootStorageCache = dirSizeBytes(new Directory(Paths.document, 'manhwas').uri);
+    }
+    return rootStorageCache;
 }
 
 /** Bytes ocupados localmente por um manhwa específico. */
 export async function getManhwaStorage(manhwaId: number): Promise<number> {
-    const dir = new Directory(Paths.document, 'manhwas', String(manhwaId));
-    if (!dir.exists) return 0;
-    return dirSizeBytes(dir);
+    let pending = storageCache.get(manhwaId);
+    if (!pending) {
+        pending = dirSizeBytes(new Directory(Paths.document, 'manhwas', String(manhwaId)).uri);
+        storageCache.set(manhwaId, pending);
+    }
+    return pending;
 }
 
 /** Set de ids de manhwa que têm algo baixado no índice (1 leitura do índice). */
@@ -792,6 +828,7 @@ export async function cleanupCorrupted(): Promise<{ removedChapters: number; rem
 
         if (indexChanged) await saveIndex(index);
         if (removedChapters > 0 || removedManhwas > 0) {
+            invalidateStorageCache();
             console.log(`[cache] 🧹 cleanup: ${removedChapters} caps corrompidos/órfãos, ${removedManhwas} manhwas órfãos removidos`);
         }
         return { removedChapters, removedManhwas };
@@ -818,6 +855,7 @@ export async function cleanupExpired(): Promise<{ removed: number }> {
                         console.warn(`[cache] erro ao apagar expirado ${filename}:`, e);
                     }
                     delete m.cached[filename];
+                    invalidateStorageCache(manhwaId);
                     removed++;
                 }
             }

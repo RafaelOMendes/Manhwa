@@ -30,6 +30,10 @@ interface RowInfo {
     pendingMB: number;
     /** false quando /files falhou (offline) — "falta" fica desconhecido. */
     filesLoaded: boolean;
+    /** Cover local (file://) com fallback pro servidor. Resolvida aqui e não no
+     *  render: `getLocalCoverUri` é uma chamada de disco SÍNCRONA e as linhas
+     *  re-renderizam a cada tick de progresso do download. */
+    coverUri: string | null;
 }
 
 function formatBytes(bytes: number): string {
@@ -50,6 +54,13 @@ async function poolMap<T, R>(items: T[], limit: number, fn: (item: T) => Promise
     };
     await Promise.all(Array.from({ length: Math.min(limit, items.length || 1) }, worker));
     return results;
+}
+
+function resolveCoverUri(m: Manhwa): string | null {
+    const local = getLocalCoverUri(m.id);
+    if (local) return local;
+    if (!m.cover_url) return null;
+    return m.cover_url.startsWith('/') ? `${API_BASE}${m.cover_url}` : m.cover_url;
 }
 
 /** Computa info local + pendências de um manhwa. */
@@ -101,6 +112,7 @@ async function buildRow(m: Manhwa): Promise<RowInfo> {
         pendingCount,
         pendingMB,
         filesLoaded,
+        coverUri: resolveCoverUri(m),
     };
 }
 
@@ -299,13 +311,7 @@ export default function Downloads() {
         const m = item.manhwa;
         const prog = progress[m.id];
         const isDownloading = prog?.status === 'downloading';
-        const coverUri =
-            getLocalCoverUri(m.id) ??
-            (m.cover_url
-                ? m.cover_url.startsWith('/')
-                    ? `${API_BASE}${m.cover_url}`
-                    : m.cover_url
-                : null);
+        const coverUri = item.coverUri;
 
         let fraction = 0;
         let progLabel = '';
