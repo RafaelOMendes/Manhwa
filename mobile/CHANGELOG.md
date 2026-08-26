@@ -4,6 +4,33 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.4.2
+
+- **Corrigido o reset do aparelho depois de ~1h com o app aberto** (VPN, Bluetooth e Wi-Fi caindo
+  juntos = soft reboot do `system_server`, não um boot de verdade). Duas causas, ambas no foreground
+  service de download:
+  - **Enxurrada de notificações.** Cada capítulo concluído emitia no store e o handler postava um
+    `displayNotification` por emit — com até 20 downloads em paralelo (4 manhwas × 5 capítulos), eram
+    dezenas de chamadas binder por segundo no `NotificationManagerService`, sustentadas por horas.
+    Agora as atualizações são coalescidas em no máximo uma a cada 2s (`NOTIF_THROTTLE_MS`), lendo o
+    progresso mais fresco na hora de postar e deduplicando quando nada mudou.
+  - **Serviço que nunca encerrava.** A promise do handler só resolvia se `drainQueue()` retornasse. Como
+    nem o `fetch` do React Native nem o `File.downloadFileAsync` têm timeout, um socket travado (o host
+    do backend some quando a VPN cai) deixava o download pendente pra sempre — e o Android segurando o
+    processo em foreground com wake lock, indefinidamente.
+- **Timeouts em toda operação de rede do download:** 30s pra listar os arquivos de um manhwa, 5min pra
+  baixar um capítulo. Estourou, conta como erro e o worker segue pro próximo.
+- **Dois watchdogs no serviço:** aborta após 10min sem nenhum progresso e após 5h de execução, em
+  qualquer caso encerrando o serviço e mostrando "Download interrompido".
+- **Encerramento à prova de falha:** `resolve()` agora acontece em TODOS os caminhos (sucesso, erro,
+  timeout), as chamadas nativas do notifee têm teto de 10s, e se `stopForegroundService()` não
+  responder o serviço é derrubado cancelando a notificação.
+- **Vazamentos corrigidos:** guarda de reentrância impede uma segunda instância do handler (que
+  duplicava o `drainQueue` e deixava um listener do store órfão) e as sessões passaram a ser versionadas,
+  pra um worker preso não voltar a consumir a fila do download seguinte.
+- **Logs `[fgs]`** do ciclo de vida do serviço (início, motivo do encerramento, se o
+  `stopForegroundService` completou, resolução da promise).
+
 ## 1.4.1
 
 - **Cache local reduzido pra apenas o último capítulo lido.** `MAX_CACHED` (`cache.ts`) passou de `5`

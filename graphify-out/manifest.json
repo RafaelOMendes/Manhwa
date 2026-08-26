@@ -220,19 +220,19 @@
     "semantic_hash": "03b51a14ec30da5044703ae20b9a2115"
   },
   "mobile/src/lib/background-download.ts": {
-    "mtime": 1779371142.7779603,
-    "ast_hash": "f08dcb29bf681c84b7d43416710dff1c",
-    "semantic_hash": "f08dcb29bf681c84b7d43416710dff1c"
+    "mtime": 1787743762.8160553,
+    "ast_hash": "4d91b0bec16620d97ee655af3749ecc9",
+    "semantic_hash": ""
   },
   "mobile/src/lib/cache.ts": {
-    "mtime": 1787743319.366175,
-    "ast_hash": "11da93bd455279c26cea5fbedc02db01",
+    "mtime": 1787743739.7141223,
+    "ast_hash": "adedf38ec2d8abe3df6b7b8adb87fd78",
     "semantic_hash": ""
   },
   "mobile/src/lib/download-manager.ts": {
-    "mtime": 1779371142.7799597,
-    "ast_hash": "1dd453d78544a93ef65cbc64b5d6f889",
-    "semantic_hash": "1dd453d78544a93ef65cbc64b5d6f889"
+    "mtime": 1787743723.3029244,
+    "ast_hash": "83b779d5d8ebfbf0191f694cc5d75beb",
+    "semantic_hash": ""
   },
   "mobile/src/lib/reader-store.ts": {
     "mtime": 1779371142.780959,
@@ -245,8 +245,8 @@
     "semantic_hash": ""
   },
   "mobile/src/lib/version.ts": {
-    "mtime": 1787743324.206602,
-    "ast_hash": "89f9489c9ad03899c7d2013cb94fb30c",
+    "mtime": 1787743821.478616,
+    "ast_hash": "047c88ea1c05aaa68d4beaa14da5596c",
     "semantic_hash": ""
   },
   "mobile/src/nativewind-env.d.ts": {
@@ -350,13 +350,13 @@
     "semantic_hash": "2d3a37a405a8f9ffb72ff12bdd3b0adf"
   },
   "mobile/AGENTS.md": {
-    "mtime": 1787743332.4255674,
-    "ast_hash": "393dad08f141a58430f93c872336b0b2",
+    "mtime": 1787743818.3665166,
+    "ast_hash": "7ad21ebeae61444abab1f7c272fb83b0",
     "semantic_hash": ""
   },
   "mobile/CHANGELOG.md": {
-    "mtime": 1787743326.691609,
-    "ast_hash": "4177f0cbf52eb529913f155959f2e388",
+    "mtime": 1787743837.0635667,
+    "ast_hash": "0fbe2d03413fed4b5af94693792a2917",
     "semantic_hash": ""
   },
   "mobile/CLAUDE.md": {

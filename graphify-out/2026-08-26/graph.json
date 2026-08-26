@@ -1190,7 +1190,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_bench_review_parallelism",
-      "community": 77,
+      "community": 89,
       "norm_label": "bench_review_parallelism.py"
     },
     {
@@ -1200,7 +1200,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "backend_bench_review_parallelism_legacyscraper",
-      "community": 77,
+      "community": 89,
       "norm_label": "legacyscraper"
     },
     {
@@ -1210,7 +1210,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "backend_bench_review_parallelism_legacyscraper_resolve_entity",
-      "community": 77,
+      "community": 89,
       "norm_label": "._resolve_entity()"
     },
     {
@@ -1220,7 +1220,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "backend_bench_review_parallelism_carregar_amostra",
-      "community": 77,
+      "community": 89,
       "norm_label": "carregar_amostra()"
     },
     {
@@ -1230,7 +1230,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "backend_bench_review_parallelism_medir",
-      "community": 77,
+      "community": 89,
       "norm_label": "medir()"
     },
     {
@@ -1240,7 +1240,7 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "backend_bench_review_parallelism_main",
-      "community": 77,
+      "community": 89,
       "norm_label": "main()"
     },
     {
@@ -1250,7 +1250,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "backend_bench_review_parallelism_rationale_23",
-      "community": 77,
+      "community": 89,
       "norm_label": "reproduz o comportamento antigo: get_dialogs() + get_entity() a cada topico."
     },
     {
@@ -1260,7 +1260,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "backend_bench_review_parallelism_rationale_36",
-      "community": 77,
+      "community": 89,
       "norm_label": "select read-only: pega os primeiros n manhwas com link do telegram."
     },
     {
@@ -1620,7 +1620,7 @@
       "source_location": "L118",
       "_origin": "ast",
       "id": "backend_main_manhwabase",
-      "community": 1,
+      "community": 57,
       "norm_label": "manhwabase"
     },
     {
@@ -1640,7 +1640,7 @@
       "source_location": "L130",
       "_origin": "ast",
       "id": "backend_main_manhwacreate",
-      "community": 1,
+      "community": 57,
       "norm_label": "manhwacreate"
     },
     {
@@ -1650,7 +1650,7 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "backend_main_manhwaupdate",
-      "community": 1,
+      "community": 57,
       "norm_label": "manhwaupdate"
     },
     {
@@ -1660,7 +1660,7 @@
       "source_location": "L136",
       "_origin": "ast",
       "id": "backend_main_manhwa",
-      "community": 1,
+      "community": 57,
       "norm_label": "manhwa"
     },
     {
@@ -1670,7 +1670,7 @@
       "source_location": "L143",
       "_origin": "ast",
       "id": "backend_main_telegramimportrequest",
-      "community": 81,
+      "community": 1,
       "norm_label": "telegramimportrequest"
     },
     {
@@ -1740,7 +1740,7 @@
       "source_location": "L217",
       "_origin": "ast",
       "id": "backend_main_get_manhwa",
-      "community": 57,
+      "community": 79,
       "norm_label": "get_manhwa()"
     },
     {
@@ -1750,7 +1750,7 @@
       "source_location": "L228",
       "_origin": "ast",
       "id": "backend_main_create_manhwa",
-      "community": 79,
+      "community": 57,
       "norm_label": "create_manhwa()"
     },
     {
@@ -1890,7 +1890,7 @@
       "source_location": "L423",
       "_origin": "ast",
       "id": "backend_main_mark_previous_chapters_read",
-      "community": 79,
+      "community": 1,
       "norm_label": "_mark_previous_chapters_read()"
     },
     {
@@ -1900,7 +1900,7 @@
       "source_location": "L423",
       "_origin": "ast",
       "id": "manhwamodel",
-      "community": 79,
+      "community": 1,
       "norm_label": "manhwamodel"
     },
     {
@@ -1940,7 +1940,7 @@
       "source_location": "L575",
       "_origin": "ast",
       "id": "backend_main_get_scroll",
-      "community": 48,
+      "community": 79,
       "norm_label": "get_scroll()"
     },
     {
@@ -2010,7 +2010,7 @@
       "source_location": "L1314",
       "_origin": "ast",
       "id": "backend_main_import_from_telegram",
-      "community": 81,
+      "community": 1,
       "norm_label": "import_from_telegram()"
     },
     {
@@ -2110,7 +2110,7 @@
       "source_location": "L218",
       "_origin": "ast",
       "id": "backend_main_rationale_218",
-      "community": 57,
+      "community": 79,
       "norm_label": "retorna um manhwa especifico"
     },
     {
@@ -2220,7 +2220,7 @@
       "source_location": "L424",
       "_origin": "ast",
       "id": "backend_main_rationale_424",
-      "community": 79,
+      "community": 1,
       "norm_label": "registra como lidos todos os capitulos anteriores ao capitulo atual.      um c"
     },
     {
@@ -2250,7 +2250,7 @@
       "source_location": "L576",
       "_origin": "ast",
       "id": "backend_main_rationale_576",
-      "community": 48,
+      "community": 79,
       "norm_label": "retorna a posicao de rolagem salva de um capitulo especifico.      devolve jun"
     },
     {
@@ -2320,7 +2320,7 @@
       "source_location": "L1315",
       "_origin": "ast",
       "id": "backend_main_rationale_1315",
-      "community": 81,
+      "community": 1,
       "norm_label": "importa manhwas de um canal do telegram          requer configuracao previa da"
     },
     {
@@ -2430,7 +2430,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_telegram_scraper",
-      "community": 77,
+      "community": 88,
       "norm_label": "telegram_scraper.py"
     },
     {
@@ -2440,7 +2440,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "backend_telegram_scraper_classify_telegram_error",
-      "community": 77,
+      "community": 88,
       "norm_label": "classify_telegram_error()"
     },
     {
@@ -2450,7 +2450,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "backend_telegram_scraper_py_baseexception",
-      "community": 77,
+      "community": 88,
       "norm_label": "baseexception"
     },
     {
@@ -2460,7 +2460,7 @@
       "source_location": "L97",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper",
-      "community": 77,
+      "community": 88,
       "norm_label": "telegrammanhwascraper"
     },
     {
@@ -2470,7 +2470,7 @@
       "source_location": "L98",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_init",
-      "community": 77,
+      "community": 88,
       "norm_label": ".__init__()"
     },
     {
@@ -2480,7 +2480,7 @@
       "source_location": "L123",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_wait_flood_gate",
-      "community": 77,
+      "community": 88,
       "norm_label": "._wait_flood_gate()"
     },
     {
@@ -2490,7 +2490,7 @@
       "source_location": "L130",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_open_flood_gate_in",
-      "community": 77,
+      "community": 88,
       "norm_label": "._open_flood_gate_in()"
     },
     {
@@ -2500,7 +2500,7 @@
       "source_location": "L135",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_fetch_entity",
-      "community": 77,
+      "community": 88,
       "norm_label": "._fetch_entity()"
     },
     {
@@ -2510,7 +2510,7 @@
       "source_location": "L156",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_resolve_entity",
-      "community": 77,
+      "community": 88,
       "norm_label": "._resolve_entity()"
     },
     {
@@ -2520,7 +2520,7 @@
       "source_location": "L192",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_connect",
-      "community": 77,
+      "community": 88,
       "norm_label": ".connect()"
     },
     {
@@ -2530,7 +2530,7 @@
       "source_location": "L195",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_disconnect",
-      "community": 77,
+      "community": 88,
       "norm_label": ".disconnect()"
     },
     {
@@ -2540,7 +2540,7 @@
       "source_location": "L198",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_parse_telegram_link",
-      "community": 77,
+      "community": 88,
       "norm_label": "._parse_telegram_link()"
     },
     {
@@ -2550,7 +2550,7 @@
       "source_location": "L215",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_get_topic_stats",
-      "community": 77,
+      "community": 88,
       "norm_label": "._get_topic_stats()"
     },
     {
@@ -2560,7 +2560,7 @@
       "source_location": "L310",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_download_cbz_from_topic",
-      "community": 77,
+      "community": 88,
       "norm_label": ".download_cbz_from_topic()"
     },
     {
@@ -2570,7 +2570,7 @@
       "source_location": "L432",
       "_origin": "ast",
       "id": "backend_telegram_scraper_telegrammanhwascraper_scrape_manhwa_topic",
-      "community": 77,
+      "community": 88,
       "norm_label": ".scrape_manhwa_topic()"
     },
     {
@@ -2580,7 +2580,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "backend_telegram_scraper_rationale_51",
-      "community": 77,
+      "community": 88,
       "norm_label": "traduz uma excecao do telethon num `(error_type, error_message, retry_after)`."
     },
     {
@@ -2590,7 +2590,7 @@
       "source_location": "L124",
       "_origin": "ast",
       "id": "backend_telegram_scraper_rationale_124",
-      "community": 77,
+      "community": 88,
       "norm_label": "segura a requisicao enquanto durar um flood wait pedido pelo telegram."
     },
     {
@@ -2600,7 +2600,7 @@
       "source_location": "L131",
       "_origin": "ast",
       "id": "backend_telegram_scraper_rationale_131",
-      "community": 77,
+      "community": 88,
       "norm_label": "registra um flood wait para que todas as leituras paralelas recuem juntas."
     },
     {
@@ -2610,7 +2610,7 @@
       "source_location": "L157",
       "_origin": "ast",
       "id": "backend_telegram_scraper_rationale_157",
-      "community": 77,
+      "community": 88,
       "norm_label": "resolve (e memoriza) o chat de um link.          antes, cada leitura de topico"
     },
     {
@@ -2620,7 +2620,7 @@
       "source_location": "L216",
       "_origin": "ast",
       "id": "backend_telegram_scraper_rationale_216",
-      "community": 77,
+      "community": 88,
       "norm_label": "entra em um topico do telegram e retorna:         - cbz_count: quantos arquivos"
     },
     {
@@ -2630,7 +2630,7 @@
       "source_location": "L311",
       "_origin": "ast",
       "id": "backend_telegram_scraper_rationale_311",
-      "community": 77,
+      "community": 88,
       "norm_label": "baixa todos os arquivos .cbz de um topico do telegram em paralelo.         salv"
     },
     {
@@ -2640,7 +2640,7 @@
       "source_location": "L433",
       "_origin": "ast",
       "id": "backend_telegram_scraper_rationale_433",
-      "community": 77,
+      "community": 88,
       "norm_label": "le apenas um topico. o nome do manhwa e o nome do topico.         a partir da p"
     },
     {
@@ -7977,7 +7977,7 @@
       "label": "Download (`src/lib/download-manager.ts` + `background-download.ts`)",
       "file_type": "document",
       "source_file": "mobile/AGENTS.md",
-      "source_location": "L121",
+      "source_location": "L125",
       "_origin": "ast",
       "id": "mobile_agents_download_src_lib_download_manager_ts_background_download_ts",
       "community": 49,
@@ -7987,7 +7987,7 @@
       "label": "Fila offline (`src/lib/sync-queue.ts`)",
       "file_type": "document",
       "source_file": "mobile/AGENTS.md",
-      "source_location": "L143",
+      "source_location": "L147",
       "_origin": "ast",
       "id": "mobile_agents_fila_offline_src_lib_sync_queue_ts",
       "community": 49,
@@ -7997,7 +7997,7 @@
       "label": "Nativo / build",
       "file_type": "document",
       "source_file": "mobile/AGENTS.md",
-      "source_location": "L147",
+      "source_location": "L151",
       "_origin": "ast",
       "id": "mobile_agents_nativo_build",
       "community": 49,
@@ -8007,7 +8007,7 @@
       "label": "Performance",
       "file_type": "document",
       "source_file": "mobile/AGENTS.md",
-      "source_location": "L157",
+      "source_location": "L161",
       "_origin": "ast",
       "id": "mobile_agents_performance",
       "community": 49,
@@ -8017,7 +8017,7 @@
       "label": "Entregar via `eas update` (autorizado pro Claude)",
       "file_type": "document",
       "source_file": "mobile/AGENTS.md",
-      "source_location": "L161",
+      "source_location": "L165",
       "_origin": "ast",
       "id": "mobile_agents_entregar_via_eas_update_autorizado_pro_claude",
       "community": 49,
@@ -8044,10 +8044,20 @@
       "norm_label": "changelog (mobile)"
     },
     {
-      "label": "1.4.0",
+      "label": "1.4.1",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
       "source_location": "L7",
+      "_origin": "ast",
+      "id": "mobile_changelog_1_4_1",
+      "community": 5,
+      "norm_label": "1.4.1"
+    },
+    {
+      "label": "1.4.0",
+      "file_type": "document",
+      "source_file": "mobile/CHANGELOG.md",
+      "source_location": "L14",
       "_origin": "ast",
       "id": "mobile_changelog_1_4_0",
       "community": 5,
@@ -8057,7 +8067,7 @@
       "label": "1.3.1",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L35",
+      "source_location": "L42",
       "_origin": "ast",
       "id": "mobile_changelog_1_3_1",
       "community": 5,
@@ -8067,7 +8077,7 @@
       "label": "1.3.0",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L54",
+      "source_location": "L61",
       "_origin": "ast",
       "id": "mobile_changelog_1_3_0",
       "community": 5,
@@ -8077,7 +8087,7 @@
       "label": "1.2.4",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L67",
+      "source_location": "L74",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_4",
       "community": 5,
@@ -8087,7 +8097,7 @@
       "label": "1.2.3",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L97",
+      "source_location": "L104",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_3",
       "community": 5,
@@ -8097,7 +8107,7 @@
       "label": "1.2.2",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L110",
+      "source_location": "L117",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_2",
       "community": 5,
@@ -8107,7 +8117,7 @@
       "label": "1.2.1",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L128",
+      "source_location": "L135",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_1",
       "community": 5,
@@ -8117,7 +8127,7 @@
       "label": "1.2.0",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L138",
+      "source_location": "L145",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_0",
       "community": 5,
@@ -8127,7 +8137,7 @@
       "label": "1.1.12",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L158",
+      "source_location": "L165",
       "_origin": "ast",
       "id": "mobile_changelog_1_1_12",
       "community": 5,
@@ -8137,7 +8147,7 @@
       "label": "1.1.11",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L167",
+      "source_location": "L174",
       "_origin": "ast",
       "id": "mobile_changelog_1_1_11",
       "community": 5,
@@ -8147,7 +8157,7 @@
       "label": "1.1.10",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L177",
+      "source_location": "L184",
       "_origin": "ast",
       "id": "mobile_changelog_1_1_10",
       "community": 5,
@@ -9746,9 +9756,9 @@
       "source_file": "automation/claude_runner.py",
       "source_location": "L65",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "automation_claude_runner",
-      "target": "automation_claude_runner_py_datetime",
-      "confidence_score": 1.0
+      "target": "automation_claude_runner_py_datetime"
     },
     {
       "relation": "contains",
@@ -9842,9 +9852,9 @@
       "source_file": "automation/claude_runner.py",
       "source_location": "L145",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "automation_claude_runner_parse_usage_limit_reset",
-      "target": "automation_claude_runner_py_datetime",
-      "confidence_score": 1.0
+      "target": "automation_claude_runner_py_datetime"
     },
     {
       "relation": "rationale_for",
@@ -12370,9 +12380,9 @@
       "source_file": "backend/main.py",
       "source_location": "L404",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main",
-      "target": "backend_main_cliente_esta_velho",
-      "confidence_score": 1.0
+      "target": "backend_main_cliente_esta_velho"
     },
     {
       "relation": "contains",
@@ -12510,9 +12520,9 @@
       "source_file": "backend/main.py",
       "source_location": "L398",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main",
-      "target": "backend_main_iso_utc",
-      "confidence_score": 1.0
+      "target": "backend_main_iso_utc"
     },
     {
       "relation": "contains",
@@ -12610,9 +12620,9 @@
       "source_file": "backend/main.py",
       "source_location": "L368",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main",
-      "target": "backend_main_parse_client_ts",
-      "confidence_score": 1.0
+      "target": "backend_main_parse_client_ts"
     },
     {
       "relation": "contains",
@@ -12641,9 +12651,9 @@
       "source_file": "backend/main.py",
       "source_location": "L9",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main",
-      "target": "backend_main_py_datetime",
-      "confidence_score": 1.0
+      "target": "backend_main_py_datetime"
     },
     {
       "relation": "contains",
@@ -12721,9 +12731,9 @@
       "source_file": "backend/main.py",
       "source_location": "L389",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main",
-      "target": "backend_main_to_utc",
-      "confidence_score": 1.0
+      "target": "backend_main_to_utc"
     },
     {
       "relation": "contains",
@@ -13740,9 +13750,9 @@
       "source_file": "backend/main.py",
       "source_location": "L368",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_parse_client_ts",
-      "target": "backend_main_py_datetime",
-      "confidence_score": 1.0
+      "target": "backend_main_py_datetime"
     },
     {
       "relation": "calls",
@@ -13751,9 +13761,9 @@
       "source_file": "backend/main.py",
       "source_location": "L386",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_parse_client_ts",
-      "target": "backend_main_to_utc",
-      "confidence_score": 1.0
+      "target": "backend_main_to_utc"
     },
     {
       "relation": "rationale_for",
@@ -13761,9 +13771,9 @@
       "source_file": "backend/main.py",
       "source_location": "L369",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_369",
-      "target": "backend_main_parse_client_ts",
-      "confidence_score": 1.0
+      "target": "backend_main_parse_client_ts"
     },
     {
       "relation": "calls",
@@ -13772,9 +13782,9 @@
       "source_file": "backend/main.py",
       "source_location": "L482",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_update_current_chapter",
-      "target": "backend_main_parse_client_ts",
-      "confidence_score": 1.0
+      "target": "backend_main_parse_client_ts"
     },
     {
       "relation": "calls",
@@ -13783,9 +13793,9 @@
       "source_file": "backend/main.py",
       "source_location": "L549",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_update_scroll",
-      "target": "backend_main_parse_client_ts",
-      "confidence_score": 1.0
+      "target": "backend_main_parse_client_ts"
     },
     {
       "relation": "references",
@@ -13794,9 +13804,9 @@
       "source_file": "backend/main.py",
       "source_location": "L404",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_cliente_esta_velho",
-      "target": "backend_main_py_datetime",
-      "confidence_score": 1.0
+      "target": "backend_main_py_datetime"
     },
     {
       "relation": "references",
@@ -13805,9 +13815,9 @@
       "source_file": "backend/main.py",
       "source_location": "L398",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_iso_utc",
-      "target": "backend_main_py_datetime",
-      "confidence_score": 1.0
+      "target": "backend_main_py_datetime"
     },
     {
       "relation": "uses",
@@ -13815,9 +13825,9 @@
       "source_file": "backend/main.py",
       "source_location": "L23",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "backend_main_py_datetime",
-      "target": "backend_models_chapterprogress",
-      "confidence_score": 0.5
+      "target": "backend_models_chapterprogress"
     },
     {
       "relation": "uses",
@@ -13825,9 +13835,9 @@
       "source_file": "backend/main.py",
       "source_location": "L23",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "backend_main_py_datetime",
-      "target": "backend_models_manhwa",
-      "confidence_score": 0.5
+      "target": "backend_models_manhwa"
     },
     {
       "relation": "uses",
@@ -13835,9 +13845,9 @@
       "source_file": "backend/main.py",
       "source_location": "L169",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "backend_main_py_datetime",
-      "target": "backend_telegram_scraper_telegrammanhwascraper",
-      "confidence_score": 0.5
+      "target": "backend_telegram_scraper_telegrammanhwascraper"
     },
     {
       "relation": "references",
@@ -13846,9 +13856,9 @@
       "source_file": "backend/main.py",
       "source_location": "L389",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_to_utc",
-      "target": "backend_main_py_datetime",
-      "confidence_score": 1.0
+      "target": "backend_main_py_datetime"
     },
     {
       "relation": "calls",
@@ -13857,9 +13867,9 @@
       "source_file": "backend/main.py",
       "source_location": "L410",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_cliente_esta_velho",
-      "target": "backend_main_to_utc",
-      "confidence_score": 1.0
+      "target": "backend_main_to_utc"
     },
     {
       "relation": "calls",
@@ -13868,9 +13878,9 @@
       "source_file": "backend/main.py",
       "source_location": "L400",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_iso_utc",
-      "target": "backend_main_to_utc",
-      "confidence_score": 1.0
+      "target": "backend_main_to_utc"
     },
     {
       "relation": "rationale_for",
@@ -13878,9 +13888,9 @@
       "source_file": "backend/main.py",
       "source_location": "L390",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_390",
-      "target": "backend_main_to_utc",
-      "confidence_score": 1.0
+      "target": "backend_main_to_utc"
     },
     {
       "relation": "calls",
@@ -13889,9 +13899,9 @@
       "source_file": "backend/main.py",
       "source_location": "L589",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_get_scroll",
-      "target": "backend_main_iso_utc",
-      "confidence_score": 1.0
+      "target": "backend_main_iso_utc"
     },
     {
       "relation": "rationale_for",
@@ -13899,9 +13909,9 @@
       "source_file": "backend/main.py",
       "source_location": "L399",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_399",
-      "target": "backend_main_iso_utc",
-      "confidence_score": 1.0
+      "target": "backend_main_iso_utc"
     },
     {
       "relation": "calls",
@@ -13910,9 +13920,9 @@
       "source_file": "backend/main.py",
       "source_location": "L493",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_update_current_chapter",
-      "target": "backend_main_iso_utc",
-      "confidence_score": 1.0
+      "target": "backend_main_iso_utc"
     },
     {
       "relation": "calls",
@@ -13921,9 +13931,9 @@
       "source_file": "backend/main.py",
       "source_location": "L556",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_update_scroll",
-      "target": "backend_main_iso_utc",
-      "confidence_score": 1.0
+      "target": "backend_main_iso_utc"
     },
     {
       "relation": "rationale_for",
@@ -13931,9 +13941,9 @@
       "source_file": "backend/main.py",
       "source_location": "L405",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_405",
-      "target": "backend_main_cliente_esta_velho",
-      "confidence_score": 1.0
+      "target": "backend_main_cliente_esta_velho"
     },
     {
       "relation": "calls",
@@ -13942,9 +13952,9 @@
       "source_file": "backend/main.py",
       "source_location": "L482",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_update_current_chapter",
-      "target": "backend_main_cliente_esta_velho",
-      "confidence_score": 1.0
+      "target": "backend_main_cliente_esta_velho"
     },
     {
       "relation": "calls",
@@ -13953,9 +13963,9 @@
       "source_file": "backend/main.py",
       "source_location": "L549",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_update_scroll",
-      "target": "backend_main_cliente_esta_velho",
-      "confidence_score": 1.0
+      "target": "backend_main_cliente_esta_velho"
     },
     {
       "relation": "references",
@@ -14026,9 +14036,9 @@
       "source_file": "backend/main.py",
       "source_location": "L424",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_424",
-      "target": "backend_main_mark_previous_chapters_read",
-      "confidence_score": 1.0
+      "target": "backend_main_mark_previous_chapters_read"
     },
     {
       "relation": "calls",
@@ -14121,9 +14131,9 @@
       "source_file": "backend/main.py",
       "source_location": "L464",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_464",
-      "target": "backend_main_update_current_chapter",
-      "confidence_score": 1.0
+      "target": "backend_main_update_current_chapter"
     },
     {
       "relation": "uses",
@@ -14172,9 +14182,9 @@
       "source_file": "backend/main.py",
       "source_location": "L529",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_529",
-      "target": "backend_main_update_scroll",
-      "confidence_score": 1.0
+      "target": "backend_main_update_scroll"
     },
     {
       "relation": "calls",
@@ -14193,9 +14203,9 @@
       "source_file": "backend/main.py",
       "source_location": "L576",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_576",
-      "target": "backend_main_get_scroll",
-      "confidence_score": 1.0
+      "target": "backend_main_get_scroll"
     },
     {
       "relation": "rationale_for",
@@ -14203,9 +14213,9 @@
       "source_file": "backend/main.py",
       "source_location": "L594",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_594",
-      "target": "backend_main_get_cbz_info",
-      "confidence_score": 1.0
+      "target": "backend_main_get_cbz_info"
     },
     {
       "relation": "rationale_for",
@@ -14213,9 +14223,9 @@
       "source_file": "backend/main.py",
       "source_location": "L620",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_620",
-      "target": "backend_main_download_cbz_file",
-      "confidence_score": 1.0
+      "target": "backend_main_download_cbz_file"
     },
     {
       "relation": "rationale_for",
@@ -14223,9 +14233,9 @@
       "source_file": "backend/main.py",
       "source_location": "L645",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_645",
-      "target": "backend_main_get_cbz_page",
-      "confidence_score": 1.0
+      "target": "backend_main_get_cbz_page"
     },
     {
       "relation": "calls",
@@ -14244,9 +14254,9 @@
       "source_file": "backend/main.py",
       "source_location": "L686",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_686",
-      "target": "backend_main_persist_sync_updates",
-      "confidence_score": 1.0
+      "target": "backend_main_persist_sync_updates"
     },
     {
       "relation": "calls",
@@ -14265,9 +14275,9 @@
       "source_file": "backend/main.py",
       "source_location": "L736",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_736",
-      "target": "backend_main_download_all_manhwas",
-      "confidence_score": 1.0
+      "target": "backend_main_download_all_manhwas"
     },
     {
       "relation": "rationale_for",
@@ -14275,9 +14285,9 @@
       "source_file": "backend/main.py",
       "source_location": "L964",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_964",
-      "target": "backend_main_review_all_manhwas",
-      "confidence_score": 1.0
+      "target": "backend_main_review_all_manhwas"
     },
     {
       "relation": "rationale_for",
@@ -14285,9 +14295,9 @@
       "source_file": "backend/main.py",
       "source_location": "L1315",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_1315",
-      "target": "backend_main_import_from_telegram",
-      "confidence_score": 1.0
+      "target": "backend_main_import_from_telegram"
     },
     {
       "relation": "rationale_for",
@@ -14295,9 +14305,9 @@
       "source_file": "backend/main.py",
       "source_location": "L1456",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_1456",
-      "target": "backend_main_test_telegram_config",
-      "confidence_score": 1.0
+      "target": "backend_main_test_telegram_config"
     },
     {
       "relation": "contains",
@@ -14415,9 +14425,9 @@
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L26",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "backend_test_timestamp_sync_py_datetime",
-      "target": "backend_models_manhwa",
-      "confidence_score": 0.5
+      "target": "backend_models_manhwa"
     },
     {
       "relation": "inherits",
@@ -14455,9 +14465,9 @@
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L26",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "backend_test_timestamp_sync_py_datetime",
-      "target": "backend_models_chapterprogress",
-      "confidence_score": 0.5
+      "target": "backend_models_chapterprogress"
     },
     {
       "relation": "contains",
@@ -15396,9 +15406,9 @@
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L115",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_timestamp_sync",
-      "target": "backend_test_timestamp_sync_cenarios",
-      "confidence_score": 1.0
+      "target": "backend_test_timestamp_sync_cenarios"
     },
     {
       "relation": "contains",
@@ -15406,9 +15416,9 @@
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L37",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_timestamp_sync",
-      "target": "backend_test_timestamp_sync_check",
-      "confidence_score": 1.0
+      "target": "backend_test_timestamp_sync_check"
     },
     {
       "relation": "contains",
@@ -15416,9 +15426,9 @@
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L45",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_timestamp_sync",
-      "target": "backend_test_timestamp_sync_forcar_updated_at",
-      "confidence_score": 1.0
+      "target": "backend_test_timestamp_sync_forcar_updated_at"
     },
     {
       "relation": "contains",
@@ -15426,9 +15436,9 @@
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L60",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_timestamp_sync",
-      "target": "backend_test_timestamp_sync_forcar_updated_at_scroll",
-      "confidence_score": 1.0
+      "target": "backend_test_timestamp_sync_forcar_updated_at_scroll"
     },
     {
       "relation": "contains",
@@ -15436,9 +15446,9 @@
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L90",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_timestamp_sync",
-      "target": "backend_test_timestamp_sync_get_scroll",
-      "confidence_score": 1.0
+      "target": "backend_test_timestamp_sync_get_scroll"
     },
     {
       "relation": "contains",
@@ -15446,9 +15456,9 @@
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L70",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_timestamp_sync",
-      "target": "backend_test_timestamp_sync_ler_manhwa",
-      "confidence_score": 1.0
+      "target": "backend_test_timestamp_sync_ler_manhwa"
     },
     {
       "relation": "contains",
@@ -15456,9 +15466,9 @@
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L76",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_timestamp_sync",
-      "target": "backend_test_timestamp_sync_patch_chapter",
-      "confidence_score": 1.0
+      "target": "backend_test_timestamp_sync_patch_chapter"
     },
     {
       "relation": "contains",
@@ -15466,9 +15476,9 @@
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L83",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_timestamp_sync",
-      "target": "backend_test_timestamp_sync_put_scroll",
-      "confidence_score": 1.0
+      "target": "backend_test_timestamp_sync_put_scroll"
     },
     {
       "relation": "imports_from",
@@ -15477,9 +15487,9 @@
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L19",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_timestamp_sync",
-      "target": "backend_test_timestamp_sync_py_datetime",
-      "confidence_score": 1.0
+      "target": "backend_test_timestamp_sync_py_datetime"
     },
     {
       "relation": "contains",
@@ -15487,9 +15497,9 @@
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L97",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_timestamp_sync",
-      "target": "backend_test_timestamp_sync_rodar",
-      "confidence_score": 1.0
+      "target": "backend_test_timestamp_sync_rodar"
     },
     {
       "relation": "calls",
@@ -15498,9 +15508,9 @@
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L133",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_timestamp_sync_cenarios",
-      "target": "backend_test_timestamp_sync_check",
-      "confidence_score": 1.0
+      "target": "backend_test_timestamp_sync_check"
     },
     {
       "relation": "calls",
@@ -15509,9 +15519,9 @@
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L164",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_timestamp_sync_cenarios",
-      "target": "backend_test_timestamp_sync_forcar_updated_at",
-      "confidence_score": 1.0
+      "target": "backend_test_timestamp_sync_forcar_updated_at"
     },
     {
       "relation": "references",
@@ -15520,9 +15530,9 @@
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L45",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_timestamp_sync_forcar_updated_at",
-      "target": "backend_test_timestamp_sync_py_datetime",
-      "confidence_score": 1.0
+      "target": "backend_test_timestamp_sync_py_datetime"
     },
     {
       "relation": "rationale_for",
@@ -15530,9 +15540,9 @@
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L46",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_timestamp_sync_rationale_46",
-      "target": "backend_test_timestamp_sync_forcar_updated_at",
-      "confidence_score": 1.0
+      "target": "backend_test_timestamp_sync_forcar_updated_at"
     },
     {
       "relation": "calls",
@@ -15541,9 +15551,9 @@
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L135",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_timestamp_sync_cenarios",
-      "target": "backend_test_timestamp_sync_py_datetime",
-      "confidence_score": 1.0
+      "target": "backend_test_timestamp_sync_py_datetime"
     },
     {
       "relation": "references",
@@ -15552,9 +15562,9 @@
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L60",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_timestamp_sync_forcar_updated_at_scroll",
-      "target": "backend_test_timestamp_sync_py_datetime",
-      "confidence_score": 1.0
+      "target": "backend_test_timestamp_sync_py_datetime"
     },
     {
       "relation": "calls",
@@ -15563,9 +15573,9 @@
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L217",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_timestamp_sync_cenarios",
-      "target": "backend_test_timestamp_sync_forcar_updated_at_scroll",
-      "confidence_score": 1.0
+      "target": "backend_test_timestamp_sync_forcar_updated_at_scroll"
     },
     {
       "relation": "calls",
@@ -15574,9 +15584,9 @@
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L168",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_timestamp_sync_cenarios",
-      "target": "backend_test_timestamp_sync_ler_manhwa",
-      "confidence_score": 1.0
+      "target": "backend_test_timestamp_sync_ler_manhwa"
     },
     {
       "relation": "calls",
@@ -15585,9 +15595,9 @@
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L157",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_timestamp_sync_cenarios",
-      "target": "backend_test_timestamp_sync_patch_chapter",
-      "confidence_score": 1.0
+      "target": "backend_test_timestamp_sync_patch_chapter"
     },
     {
       "relation": "calls",
@@ -15596,9 +15606,9 @@
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L210",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_timestamp_sync_cenarios",
-      "target": "backend_test_timestamp_sync_put_scroll",
-      "confidence_score": 1.0
+      "target": "backend_test_timestamp_sync_put_scroll"
     },
     {
       "relation": "calls",
@@ -15607,9 +15617,9 @@
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L229",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_timestamp_sync_cenarios",
-      "target": "backend_test_timestamp_sync_get_scroll",
-      "confidence_score": 1.0
+      "target": "backend_test_timestamp_sync_get_scroll"
     },
     {
       "relation": "calls",
@@ -15618,9 +15628,9 @@
       "source_file": "backend/test_timestamp_sync.py",
       "source_location": "L109",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_test_timestamp_sync_rodar",
-      "target": "backend_test_timestamp_sync_cenarios",
-      "confidence_score": 1.0
+      "target": "backend_test_timestamp_sync_cenarios"
     },
     {
       "relation": "contains",
@@ -18946,9 +18956,9 @@
       "source_file": "mobile/src/lib/cache.ts",
       "source_location": "L573",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_cache",
-      "target": "lib_cache_adoptservercurrentchapter",
-      "confidence_score": 1.0
+      "target": "lib_cache_adoptservercurrentchapter"
     },
     {
       "relation": "contains",
@@ -19146,9 +19156,9 @@
       "source_file": "mobile/src/lib/cache.ts",
       "source_location": "L633",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_cache",
-      "target": "lib_cache_getlocalscrollentry",
-      "confidence_score": 1.0
+      "target": "lib_cache_getlocalscrollentry"
     },
     {
       "relation": "contains",
@@ -19508,9 +19518,9 @@
       "source_file": "mobile/src/lib/sync-queue.ts",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_sync_queue",
-      "target": "lib_cache",
-      "confidence_score": 1.0
+      "target": "lib_cache"
     },
     {
       "relation": "calls",
@@ -20025,9 +20035,9 @@
       "source_file": "mobile/src/lib/cache.ts",
       "source_location": "L577",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_cache_adoptservercurrentchapter",
-      "target": "lib_cache_reconcilereadswithserver",
-      "confidence_score": 1.0
+      "target": "lib_cache_reconcilereadswithserver"
     },
     {
       "relation": "calls",
@@ -20036,9 +20046,9 @@
       "source_file": "mobile/src/lib/cache.ts",
       "source_location": "L575",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_cache_adoptservercurrentchapter",
-      "target": "lib_cache_loadmanhwafiles",
-      "confidence_score": 1.0
+      "target": "lib_cache_loadmanhwafiles"
     },
     {
       "relation": "imports",
@@ -20047,9 +20057,9 @@
       "source_file": "mobile/src/lib/sync-queue.ts",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_sync_queue",
-      "target": "lib_cache_adoptservercurrentchapter",
-      "confidence_score": 1.0
+      "target": "lib_cache_adoptservercurrentchapter"
     },
     {
       "relation": "calls",
@@ -20080,9 +20090,9 @@
       "source_file": "mobile/src/lib/cache.ts",
       "source_location": "L638",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_cache_getlocalscrollentry",
-      "target": "lib_cache_loadscrollmap",
-      "confidence_score": 1.0
+      "target": "lib_cache_loadscrollmap"
     },
     {
       "relation": "calls",
@@ -20124,9 +20134,9 @@
       "source_file": "mobile/src/lib/sync-queue.ts",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_sync_queue",
-      "target": "lib_cache_savelocalscroll",
-      "confidence_score": 1.0
+      "target": "lib_cache_savelocalscroll"
     },
     {
       "relation": "calls",
@@ -20627,9 +20637,9 @@
       "source_file": "mobile/src/lib/sync-queue.ts",
       "source_location": "L105",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_sync_queue",
-      "target": "lib_sync_queue_parsesyncresponse",
-      "confidence_score": 1.0
+      "target": "lib_sync_queue_parsesyncresponse"
     },
     {
       "relation": "contains",
@@ -20677,9 +20687,9 @@
       "source_file": "mobile/src/lib/sync-queue.ts",
       "source_location": "L92",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_sync_queue",
-      "target": "lib_sync_queue_syncresponse",
-      "confidence_score": 1.0
+      "target": "lib_sync_queue_syncresponse"
     },
     {
       "relation": "calls",
@@ -21442,9 +21452,9 @@
       "source_file": "AGENT_INSTRUCTIONS.md",
       "source_location": "L287",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agent_instructions_3_mobile_expo_react_native",
-      "target": "agent_instructions_compara\u00e7\u00e3o_de_timestamps_na_sincroniza\u00e7\u00e3o_app_offline_banco",
-      "confidence_score": 1.0
+      "target": "agent_instructions_compara\u00e7\u00e3o_de_timestamps_na_sincroniza\u00e7\u00e3o_app_offline_banco"
     },
     {
       "relation": "contains",
@@ -22152,8 +22162,18 @@
       "source_file": "mobile/CHANGELOG.md",
       "source_location": "L7",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "mobile_changelog_changelog_mobile",
-      "target": "mobile_changelog_1_4_0",
+      "target": "mobile_changelog_1_4_0"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "mobile/CHANGELOG.md",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "mobile_changelog_changelog_mobile",
+      "target": "mobile_changelog_1_4_1",
       "confidence_score": 1.0
     },
     {
@@ -23526,5 +23546,5 @@
       "source_file": ".claude/skills/graphify/references/query.md"
     }
   ],
-  "built_at_commit": "a4a447402ee14be01210c8e094eada10c974045d"
+  "built_at_commit": "ffffdf597daa9c96b7b9897a2cacaa2643f01d18"
 }

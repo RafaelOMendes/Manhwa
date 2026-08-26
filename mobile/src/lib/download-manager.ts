@@ -93,11 +93,25 @@ interface FileInfo {
     size_mb?: number;
 }
 
+/**
+ * Teto pra listar os arquivos de um manhwa. `fetch` no React Native NÃO tem
+ * timeout padrão: se o host some no meio da conexão (a VPN cai, por exemplo), a
+ * promise fica pendente pra sempre — e como esse fetch roda dentro do foreground
+ * service de download, ele levava o serviço junto, sem nunca encerrar.
+ */
+const FILES_FETCH_TIMEOUT_MS = 30_000;
+
 async function fetchFiles(manhwaId: number): Promise<{ files: FileInfo[]; currentChapter: number }> {
-    const res = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/files`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    return { files: data.files ?? [], currentChapter: data.current_chapter ?? 0 };
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), FILES_FETCH_TIMEOUT_MS);
+    try {
+        const res = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/files`, { signal: ctrl.signal });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        return { files: data.files ?? [], currentChapter: data.current_chapter ?? 0 };
+    } finally {
+        clearTimeout(timer);
+    }
 }
 
 export interface DownloadResult {

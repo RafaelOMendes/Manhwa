@@ -71,6 +71,8 @@ const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_CACHED = 1;
 /** Chapters baixados em paralelo dentro de um mesmo manhwa. */
 const CHAPTER_CONCURRENCY = 5;
+/** Teto pra baixar UM capítulo. Ver o comentário em `downloadChapter`. */
+const CHAPTER_TIMEOUT_MS = 5 * 60 * 1000;
 
 async function loadIndex(): Promise<CacheIndex> {
     try {
@@ -209,8 +211,22 @@ async function downloadChapter(manhwaId: number, filename: string): Promise<numb
     const cbzTemp = new File(dir, '_chapter.cbz');
     const remoteUrl = `${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/download`;
 
+    let timeoutTimer: ReturnType<typeof setTimeout> | undefined;
     try {
-        await File.downloadFileAsync(remoteUrl, cbzTemp, { idempotent: true });
+        // `File.downloadFileAsync` não tem timeout próprio: num socket que trava
+        // (host inalcançável depois da conexão aberta, ex.: a VPN caiu) a promise
+        // fica pendente PRA SEMPRE. Como esse download roda dentro do foreground
+        // service, isso segurava o serviço vivo indefinidamente. O race abaixo faz
+        // o lado JS desistir e contar como erro; o worker segue pro próximo cap.
+        await Promise.race([
+            File.downloadFileAsync(remoteUrl, cbzTemp, { idempotent: true }),
+            new Promise<never>((_, reject) => {
+                timeoutTimer = setTimeout(
+                    () => reject(new Error(`timeout de ${CHAPTER_TIMEOUT_MS}ms baixando o CBZ`)),
+                    CHAPTER_TIMEOUT_MS
+                );
+            }),
+        ]);
         const sizeMB = (cbzTemp.size / (1024 * 1024)).toFixed(1);
         const dlMs = Date.now() - t0;
         console.log(`[download]   📦 #${manhwaId}/${filename} CBZ recebido — ${sizeMB}MB em ${dlMs}ms`);
@@ -242,6 +258,7 @@ async function downloadChapter(manhwaId: number, filename: string): Promise<numb
         try { if (dir.exists) dir.delete(); } catch {}
         throw e;
     } finally {
+        if (timeoutTimer) clearTimeout(timeoutTimer);
         // Sucesso ou falha, o diretório do manhwa mudou de tamanho.
         invalidateStorageCache(manhwaId);
     }

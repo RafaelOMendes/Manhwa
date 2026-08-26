@@ -53,18 +53,70 @@ const CHANNEL_ID = 'downloads';
 const PROGRESS_NOTIF_ID = 'manhwa-download-progress';
 const MANHWA_CONCURRENCY = 4;
 
+/**
+ * Intervalo mínimo entre atualizações da notificação de progresso.
+ * ⚠️ Não remover. Cada capítulo concluído emite no store, e rodam até
+ * MANHWA_CONCURRENCY × CHAPTER_CONCURRENCY (4 × 5 = 20) downloads em paralelo —
+ * sem throttle isso vira dezenas de `displayNotification` por segundo, por horas,
+ * inundando o NotificationManagerService (system_server) com chamadas binder.
+ */
+const NOTIF_THROTTLE_MS = 2000;
+/** Sem NENHUM progresso por esse tempo, o download está travado → encerra o serviço. */
+const FGS_STALL_TIMEOUT_MS = 10 * 60 * 1000;
+/** Teto absoluto de vida do serviço, mesmo progredindo. Rede de segurança final. */
+const FGS_MAX_RUNTIME_MS = 5 * 60 * 60 * 1000;
+/** Teto por chamada nativa do notifee no encerramento (elas podem não responder). */
+const NOTIFEE_CALL_TIMEOUT_MS = 10_000;
+/** Se o handler não iniciar nesse tempo depois de exibir a notificação, algo deu errado. */
+const FGS_START_TIMEOUT_MS = 30_000;
+
 // Fila dinâmica: novos manhwas podem ser adicionados a qualquer momento e os
 // workers em execução os pegam. inFlight = ids sendo baixados agora (dedupe).
 let currentQueue: Manhwa[] = [];
 const inFlight = new Set<number>();
 let running = false;
 
+/**
+ * Geração da sessão de download. É incrementada ao encerrar o serviço (normal ou
+ * por watchdog) e ao parar manualmente. Workers do `drainQueue` comparam a geração
+ * a cada volta: se a sessão deles já morreu, saem. Sem isso, um worker preso numa
+ * operação nativa que só responde depois do encerramento voltaria a consumir a
+ * fila da sessão SEGUINTE (download duplicado + progresso fantasma).
+ */
+let queueGeneration = 0;
+
+/**
+ * Roda `p` com teto de tempo. NUNCA rejeita nem fica pendente: erro ou estouro
+ * devolvem `fallback` (e logam). É o que garante que nenhuma etapa do
+ * encerramento deixe a promise do foreground service pendente pra sempre.
+ */
+async function settleWithin<T>(p: Promise<T>, ms: number, label: string, fallback: T): Promise<T> {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+        return await Promise.race([
+            p.catch((e: unknown) => {
+                console.warn(`[fgs] ${label} falhou:`, e);
+                return fallback;
+            }),
+            new Promise<T>((res) => {
+                timer = setTimeout(() => {
+                    console.warn(`[fgs] ${label} não respondeu em ${ms}ms — seguindo sem esperar`);
+                    res(fallback);
+                }, ms);
+            }),
+        ]);
+    } finally {
+        if (timer) clearTimeout(timer);
+    }
+}
+
 /** Drena a fila com workers em paralelo, pegando itens adicionados durante a execução. */
-async function drainQueue(): Promise<{ done: number; errors: number }> {
+async function drainQueue(gen: number): Promise<{ done: number; errors: number }> {
     let done = 0;
     let errors = 0;
     const worker = async () => {
         while (true) {
+            if (gen !== queueGeneration) return; // sessão encerrada por watchdog/parada
             if (isCancelRequested()) { currentQueue.length = 0; return; }
             const m = currentQueue.shift();
             if (!m) return;
@@ -73,7 +125,8 @@ async function drainQueue(): Promise<{ done: number; errors: number }> {
                 const r = await downloadManhwa(m);
                 done += r.downloaded;
                 errors += r.errors;
-            } catch {
+            } catch (e) {
+                console.warn('[fgs] downloadManhwa falhou:', e);
                 errors++;
             } finally {
                 inFlight.delete(m.id);
@@ -85,7 +138,7 @@ async function drainQueue(): Promise<{ done: number; errors: number }> {
         await Promise.all(
             Array.from({ length: Math.min(MANHWA_CONCURRENCY, currentQueue.length || 1) }, worker)
         );
-    } while (currentQueue.length > 0 && !isCancelRequested());
+    } while (currentQueue.length > 0 && !isCancelRequested() && gen === queueGeneration);
     return { done, errors };
 }
 
@@ -130,13 +183,47 @@ async function showProgressNotification(): Promise<void> {
     });
 }
 
-async function showDoneNotification(done: number, errors: number): Promise<void> {
+// Throttle da notificação de progresso. `notifTimer` pendente = já há um post
+// agendado; ele lê o `aggregate()` na hora de disparar, então os emits que
+// chegarem no meio do caminho são absorvidos por esse mesmo post.
+let notifTimer: ReturnType<typeof setTimeout> | null = null;
+let lastNotifAt = 0;
+let lastNotifKey = '';
+
+function clearNotifTimer(): void {
+    if (notifTimer) {
+        clearTimeout(notifTimer);
+        notifTimer = null;
+    }
+}
+
+/** Agenda uma atualização da notificação respeitando o NOTIF_THROTTLE_MS. */
+function scheduleProgressNotification(): void {
+    if (notifTimer) return;
+    const wait = Math.max(0, NOTIF_THROTTLE_MS - (Date.now() - lastNotifAt));
+    notifTimer = setTimeout(() => {
+        notifTimer = null;
+        lastNotifAt = Date.now();
+        const { done, total } = aggregate();
+        const key = `${done}/${total}`;
+        // Nada mudou desde o último post: não repõe a notificação à toa.
+        if (key === lastNotifKey) return;
+        lastNotifKey = key;
+        showProgressNotification().catch(e => console.warn('[fgs] progresso:', e));
+    }, wait);
+}
+
+async function showDoneNotification(done: number, errors: number, aborted: boolean): Promise<void> {
+    const title = aborted
+        ? 'Download interrompido'
+        : errors > 0 ? 'Download concluído com erros' : 'Download concluído';
+    const body = errors > 0
+        ? `${done} capítulos baixados · ${errors} manhwa(s) com erro`
+        : `${done} capítulos baixados`;
     await notifee.displayNotification({
         id: PROGRESS_NOTIF_ID,
-        title: errors > 0 ? 'Download concluído com erros' : 'Download concluído',
-        body: errors > 0
-            ? `${done} capítulos baixados · ${errors} manhwa(s) com erro`
-            : `${done} capítulos baixados`,
+        title,
+        body,
         android: {
             channelId: CHANNEL_ID,
             onlyAlertOnce: true,
@@ -150,36 +237,140 @@ async function showDoneNotification(done: number, errors: number): Promise<void>
 // in-app pra não quebrar o app.
 let fgsAvailable = false;
 
+/** Handler do foreground service em execução (guarda contra reentrância). */
+let fgsActive = false;
+
 // Registra o handler do foreground service no escopo do módulo (uma vez).
 // Esse handler roda enquanto a notificação asForegroundService está visível.
+//
+// ⚠️ CONTRATO: a promise devolvida aqui é o que mantém o serviço vivo. Enquanto
+// ela estiver pendente, o Android segura o processo com wake lock. Se ela NUNCA
+// resolver (download travado numa operação nativa sem timeout, exceção no meio
+// do encerramento, `stopForegroundService` que não responde), o serviço roda
+// indefinidamente — foi essa a causa do device entrar em colapso depois de ~1h.
+// Portanto: TODO caminho tem que chegar em `resolve()`, e há dois watchdogs
+// (inatividade e tempo máximo) que forçam o encerramento.
 if (Platform.OS === 'android' && notifee) {
     try {
-        notifee.registerForegroundService(() => {
-            return new Promise<void>((resolve) => {
-                const unsub = subscribeStore(() => {
-                    showProgressNotification().catch(() => {});
-                });
-                (async () => {
-                    let done = 0;
-                    let errors = 0;
-                    try {
-                        const r = await drainQueue();
-                        done = r.done;
-                        errors = r.errors;
-                    } catch {
-                        errors++;
-                    } finally {
-                        unsub();
-                        running = false;
-                        try {
-                            await notifee.stopForegroundService();
-                            await showDoneNotification(done, errors);
-                        } catch {}
-                        resolve();
+        notifee.registerForegroundService(() => new Promise<void>((resolve) => {
+            // Reentrância: o Android pode reentregar o start do serviço (e o notifee
+            // redisparar a task). Uma segunda instância criaria um segundo drainQueue
+            // e um segundo listener do store — que é como o flood de notificações se
+            // multiplicava. Resolve na hora e deixa a instância viva terminar.
+            if (fgsActive) {
+                console.warn('[fgs] handler já ativo — reentrada ignorada');
+                resolve();
+                return;
+            }
+            fgsActive = true;
+
+            const gen = queueGeneration;
+            const startedAt = Date.now();
+            console.log(`[fgs] handler iniciado (geração ${gen}, ${currentQueue.length} na fila)`);
+
+            let settled = false;
+            let unsub: () => void = () => {};
+            let stallTimer: ReturnType<typeof setTimeout> | null = null;
+            let maxTimer: ReturnType<typeof setTimeout> | null = null;
+
+            /**
+             * Encerra a sessão e resolve a promise. Idempotente e à prova de exceção:
+             * o `resolve()` está no `finally`, então nenhum erro aqui dentro deixa o
+             * serviço pendurado.
+             */
+            const finish = async (reason: string, done: number, errors: number): Promise<void> => {
+                if (settled) return;
+                settled = true;
+                const secs = Math.round((Date.now() - startedAt) / 1000);
+                const aborted = reason !== 'fila-drenada';
+                console.log(`[fgs] encerrando (${reason}) após ${secs}s — ${done} caps, ${errors} erros`);
+
+                try {
+                    if (stallTimer) clearTimeout(stallTimer);
+                    if (maxTimer) clearTimeout(maxTimer);
+                    clearNotifTimer();
+                    try { unsub(); } catch (e) { console.warn('[fgs] unsubscribe:', e); }
+
+                    // Mata a sessão: workers zumbis do drainQueue saem na próxima volta.
+                    queueGeneration++;
+                    if (aborted) {
+                        currentQueue = [];
+                        requestCancel();
                     }
-                })();
-            });
-        });
+
+                    // Passo crítico: sem isso o Android mantém o processo em foreground.
+                    const stopped = await settleWithin(
+                        notifee.stopForegroundService().then(() => true),
+                        NOTIFEE_CALL_TIMEOUT_MS, 'stopForegroundService', false
+                    );
+                    console.log(`[fgs] stopForegroundService ${stopped ? 'completou' : 'NÃO completou'}`);
+                    if (!stopped) {
+                        // Cancelar a notificação também derruba o serviço — última tentativa.
+                        await settleWithin(
+                            notifee.cancelNotification(PROGRESS_NOTIF_ID).then(() => true),
+                            NOTIFEE_CALL_TIMEOUT_MS, 'cancelNotification', false
+                        );
+                    }
+
+                    await settleWithin(
+                        showDoneNotification(done, errors, aborted).then(() => true),
+                        NOTIFEE_CALL_TIMEOUT_MS, 'showDoneNotification', false
+                    );
+                } catch (e) {
+                    console.warn('[fgs] erro no encerramento:', e);
+                } finally {
+                    // Só liberamos a trava DEPOIS do teardown: se `running`/`fgsActive`
+                    // caíssem antes, um toque durante os aguardos acima subiria uma
+                    // sessão nova que o `stopForegroundService` desta aqui derrubaria.
+                    running = false;
+                    fgsActive = false;
+                    console.log(`[fgs] promise resolvida (${reason})`);
+                    resolve();
+                }
+            };
+
+            // Watchdog de inatividade: rearmado a cada progresso no store. Cobre o
+            // caso real de travamento — operação de rede nativa que não responde
+            // (ex.: a VPN cai e o host do backend some), deixando o download pendente.
+            const armStall = () => {
+                if (settled) return;
+                if (stallTimer) clearTimeout(stallTimer);
+                stallTimer = setTimeout(() => {
+                    console.warn(`[fgs] sem progresso por ${FGS_STALL_TIMEOUT_MS / 60000}min — abortando`);
+                    void finish('travado', 0, 0);
+                }, FGS_STALL_TIMEOUT_MS);
+            };
+
+            // Teto absoluto: mesmo com progresso, o serviço não vive mais que isso.
+            maxTimer = setTimeout(() => {
+                console.warn(`[fgs] tempo máximo (${FGS_MAX_RUNTIME_MS / 3600000}h) atingido — abortando`);
+                void finish('tempo-maximo', 0, 0);
+            }, FGS_MAX_RUNTIME_MS);
+
+            try {
+                unsub = subscribeStore(() => {
+                    armStall();
+                    scheduleProgressNotification();
+                });
+            } catch (e) {
+                console.warn('[fgs] subscribeStore falhou:', e);
+            }
+            armStall();
+
+            void (async () => {
+                let done = 0;
+                let errors = 0;
+                try {
+                    const r = await drainQueue(gen);
+                    done = r.done;
+                    errors = r.errors;
+                } catch (e) {
+                    console.warn('[fgs] drainQueue falhou:', e);
+                    errors++;
+                }
+                await finish('fila-drenada', done, errors);
+            })();
+        }));
         fgsAvailable = true;
     } catch (e) {
         console.warn('[bg-download] notifee indisponível, usando download in-app:', e);
@@ -216,6 +407,8 @@ export async function startBackgroundDownload(manhwas: Manhwa[]): Promise<void> 
     }
     running = true;
     resetCancel(); // nova sessão de download
+    lastNotifKey = '';
+    lastNotifAt = 0;
 
     try {
         await notifee.requestPermission();
@@ -223,6 +416,16 @@ export async function startBackgroundDownload(manhwas: Manhwa[]): Promise<void> 
         // Exibir a notificação asForegroundService inicia o serviço, que dispara
         // o handler registrado acima (que chama drainQueue).
         await showProgressNotification();
+        // Se o handler não subir, o serviço ficaria "no ar" sem ninguém baixando e
+        // com `running` travado em true (nenhum toque novo reiniciaria). Solta a
+        // trava e registra — é o sintoma que o log precisa mostrar.
+        const gen = queueGeneration;
+        setTimeout(() => {
+            if (!fgsActive && running && gen === queueGeneration) {
+                console.warn('[fgs] handler não iniciou em 30s — liberando pra nova tentativa');
+                running = false;
+            }
+        }, FGS_START_TIMEOUT_MS);
     } catch (e) {
         console.warn('[bg-download] falha ao iniciar serviço:', e);
         running = false;
@@ -238,10 +441,19 @@ export async function startBackgroundDownload(manhwas: Manhwa[]): Promise<void> 
  * e é salvo, o resto é abortado) e encerra o foreground service.
  */
 export async function stopBackgroundDownload(): Promise<void> {
+    console.log('[fgs] parada solicitada pelo usuário');
     currentQueue = [];
     requestCancel();
     running = false;
+    clearNotifTimer();
+    // Mata a sessão pra que o drainQueue em andamento saia na próxima volta —
+    // o handler então resolve a promise sozinho e o serviço cai.
+    queueGeneration++;
     if (notifee) {
-        try { await notifee.stopForegroundService(); } catch {}
+        const stopped = await settleWithin(
+            notifee.stopForegroundService().then(() => true),
+            NOTIFEE_CALL_TIMEOUT_MS, 'stopForegroundService (parada)', false
+        );
+        console.log(`[fgs] parada: stopForegroundService ${stopped ? 'completou' : 'NÃO completou'}`);
     }
 }

@@ -135,6 +135,45 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
 - **Parar** (`stopBackgroundDownload` / `requestCancel`): esvazia a fila e cancela; o capítulo em
   andamento termina e é salvo, o resto é abortado (`syncManhwaLocal` checa `shouldCancel` entre caps).
   Status `cancelled` no store. Botão "Parar" aparece na tela de Downloads enquanto baixa.
+
+### 🚨 Contrato do foreground service (`registerForegroundService`) — LER antes de mexer
+A promise devolvida pelo handler é o que **mantém o serviço vivo**. Enquanto ela estiver pendente, o
+Android segura o processo em foreground com wake lock. Se ela nunca resolver, o serviço roda
+indefinidamente — foi assim que o app derrubava o aparelho depois de ~1h de uso (soft reboot do
+`system_server`: VPN, Bluetooth e Wi-Fi resetavam). Regras que **não** podem ser quebradas:
+
+1. **Todo caminho tem que chegar em `resolve()`.** O `resolve()` fica no `finally` do `finish()`, que é
+   idempotente (`settled`). Erro no meio do encerramento não pode pular o resolve.
+2. **Nenhuma chamada nativa do notifee é esperada sem teto.** `settleWithin()` envolve
+   `stopForegroundService`/`cancelNotification`/`displayNotification` com timeout de 10s e **nunca
+   rejeita**. Se `stopForegroundService` não completa, o fallback é `cancelNotification` (cancelar a
+   notificação também derruba o serviço). Os dois logam se completaram ou não.
+3. **Dois watchdogs.** `FGS_STALL_TIMEOUT_MS` (10min sem nenhum progresso no store → aborta) e
+   `FGS_MAX_RUNTIME_MS` (5h de teto absoluto). O de inatividade é o que salva do caso real: operação
+   de rede nativa que trava (a VPN cai e o host do backend some).
+4. **Notificação de progresso é THROTTLED (`NOTIF_THROTTLE_MS`, 2s) — não remover.** Rodam até
+   `MANHWA_CONCURRENCY × CHAPTER_CONCURRENCY` = 20 downloads em paralelo e cada capítulo concluído
+   emite no store. Postar `displayNotification` a cada emit são dezenas de chamadas binder por segundo
+   por horas a fio dentro do `NotificationManagerService` — **essa era a causa direta do reset do
+   aparelho**. `scheduleProgressNotification()` coalesce tudo num post que lê o `aggregate()` fresco na
+   hora de disparar, e ainda deduplica por `done/total`.
+5. **Guarda de reentrância (`fgsActive`).** O Android pode reentregar o start do serviço. Sem a guarda,
+   uma segunda instância do handler criava um segundo `drainQueue` e um **segundo listener do store**
+   (que só saía no `finally` da própria instância) — multiplicando o flood.
+6. **`queueGeneration`.** Incrementada ao encerrar/parar. Os workers do `drainQueue` comparam a geração
+   a cada volta e saem se a sessão deles morreu; senão um worker preso numa operação nativa voltaria a
+   consumir a fila da sessão seguinte.
+7. **`running`/`fgsActive` só são liberados no fim do teardown**, senão um toque durante os aguardos
+   subiria uma sessão nova que o `stopForegroundService` da anterior derrubaria.
+
+Timeouts de rede que sustentam tudo isso (o `fetch` do RN e o `File.downloadFileAsync` **não têm
+timeout padrão** — promise pendente pra sempre num socket travado):
+`FILES_FETCH_TIMEOUT_MS` (30s, `download-manager.ts`) e `CHAPTER_TIMEOUT_MS` (5min, `cache.ts`).
+Ao mexer em download, **toda** operação de rede nova precisa de teto.
+
+Pra depurar: os logs são prefixados `[fgs]` — `handler iniciado` → `encerrando (motivo)` →
+`stopForegroundService completou/NÃO completou` → `promise resolvida`. Um `handler iniciado` sem o
+`promise resolvida` correspondente é exatamente o bug de serviço pendurado.
 - **Limpeza** (`cleanupCorrupted`): remove do disco o que está órfão/corrompido (pastas de manhwa/cap
   fora do índice, capítulos sem `page_0.jpg`, `_chapter.cbz` residual). Roda na tela de Downloads
   quando NÃO há download ativo — resolve o caso "X GB usado mas 0 baixado" de downloads interrompidos.
@@ -153,6 +192,11 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
 - O notifee declara o foreground service como `shortService` (limite ~3 min no Android 14+). O config
   plugin `plugins/withNotifeeForegroundServiceType.js` sobrescreve para `dataSync` (downloads longos).
   Permissões em `app.json`: `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_DATA_SYNC`, `POST_NOTIFICATIONS`, `WAKE_LOCK`.
+- **`WAKE_LOCK` fica.** Foi cogitado removê-la ao investigar o reset do aparelho, mas: (a) ela não era a
+  causa — o problema era o serviço **nunca encerrar**, e o wake lock só é segurado enquanto ele roda,
+  então corrigir o ciclo de vida já elimina o wake lock indefinido; (b) a task headless que o notifee
+  roda adquire um partial wake lock, e sem a permissão o serviço nativo quebra; (c) mexer em
+  `permissions` muda o **fingerprint** → exigiria `eas build`, e a correção não chegaria por OTA.
 - Perfil que gera **APK**: `preview` (`eas build -p android --profile preview`). `production` gera `.aab`.
 - **Regra prática:** mudou só JS/TS → `eas update --branch preview` (abrir/fechar/reabrir o app aplica).
   Mudou dependência nativa, `app.json` ou plugins → `eas build`.
