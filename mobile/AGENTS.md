@@ -92,6 +92,10 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
 
 ## Cache local / leitura (`src/lib/cache.ts`)
 - Índice em AsyncStorage por manhwa: `pending`/`cached` (entradas baixadas) + `read` (set de filenames lidos).
+- **Retenção: só o último capítulo lido fica em disco (`MAX_CACHED = 1`), por até 7 dias.** `trimCached`
+  mantém apenas o cached de MAIOR `chapter_number`; os demais são apagados do disco (mas continuam em
+  `read`, que é permanente — não afeta o histórico de leitura, só o que fica baixado). `cleanupExpired`
+  ainda apaga o último capítulo cacheado se `readAt` passar de 7 dias.
 - **`withIndexLock()` serializa todo load→mutate→save do índice.** Como "Baixar tudo" roda vários
   manhwas em paralelo (`MANHWA_CONCURRENCY`), cada `syncManhwaLocal` faz DOIS ciclos curtos de
   load/save (reconciliação no início, commit no fim) em vez de segurar o índice inteiro carregado

@@ -13,7 +13,7 @@ export default function RootLayout() {
   const router = useRouter();
 
   useEffect(() => {
-    // Startup: limpa cached expirado + trim de 5-caps + drena fila offline
+    // Startup: limpa cached expirado + trim pro último capítulo lido + drena fila offline
     cleanupExpired().catch(err => console.warn('[cache] cleanup falhou:', err));
     trimAllCached().catch(err => console.warn('[cache] trim falhou:', err));
     drainQueue().catch(err => console.warn('[sync] drain inicial falhou:', err));

@@ -4,6 +4,13 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.4.1
+
+- **Cache local reduzido pra apenas o último capítulo lido.** `MAX_CACHED` (`cache.ts`) passou de `5`
+  para `1`: ao sincronizar ou marcar um capítulo como lido, só o de MAIOR `chapter_number` fica em
+  disco — os demais são apagados (`trimCached`), continuando marcados em `read` (histórico permanente,
+  não some da UI). A retenção por tempo (`cleanupExpired`, 7 dias desde a última leitura) não muda.
+
 ## 1.4.0
 
 - **Sincronização por comparação de timestamps (app offline ↔ banco).** Cada operação da fila offline

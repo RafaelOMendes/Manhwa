@@ -68,7 +68,7 @@ const FILES_KEY = 'manhwa-files-v1';
 const SCROLL_KEY = 'manhwa-scroll-v1';
 const LASTREAD_KEY = 'manhwa-lastread-v1';
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
-const MAX_CACHED = 5;
+const MAX_CACHED = 1;
 /** Chapters baixados em paralelo dentro de um mesmo manhwa. */
 const CHAPTER_CONCURRENCY = 5;
 
@@ -152,7 +152,7 @@ export async function getLocalChaptersSet(manhwaId: number): Promise<Set<string>
 }
 
 /**
- * Mantém só os 5 caps lidos de MAIOR chapter_number (regra "do cap N pra trás removido").
+ * Mantém só o último capítulo lido (MAIOR chapter_number) em disco.
  * Files dos demais são apagados do disco e a entrada some do `cached`
  * (mas continuam em `read` — esse set é permanente).
  */
@@ -170,7 +170,7 @@ function trimCached(m: ManhwaCache, manhwaId: number): string[] {
     return evicted;
 }
 
-/** Aplica o trim de 5-caps pra todos os manhwas (chamado no app start). */
+/** Aplica o trim pro último capítulo lido em todos os manhwas (chamado no app start). */
 export async function trimAllCached(): Promise<{ trimmed: number }> {
     return withIndexLock(async () => {
         const index = await loadIndex();
@@ -289,7 +289,7 @@ export function getLocalCoverUri(manhwaId: number): string | null {
  * Sincroniza o cache local de um manhwa.
  * - Baixa chapters não-lidos em paralelo (até CHAPTER_CONCURRENCY simultâneos).
  * - Move pra `cached` chapters lidos que estavam em `pending`.
- * - Mantém só os 5 cached mais recentes.
+ * - Mantém só o último capítulo lido em cache.
  * - Baixa a cover pra disco se ainda não tem.
  */
 export async function syncManhwaLocal(
