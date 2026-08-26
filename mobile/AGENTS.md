@@ -41,9 +41,40 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
   pra activity. Telas abrem via `openReader(...)` do store; `navigateReader`/`closeReader` controlam.
 - Botão voltar do Android fechado via `BackHandler` (não há mais `onRequestClose`).
 - Páginas locais carregam 100% offline (file://); **nunca** toca no backend se o capítulo está baixado.
-- Marca como lido **só quando todas as páginas carregaram** (`aspectRatios.length >= totalPages`) e
-  o usuário chega ao fim — evita marcar lido cedo enquanto as imagens ainda carregam.
+- Marca como lido quando o usuário chega ao fim **e o conteúdo já tem a altura final** — evita marcar
+  lido cedo enquanto as imagens ainda carregam (o conteúdo fica curto e o "fim" dispara antes da hora).
+  Duas formas de saber que a altura é a final: (a) todas as páginas decodificaram (`loadedIdsRef.size
+  >= totalPages`) — leitura normal; (b) o pré-cálculo já sabe a altura total (`totalContentHeightRef`)
+  e a FlatList alcançou ≥98% dela — necessário depois do botão "ir pro fim", que pula páginas e
+  portanto **nunca** decodifica todas.
 - `removeClippedSubviews={false}` no FlatList (senão Android mostra "tela preta" em imagens altas).
+- **Scroll automático (`stepScrollTo`) — restore E botão "ir pro fim" usam o MESMO motor.** A FlatList
+  só mantém `windowSize` viewports montadas, então **um `scrollToOffset` único pra um offset muito à
+  frente não funciona**: o conteúdo à frente ainda não existe/não foi medido, o scroll morre no meio
+  ou engasga enquanto as páginas decodificam. `stepScrollTo(token, getTarget, opts)` empurra em
+  etapas — a cada tick vai até a borda do conteúdo já montado, o que força a FlatList a montar a
+  próxima leva, o `onContentSizeChange` atualiza `contentHeightRef`, e repete até
+  `contentHeight >= alvo + viewport`. Só então o salto/pouso final. Detalhes:
+  - `getTarget()` pode devolver `null` = "alvo desconhecido ainda" (pré-cálculo não terminou): aí
+    empurra até o conteúdo **parar de crescer** (fim real) e resolve pelo `resolveTarget()` de
+    fallback (`contentHeightRef`). Não trava nem faz scroll cego.
+  - `animatedFinal` salta sem animação pra ~1 viewport antes do alvo (conteúdo já montado) e faz só
+    o último trecho animado → pouso suave sem depender de conteúdo não-renderizado.
+  - Roda dentro de `InteractionManager.runAfterInteractions` pra não competir com o mount da FlatList.
+- **`renderBoost`: janela de renderização temporária.** Durante scroll automático, `windowSize` 3→9,
+  `maxToRenderPerBatch` 1→3 e `updateCellsBatchingPeriod` 100→30, pra as levas montarem rápido.
+  **É revertido assim que o scroll termina** (e o offset é reafirmado depois, já que desmontar itens
+  pode deslocar) — durante a leitura manual a janela apertada continua valendo, que é o que segura a
+  memória com páginas de 800×10000.
+- **Cancelamento por token.** `autoScrollTokenRef` guarda o scroll automático em andamento.
+  `onScrollBeginDrag` (toque do usuário), `scrollToTop`, troca de capítulo e unmount cancelam.
+  Enquanto o token existe, `handleEndReached` fica **suspenso** — senão os pulos intermediários (que
+  encostam na borda do conteúdo montado, não no fim do capítulo) marcariam o capítulo como lido no meio.
+- O botão "ir pro fim" para em `END_SAFE_GAP` (220px) **de propósito**: o `onScroll` marca como lido
+  em `contentSize - 120`, então o botão te leva pra perto do fim sem marcar; o último trocinho de
+  scroll é do usuário (e aí sim marca, via critério (b) acima).
+- ⚠️ `pages` (useMemo) tem que ficar declarado **antes** do efeito de pré-cálculo — ele usa `pages` na
+  dep array, que é avaliada durante o render (declarar depois = TDZ/`ReferenceError` a cada render).
 - **Restaurar scroll = max(local, servidor).** Ao abrir um capítulo, lê o scroll local (AsyncStorage) E
   o do servidor (`GET .../scroll`) e usa o MAIOR. Se o local está mais adiantado, faz `PUT` (enfileira
   via `sync-queue` se falhar). Se o servidor está mais adiantado, atualiza o local. Offline → usa o local

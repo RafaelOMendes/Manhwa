@@ -4,6 +4,36 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.2.4
+
+- **Corrige crash de render do leitor.** O `useEffect` de pré-cálculo (1.2.2) usava `pages` na dep
+  array, mas o `useMemo` que cria `pages` estava declarado DEPOIS dele no corpo do componente — a dep
+  array é avaliada durante o render, então batia TDZ (`ReferenceError`) toda vez que o `CbzReader`
+  renderizava. O `useMemo` foi movido pra antes do efeito.
+- **Corrige o botão de descer (↓) do leitor.** Era um `scrollToOffset` animado único pro offset final,
+  o que não funciona com a FlatList virtualizada: ela só mantém ~3 viewports montadas, o conteúdo à
+  frente ainda não existe/não foi medido, e o scroll morria no meio ou engasgava enquanto as páginas
+  decodificavam. Agora o botão usa o MESMO motor de scroll progressivo do restore (`stepScrollTo`):
+  empurra em etapas até a borda do conteúdo já montado, o que força a FlatList a montar a próxima
+  leva, e repete até haver conteúdo suficiente pro pouso final — que é animado (salta pra ~1 viewport
+  antes do alvo e anima só o último trecho), então o resultado é suave. Vale online e offline.
+- **Fallback quando o pré-cálculo não terminou.** Se `totalContentHeightRef` ainda é 0 (ou o
+  `RNImage.getSize` falhou), o alvo fica indefinido e o scroll empurra até o conteúdo **parar de
+  crescer** (fim real), aí resolve pelo `contentHeightRef` da própria FlatList — em vez de fazer um
+  scroll cego pra um offset errado.
+- **Renderização em boost temporário.** Durante scroll automático, `windowSize` 3→9,
+  `maxToRenderPerBatch` 1→3 e `updateCellsBatchingPeriod` 100→30 pras levas virem rápido; revertido
+  assim que o scroll termina (com reafirmação do offset), então a leitura manual continua com a
+  janela apertada e o consumo de memória não sobe.
+- **Capítulo volta a ser marcado como lido depois do botão de descer.** O gate era "todas as páginas
+  decodificaram", que nunca acontece quando você pula páginas. Agora também aceita "a FlatList
+  alcançou ≥98% da altura total pré-calculada".
+- Scroll automático agora roda em `InteractionManager.runAfterInteractions` (não compete com o mount
+  da FlatList) e é cancelável por token — arrasto do usuário, botão de subir, troca de capítulo e
+  fechar o leitor abortam na hora. Enquanto ele roda, a marcação de "lido" fica suspensa, pra os
+  pulos intermediários não marcarem o capítulo no meio do caminho.
+- O restore de scroll ao abrir um capítulo passou a usar o mesmo motor (mesma correção de suavidade).
+
 ## 1.2.3
 
 - Corrige perda silenciosa de downloads ao usar "Baixar tudo" com vários

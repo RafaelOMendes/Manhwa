@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import {
     View, Text, TouchableOpacity, ActivityIndicator,
     FlatList, Dimensions, StyleSheet, Animated, BackHandler,
-    Image as RNImage,
+    Image as RNImage, InteractionManager,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { X, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, SkipForward } from 'lucide-react-native';
@@ -37,6 +37,28 @@ function extractChapterNumber(filename: string): number {
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+// Distância em que o "ir pro fim" para ANTES do fim real. O `onScroll` dispara
+// `handleEndReached` em `contentSize - 120`, então 220 deixa ~100 de folga pro
+// overshoot do scroll animado — o botão aproxima do fim SEM marcar como lido.
+const END_SAFE_GAP = 220;
+
+// Parâmetros de renderização da FlatList.
+// - Normal: janela apertada. Páginas de manhwa podem ser MUITO altas
+//   (800×10000 → 5x a viewport); manter várias montadas enche a memória, o GC
+//   roda em loop e o fps despenca.
+// - Boost: usado SÓ durante scroll automático (restore / ir pro fim), enquanto
+//   precisamos que a FlatList monte as próximas levas o mais rápido possível.
+//   É revertido assim que o scroll termina, pra memória voltar ao normal.
+const WINDOW_NORMAL = 3;
+const WINDOW_BOOST = 9;
+const BATCH_NORMAL = 1;
+const BATCH_BOOST = 3;
+const BATCH_PERIOD_NORMAL = 100;
+const BATCH_PERIOD_BOOST = 30;
+
+/** Token de cancelamento de um scroll automático em andamento. */
+type ScrollToken = { cancelled: boolean };
 
 /**
  * Página única do leitor — componente isolado e memoizado pra que o `onLoad` de
@@ -100,6 +122,12 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     // páginas "passando rápido") e a `FlatList` renderiza só uns poucos itens
     // por vez (memória baixa). Ao terminar, libera a UI no offset correto.
     const [restoring, setRestoring] = useState(false);
+    // `autoScrolling`: scroll automático do botão "ir pro fim" em andamento.
+    // Compartilha o overlay com `restoring` (esconde as páginas passando).
+    const [autoScrolling, setAutoScrolling] = useState(false);
+    // `renderBoost`: sobe temporariamente a janela de renderização da FlatList
+    // durante scroll automático. Ver WINDOW_BOOST.
+    const [renderBoost, setRenderBoost] = useState(false);
 
     const insets = useSafeAreaInsets();
     const flatListRef = useRef<FlatList>(null);
@@ -121,6 +149,11 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     // pela FlatList. Não interfere no mount da FlatList nem no restore
     // (esses seguem o caminho da v1.1.12 — progressivo).
     const totalContentHeightRef = useRef(0);
+    // Token do scroll automático em andamento (restore OU "ir pro fim").
+    // Enquanto não-null, o `handleEndReached` fica suspenso — senão os pulos
+    // intermediários (que encostam na borda do conteúdo já montado) marcariam
+    // o capítulo como lido no meio do caminho.
+    const autoScrollTokenRef = useRef<ScrollToken | null>(null);
     // Caches mutáveis fora do render: alterar não re-renderiza.
     const aspectRatiosRef = useRef<Record<string, number>>({});
     const loadedIdsRef = useRef<Set<string>>(new Set());
@@ -170,6 +203,12 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     useEffect(() => {
         setLoading(true);
         setRestoring(false);
+        // Cancela qualquer scroll automático do capítulo anterior e devolve a
+        // FlatList aos parâmetros normais de renderização.
+        if (autoScrollTokenRef.current) autoScrollTokenRef.current.cancelled = true;
+        autoScrollTokenRef.current = null;
+        setAutoScrolling(false);
+        setRenderBoost(false);
         setReachedEnd(false);
         setMarkedAsRead(false);
         setAllPagesLoaded(false);
@@ -256,6 +295,21 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         fetchInfo();
     }, [manhwaId, filename]);
 
+    // Memoiza a lista de páginas: evita recriar um array de N itens a cada
+    // render (ex.: a cada imagem que carrega) e mantém a referência estável
+    // pro FlatList não reprocessar tudo.
+    // ⚠️ Precisa ficar ANTES do efeito de pré-cálculo: `pages` entra na dep
+    // array dele, que é avaliada durante o render (TDZ se declarado depois).
+    const pages = useMemo(
+        () => Array.from({ length: totalPages }, (_, i) => ({
+            id: i.toString(),
+            url: localPageUri
+                ? localPageUri(i)
+                : `${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/page/${i}`,
+        })),
+        [totalPages, localPageUri, manhwaId, filename]
+    );
+
     // Pré-cálculo em BACKGROUND: mede TODAS as páginas via `RNImage.getSize`
     // (concorrência 6) sem bloquear a UI. Quando termina, popula
     // `totalContentHeightRef` (usado pelo botão "ir pro fim") e
@@ -312,73 +366,136 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         return () => { cancelled = true; };
     }, [loading, totalPages, pages]);
 
-    // Restore scroll progressivo guiado por `contentHeightRef`. A FlatList só
-    // renderiza itens dentro da janela atual de scroll; pra cobrir um offset
-    // alto sem inflar `initialNumToRender` (= memória), empurramos o scroll
-    // pro fim do conteúdo renderizado a cada tick — isso força a FlatList a
-    // mountar a próxima leva, o `onContentSizeChange` atualiza a altura, e o
-    // ciclo se repete até `contentHeight >= savedScrollOffset + viewport`.
-    // SÓ ENTÃO fazemos o salto final pro offset exato (senão o scroll clampa
-    // antes do alvo e a posição fica errada — bug que vinha quebrando o
-    // "voltar pro ponto certo").
+    /**
+     * Scroll progressivo tolerante à virtualização — base do restore E do
+     * botão "ir pro fim".
+     *
+     * A FlatList só mantém `windowSize` viewports montadas, então um
+     * `scrollToOffset` ÚNICO pra um offset muito à frente é CLAMPADO na altura
+     * já renderizada: o scroll morre no meio do caminho (e, animado, ainda dá a
+     * sensação de travo). A saída é empurrar em etapas: a cada passo vamos até
+     * a borda do conteúdo já montado, o que força a FlatList a montar a próxima
+     * leva; o `onContentSizeChange` atualiza `contentHeightRef` e repetimos até
+     * haver conteúdo suficiente pro salto final.
+     *
+     * `getTarget()` pode devolver `null` = "alvo ainda desconhecido": nesse caso
+     * empurramos até o conteúdo parar de crescer (fim real) e só então
+     * resolvemos o alvo por `resolveTarget()`.
+     */
+    const stepScrollTo = useCallback(async (
+        token: ScrollToken,
+        getTarget: () => number | null,
+        opts: {
+            /** Alvo final quando `getTarget()` nunca resolveu. */
+            resolveTarget?: () => number;
+            /** Última etapa animada (pouso suave). */
+            animatedFinal?: boolean;
+            /** Aborta se o usuário tocar/arrastar (usado pelo restore). */
+            abortOnUserScroll?: boolean;
+        } = {},
+    ): Promise<number | null> => {
+        const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+        const aborted = () => token.cancelled || (opts.abortOnUserScroll === true && userHasInteracted.current);
+
+        let stagnant = 0;
+        let attempts = 0;
+        const MAX_ATTEMPTS = 120;
+
+        while (!aborted() && attempts < MAX_ATTEMPTS) {
+            const target = getTarget();
+            const prevHeight = contentHeightRef.current;
+            // Já há conteúdo suficiente pra POUSAR no alvo (é preciso
+            // target + uma viewport, senão o scroll clampa antes).
+            if (target !== null && prevHeight >= target + viewportHeightRef.current) break;
+
+            const edge = Math.max(prevHeight - SCREEN_WIDTH * 0.5, 0);
+            const pushTo = target === null ? edge : Math.min(edge, target);
+            flatListRef.current?.scrollToOffset({ offset: pushTo, animated: false });
+
+            await sleep(90);
+            attempts++;
+
+            if (contentHeightRef.current <= prevHeight + 4) {
+                // Conteúdo parou de crescer: ou chegamos ao fim real, ou a
+                // decodificação empacou. Alguns ticks de tolerância e desiste.
+                stagnant++;
+                if (stagnant > 8) break;
+            } else {
+                stagnant = 0;
+            }
+        }
+
+        if (aborted()) return null;
+
+        const target = getTarget() ?? opts.resolveTarget?.() ?? null;
+        if (target === null) return null;
+
+        if (opts.animatedFinal) {
+            // Pouso suave: salta (sem animação) pra ~1 viewport antes do alvo —
+            // já com o conteúdo montado — e faz só o último trecho animado.
+            const runway = Math.max(target - viewportHeightRef.current * 0.8, 0);
+            flatListRef.current?.scrollToOffset({ offset: runway, animated: false });
+            await sleep(60);
+            if (aborted()) return null;
+            flatListRef.current?.scrollToOffset({ offset: target, animated: true });
+            await sleep(360);
+        } else {
+            await sleep(40);
+            flatListRef.current?.scrollToOffset({ offset: target, animated: false });
+            await sleep(120);
+            if (aborted()) return null;
+            flatListRef.current?.scrollToOffset({ offset: target, animated: false });
+        }
+
+        return aborted() ? null : target;
+    }, []);
+
+    /** Cancela o scroll automático em andamento (se houver). */
+    const cancelAutoScroll = useCallback(() => {
+        if (autoScrollTokenRef.current) {
+            autoScrollTokenRef.current.cancelled = true;
+            autoScrollTokenRef.current = null;
+        }
+    }, []);
+
+    // Restore scroll progressivo até `savedScrollOffset`. Roda com o overlay
+    // por cima (esconde as páginas passando) e com `renderBoost` ligado, pra as
+    // levas da FlatList virem rápido; ambos são desligados ao terminar.
     useEffect(() => {
         if (loading || totalPages === 0) return;
         if (savedScrollOffset <= 0) return;
 
-        let cancelled = false;
+        const token: ScrollToken = { cancelled: false };
+        autoScrollTokenRef.current = token;
         setRestoring(true);
+        setRenderBoost(true);
         contentHeightRef.current = 0;
 
-        (async () => {
-            const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
-            await sleep(80);
-
-            const TARGET_WITH_MARGIN = savedScrollOffset + SCREEN_WIDTH * 0.6;
-            let stagnant = 0;
-            let attempts = 0;
-            const MAX_ATTEMPTS = 80;
-
-            while (
-                !cancelled &&
-                !userHasInteracted.current &&
-                contentHeightRef.current < TARGET_WITH_MARGIN &&
-                attempts < MAX_ATTEMPTS
-            ) {
-                const prevHeight = contentHeightRef.current;
-                const pushTo = Math.min(
-                    Math.max(prevHeight - SCREEN_WIDTH * 0.5, 0),
-                    savedScrollOffset
-                );
-                flatListRef.current?.scrollToOffset({ offset: pushTo, animated: false });
-
-                await sleep(100);
-                attempts++;
-
-                if (contentHeightRef.current <= prevHeight + 4) {
-                    stagnant++;
-                    if (stagnant > 6) break;
-                } else {
-                    stagnant = 0;
+        // `runAfterInteractions` deixa o mount da FlatList terminar antes de
+        // começarmos a empurrar o scroll — senão o primeiro tick é desperdiçado.
+        const handle = InteractionManager.runAfterInteractions(() => {
+            (async () => {
+                await new Promise(r => setTimeout(r, 80));
+                try {
+                    await stepScrollTo(token, () => savedScrollOffset, { abortOnUserScroll: true });
+                } finally {
+                    if (autoScrollTokenRef.current === token) autoScrollTokenRef.current = null;
+                    setRestoring(false);
+                    // Só derruba o boost se ninguém mais estiver auto-scrollando
+                    // (ex.: usuário tocou no FAB "descer" durante o restore).
+                    if (!autoScrollTokenRef.current) setRenderBoost(false);
                 }
-            }
-
-            if (!cancelled && !userHasInteracted.current) {
-                await sleep(40);
-                flatListRef.current?.scrollToOffset({ offset: savedScrollOffset, animated: false });
-                await sleep(120);
-                if (!cancelled && !userHasInteracted.current) {
-                    flatListRef.current?.scrollToOffset({ offset: savedScrollOffset, animated: false });
-                }
-            }
-
-            if (!cancelled) setRestoring(false);
-        })();
+            })();
+        });
 
         return () => {
-            cancelled = true;
+            token.cancelled = true;
+            handle.cancel();
+            if (autoScrollTokenRef.current === token) autoScrollTokenRef.current = null;
             setRestoring(false);
+            setRenderBoost(false);
         };
-    }, [loading, totalPages, savedScrollOffset]);
+    }, [loading, totalPages, savedScrollOffset, stepScrollTo]);
 
     // Auto-hide header after 3s
     useEffect(() => {
@@ -471,10 +588,20 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     }, [totalPages]);
 
     const handleEndReached = useCallback(() => {
-        // Só marca como lido quando TODAS as páginas já carregaram (altura final
-        // do conteúdo). Senão, enquanto as imagens carregam, o conteúdo fica curto
-        // e o "fim" dispara antes de você ler de verdade.
-        if (totalPages > 0 && !loading && !reachedEnd && allPagesLoaded) {
+        // Durante scroll automático os pulos intermediários encostam na borda do
+        // conteúdo já montado — que NÃO é o fim do capítulo. Ignora.
+        if (autoScrollTokenRef.current) return;
+        // Só marca como lido quando o conteúdo já tem a altura FINAL. Senão,
+        // enquanto as imagens carregam, o conteúdo fica curto e o "fim" dispara
+        // antes de você ler de verdade. Duas formas de saber que chegou lá:
+        //  a) todas as páginas decodificaram (`allPagesLoaded`) — leitura normal;
+        //  b) o pré-cálculo (`RNImage.getSize`) já sabe a altura total e a
+        //     FlatList alcançou ela. Necessário depois do botão "ir pro fim",
+        //     que pula páginas e portanto nunca decodifica todas — sem isso o
+        //     capítulo nunca era marcado como lido por esse caminho.
+        const knownTotal = totalContentHeightRef.current;
+        const heightSettled = knownTotal > 0 && contentHeightRef.current >= knownTotal * 0.98;
+        if (totalPages > 0 && !loading && !reachedEnd && (allPagesLoaded || heightSettled)) {
             setReachedEnd(true);
             markChapterAsRead();
         }
@@ -519,6 +646,9 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     // de 500ms podia ser engolido pela desmontagem, perdendo o final do scroll.
     useEffect(() => {
         return () => {
+            // Nada de scroll automático sobrevivendo à desmontagem.
+            if (autoScrollTokenRef.current) autoScrollTokenRef.current.cancelled = true;
+            autoScrollTokenRef.current = null;
             if (scrollSaveTimeout.current) {
                 clearTimeout(scrollSaveTimeout.current);
                 scrollSaveTimeout.current = null;
@@ -539,39 +669,81 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         });
     }, []);
 
-    const scrollToTop = () => {
-        flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
-    };
-
-    // Pula pra perto do fim SEM marcar como lido. O onScroll dispara
-    // `handleEndReached` quando `contentOffset + viewport >= contentSize - 120`,
-    // então paramos com 220 de folga (200 de margem + ~20 de slack pro scroll
-    // animado overshoot). Usa o `totalContentHeightRef` pré-calculado (exato);
-    // se o pré-cálculo falhou, cai no `contentHeightRef` (FlatList).
-    const scrollToBottomSafe = () => {
+    const scrollToTop = useCallback(() => {
+        cancelAutoScroll();
+        setAutoScrolling(false);
+        setRenderBoost(false);
         userHasInteracted.current = true;
-        const total = totalContentHeightRef.current || contentHeightRef.current;
-        const target = Math.max(total - viewportHeightRef.current - 220, 0);
-        flatListRef.current?.scrollToOffset({ offset: target, animated: true });
-    };
+        flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+    }, [cancelAutoScroll]);
+
+    /**
+     * Pula pra perto do fim SEM marcar como lido (para em `END_SAFE_GAP`).
+     *
+     * Antes isto era UM `scrollToOffset` animado pro offset final — e não
+     * funcionava: a FlatList só tem ~`windowSize` viewports montadas, então o
+     * offset era clampado na altura renderizada e o scroll parava no meio (ou
+     * engasgava enquanto as páginas seguintes decodificavam). Agora é o mesmo
+     * scroll progressivo do restore, com a janela de renderização em boost
+     * (revertida no fim, pra não segurar memória durante a leitura).
+     *
+     * Alvo: `totalContentHeightRef` (pré-calculado via `RNImage.getSize`,
+     * exato). Se o pré-cálculo ainda não terminou/falhou, o alvo fica `null` e
+     * empurramos até o conteúdo parar de crescer — aí `contentHeightRef` (da
+     * própria FlatList) é o fim real e serve de fallback.
+     */
+    const scrollToBottomSafe = useCallback(() => {
+        cancelAutoScroll();
+        const token: ScrollToken = { cancelled: false };
+        autoScrollTokenRef.current = token;
+
+        userHasInteracted.current = true;
+        setAutoScrolling(true);
+        setRenderBoost(true);
+
+        const targetFromTotal = () => {
+            const total = totalContentHeightRef.current;
+            if (total <= 0) return null;
+            return Math.max(total - viewportHeightRef.current - END_SAFE_GAP, 0);
+        };
+        const targetFromContent = () =>
+            Math.max(contentHeightRef.current - viewportHeightRef.current - END_SAFE_GAP, 0);
+
+        InteractionManager.runAfterInteractions(() => {
+            (async () => {
+                try {
+                    const landed = await stepScrollTo(token, targetFromTotal, {
+                        resolveTarget: targetFromContent,
+                        animatedFinal: true,
+                    });
+                    setAutoScrolling(false);
+                    // Volta aos parâmetros normais de renderização ANTES do
+                    // último ajuste: desligar o boost desmonta os itens fora da
+                    // janela (a FlatList os troca por espaçadores da altura já
+                    // medida) e reafirmamos o offset por segurança — invisível
+                    // se nada mudou.
+                    setRenderBoost(false);
+                    if (landed !== null && !token.cancelled) {
+                        await new Promise(r => setTimeout(r, 120));
+                        if (!token.cancelled) {
+                            flatListRef.current?.scrollToOffset({ offset: landed, animated: false });
+                        }
+                    }
+                } finally {
+                    // O token só sai do ref no fim de tudo: enquanto ele está lá,
+                    // `cancelAutoScroll` (arrasto do usuário) consegue abortar o
+                    // ajuste final, e o `handleEndReached` fica suspenso.
+                    if (autoScrollTokenRef.current === token) autoScrollTokenRef.current = null;
+                    setAutoScrolling(false);
+                    if (!autoScrollTokenRef.current) setRenderBoost(false);
+                }
+            })();
+        });
+    }, [cancelAutoScroll, stepScrollTo]);
 
     const goToChapter = (file: ChapterFile) => {
         onNavigate?.(file.name, file.chapter_number);
     };
-
-    // Memoiza a lista de páginas: evita recriar um array de N itens a cada
-    // render (ex.: a cada imagem que carrega) e mantém a referência estável
-    // pro FlatList não reprocessar tudo.
-    const pages = useMemo(
-        () => Array.from({ length: totalPages }, (_, i) => ({
-            id: i.toString(),
-            url: localPageUri
-                ? localPageUri(i)
-                : `${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/page/${i}`,
-        })),
-        [totalPages, localPageUri, manhwaId, filename]
-    );
-
 
     // renderItem ESTÁVEL: depende só de toggleUI/handlePageLoaded (memoizados).
     // Assim, quando o reader re-renderiza (toast, reachedEnd, header), o FlatList
@@ -711,7 +883,13 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                         onEndReached={handleEndReached}
                         onEndReachedThreshold={0.3}
                         ListFooterComponent={renderFooter}
-                        onScrollBeginDrag={() => { userHasInteracted.current = true; }}
+                        onScrollBeginDrag={() => {
+                            userHasInteracted.current = true;
+                            // Toque do usuário sempre ganha do scroll automático.
+                            cancelAutoScroll();
+                            setAutoScrolling(false);
+                            setRenderBoost(false);
+                        }}
                         onScroll={(e) => {
                             const { contentOffset, layoutMeasurement, contentSize } = e.nativeEvent;
                             saveScrollPosition(contentOffset.y);
@@ -735,19 +913,23 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                         // Evita a "tela preta" do Android: por padrão o FlatList
                         // clipa itens fora da tela e eles voltam em branco/preto.
                         removeClippedSubviews={false}
-                        // Janela apertada: páginas de manhwa podem ser MUITO altas
-                        // (800×10000 → 5x a viewport). Manter várias mounted ao
-                        // mesmo tempo enche memória, GC roda em loop e o fps
-                        // despenca. Com 3 só mantém ~3 viewport-heights de itens.
-                        windowSize={3}
+                        // Janela apertada durante a leitura: páginas de manhwa
+                        // podem ser MUITO altas (800×10000 → 5x a viewport).
+                        // Manter várias mounted ao mesmo tempo enche memória, GC
+                        // roda em loop e o fps despenca. Só sobe (WINDOW_BOOST)
+                        // enquanto um scroll automático precisa que as próximas
+                        // levas montem rápido — e volta ao normal ao terminar.
+                        windowSize={renderBoost ? WINDOW_BOOST : WINDOW_NORMAL}
                         initialNumToRender={2}
-                        maxToRenderPerBatch={1}
-                        updateCellsBatchingPeriod={100}
+                        maxToRenderPerBatch={renderBoost ? BATCH_BOOST : BATCH_NORMAL}
+                        updateCellsBatchingPeriod={renderBoost ? BATCH_PERIOD_BOOST : BATCH_PERIOD_NORMAL}
                         renderItem={renderPage}
                     />
-                    {/* Overlay durante restore progressivo: esconde o "flicker"
-                        das páginas passando rápido até o offset alvo. */}
-                    {restoring && (
+                    {/* Overlay durante scroll automático (restore ou "ir pro
+                        fim"): esconde o "flicker" das páginas passando rápido
+                        até o offset alvo. `pointerEvents="none"` de propósito —
+                        um arrasto do usuário chega na FlatList e cancela. */}
+                    {(restoring || autoScrolling) && (
                         <View style={styles.restoringOverlay} pointerEvents="none">
                             <ActivityIndicator size="large" color="#ffffff" />
                         </View>
