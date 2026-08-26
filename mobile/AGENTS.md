@@ -17,9 +17,15 @@ muda o `runtimeVersion` → o `eas update` passa a publicar pra um runtime que o
 - Outras mudanças que também alteram o fingerprint e exigem rebuild: plugins, permissões, splash
   (`imageWidth` etc.), dependências nativas, qualquer coisa em `android`/`ios` do `app.json`.
 
+🚨 **`package.json` também faz parte do fingerprint — o arquivo INTEIRO, não só as `dependencies`.**
+Verificado empiricamente: adicionar um simples `"type-check": "tsc --noEmit"` em `scripts` já muda o
+hash (`9089fdd1…` → `01952b8b…`), o que basta pra o `eas update` não chegar no APK instalado. **Não
+edite `package.json` em entregas só-JS** (nem scripts). Pra rodar type-check use `npx tsc --noEmit`.
+
 Pra conferir se um update vai chegar: compare `eas update:list --branch preview` (runtimeVersion) com
 o runtimeVersion da build em `eas build:list`. Se diferirem, ou rebuilda, ou reverte a mudança nativa
-pra casar o fingerprint da build instalada.
+pra casar o fingerprint da build instalada. Pra checar ANTES de publicar:
+`npx @expo/fingerprint .` (de dentro de `mobile/`) e comparar com o hash da build.
 
 ---
 

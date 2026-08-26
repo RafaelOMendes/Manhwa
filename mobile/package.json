@@ -8,8 +8,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint",
-    "type-check": "tsc --noEmit"
+    "lint": "expo lint"
   },
   "dependencies": {
     "@notifee/react-native": "^9.1.8",
