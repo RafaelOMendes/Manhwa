@@ -17,15 +17,13 @@ Tracker praticamente sozinho, do jeito que foi combinado:
    ▼
 [Teste] ──────────────────────► avisa no Telegram "pode testar"
    │
-   ├─ ruim → comente no card (o watcher reprocessa sozinho) ou arraste de volta pra
-   │          "Em Desenvolvimento" e comente (o Claude Code retoma a MESMA sessão)
+   ├─ ruim → você arrasta de volta na mão (o watcher não reage sozinho a comentário
+   │          em "Teste"): pra "Em Andamento" e comente (redesenha o prompt do zero)
+   │          ou pra "Em Desenvolvimento" e comente (o Claude Code retoma a MESMA
+   │          sessão com esse feedback direto, sem redesenhar)
    │
    └─ bom → arraste pra "Concluído" (não faz nada de git - o código já está na
              BASE_BRANCH desde a etapa anterior, só marca o card como concluído)
-
-Quando não sobra nada em Em Andamento / Em Desenvolvimento / Teste e existe pelo
-menos uma task recém-concluída, o watcher builda o app mobile (EAS) e manda o
-link de download no Telegram.
 ```
 
 Tudo roda **local, no seu PC**, num script Python (`automation/watcher.py`) que fica
@@ -221,12 +219,13 @@ estado atual do board.
    branch manualmente no meio do caminho).
    - **Deu certo:** arraste o card pra **Concluído**. Não faz nada de git - o código
      já estava na `BASE_BRANCH` desde o passo anterior, só marca o card.
-   - **Precisa ajustar:** duas formas, escolha a que preferir:
-     - **Só comente** no card o que está errado, sem arrastar nada. O watcher detecta
-       o comentário sozinho (dentro de ~30s), manda o card de volta pra **Em
-       Andamento**, redesenha o prompt do zero já considerando esse comentário
-       (`📝`/`🚀` no Telegram nesse meio-tempo), e executa de novo - retomando a
-       mesma sessão do Claude Code, então não perde o que já foi feito.
+   - **Precisa ajustar:** o watcher não reage sozinho a comentário em **Teste** — você
+     arrasta o card na mão pra onde quiser reprocessar. Duas formas, escolha a que
+     preferir:
+     - **Comente e arraste você mesmo de volta pra Em Andamento** — o watcher
+       redesenha o prompt do zero já considerando esse comentário (`📝`/`🚀` no
+       Telegram nesse meio-tempo), e executa de novo - retomando a mesma sessão do
+       Claude Code, então não perde o que já foi feito.
      - **Ou** comente e arraste você mesmo de volta pra **Em Desenvolvimento** — pula
        direto pra execução com o comentário como feedback cru (mais rápido, sem
        redesenhar o prompt), retomando a mesma sessão.

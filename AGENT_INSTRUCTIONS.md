@@ -231,11 +231,11 @@ A posição de scroll dentro de um capítulo é salva tanto **local** (`AsyncSto
      `git pull --ff-only` antes de começar, commita e dá push na `BASE_BRANCH` ao
      fim, move o card pra "Teste" e avisa no Telegram a cada etapa (gerando prompt /
      executando / pronto).
-  3. Em "Teste": comentar no card (sem arrastar nada) reinicia o ciclo sozinho -
-     manda de volta pra "Em Andamento", redesenha o prompt considerando o comentário,
-     executa de novo retomando a mesma sessão do Claude Code. Arrastar direto pra "Em
-     Desenvolvimento" também funciona (pula o redesenho, manda o comentário como
-     feedback cru).
+  3. Em "Teste": o watcher NÃO reage sozinho a comentário novo (removido a pedido do
+     usuário - ele prefere reprocessar manualmente). Você arrasta o card na mão:
+     de volta pra "Em Andamento" redesenha o prompt considerando o comentário e
+     executa de novo retomando a mesma sessão do Claude Code; de volta direto pra "Em
+     Desenvolvimento" pula o redesenho e manda o comentário como feedback cru.
   4. Card aprovado ("Concluído") → não faz nada de git (o código já está na
      `BASE_BRANCH` desde a etapa 2), só marca o card. Compatibilidade: cards criados
      ANTES dessa mudança que ainda têm uma branch própria em `state.json` continuam
