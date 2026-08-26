@@ -4,6 +4,31 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.5.2
+
+- **Corrige o botão "ir pro fim" do leitor parando cedo demais.** Na v1.2.4 o `stepScrollTo` desistia
+  (contador de estagnação) assim que a FlatList parava de crescer por alguns ticks — mas com
+  `windowSize` em boost = 9, isso acontecia com a lista ainda tendo dezenas de páginas seguintes não
+  montadas/decodificadas. O usuário tocava a tela depois e via mais conteúdo carregar (scroll "subia"
+  visualmente, e "marcar como lido" só funcionava depois desse toque).
+- **Critério de saída do loop agora é duplo.** Além de "alcançou o offset alvo", quando o alvo vem do
+  `totalContentHeightRef` pré-calculado (`requireNearFullRender`), também exige que a altura renderizada
+  chegue a 95% da altura total antes de aceitar que terminou — evita sair só por ter alcançado o alvo
+  do botão (que já para ANTES do fim real, por causa do `END_SAFE_GAP`) com muita página não-montada.
+- **`WINDOW_BOOST` 9→18, `BATCH_BOOST` 3→5, `BATCH_PERIOD_BOOST` 30→20** — janela de renderização
+  bem mais larga durante o scroll automático, só assim dá pra cobrir capítulos inteiros antes do loop
+  desistir. Custa mais memória, mas só dura poucos segundos com o overlay cobrindo a tela; revertido
+  assim que o scroll termina (leitura manual continua com a janela apertada de sempre).
+- **Tolerância de estagnação diferenciada**: 15 ticks quando o alvo é conhecido (podemos esperar mais,
+  a FlatList pode só estar decodificando devagar), 8 quando é fallback (aí a estagnação em si é o sinal
+  de "chegou ao fim" — esperar mais não ajuda).
+- **Nudge por `scrollToIndex`** a cada 3 ticks (só no "ir pro fim"): pula pra ~10 páginas à frente da
+  posição estimada e volta, forçando a FlatList a montar itens bem além do viewport atual — acelera a
+  cobertura em vez de depender só do avanço gradual (meia tela por tick) do `scrollToOffset`.
+- **`handleEndReached()` agora é chamado manualmente ao fim do "ir pro fim"** — antes dependia de um
+  `onScroll`/`onEndReached` nativo da FlatList pra disparar a checagem de "fim do capítulo", que não
+  acontecia depois de um pouso 100% programático. Corrige "marcar como lido só depois de tocar a tela".
+
 ## 1.5.1
 
 - **O filtro do "Lendo" agora olha o celular, não o flag do servidor** — virou **"Apenas com capítulos

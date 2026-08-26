@@ -59,28 +59,57 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
   frente não funciona**: o conteúdo à frente ainda não existe/não foi medido, o scroll morre no meio
   ou engasga enquanto as páginas decodificam. `stepScrollTo(token, getTarget, opts)` empurra em
   etapas — a cada tick vai até a borda do conteúdo já montado, o que força a FlatList a montar a
-  próxima leva, o `onContentSizeChange` atualiza `contentHeightRef`, e repete até
-  `contentHeight >= alvo + viewport`. Só então o salto/pouso final. Detalhes:
+  próxima leva, o `onContentSizeChange` atualiza `contentHeightRef`, e repete até haver conteúdo
+  suficiente. Só então o salto/pouso final. Detalhes:
   - `getTarget()` pode devolver `null` = "alvo desconhecido ainda" (pré-cálculo não terminou): aí
     empurra até o conteúdo **parar de crescer** (fim real) e resolve pelo `resolveTarget()` de
     fallback (`contentHeightRef`). Não trava nem faz scroll cego.
+  - **Critério de saída duplo** (v1.2.5): sai do loop quando (a) `contentHeight >= alvo + viewport`
+    **E** (b), se `opts.requireNearFullRender`, `contentHeight >= totalContentHeightRef * 0.95`
+    (`RENDER_COMPLETE_RATIO`). Sem (b) o loop saía só por (a) — que já é o alvo do "ir pro fim",
+    ANTES do fim real por causa do `END_SAFE_GAP` — deixando dezenas de páginas seguintes nunca
+    montadas pela FlatList (bug da v1.2.4: usuário tocava a tela depois e via mais conteúdo carregar,
+    porque a lista nunca tinha renderizado tudo). `requireNearFullRender` só é usado pelo "ir pro fim"
+    — o restore não precisa (o offset salvo pode ser bem menor que o capítulo inteiro).
+  - **Tolerância de estagnação depende de o alvo ser conhecido**: `STAGNANT_LIMIT_KNOWN_TARGET = 15`
+    ticks quando `getTarget()` devolveu um valor não-null (sabemos exatamente aonde ir — a FlatList
+    pode só estar decodificando devagar, vale esperar mais); `STAGNANT_LIMIT_FALLBACK = 8` quando o
+    alvo ainda é `null` (aí a própria estagnação É o sinal de "chegou ao fim", esperar mais não ajuda).
+  - **Nudge por `scrollToIndex`** (só com `requireNearFullRender`, a cada 3 ticks): pula pra
+    `índice atual estimado + 10` (estimativa por altura média = `totalContentHeightRef / totalPages`,
+    sem `getItemLayout`) e volta pro offset progressivo. `scrollToOffset` sozinho só empurra a borda
+    do que já foi renderizado (meia tela por tick); o nudge força a FlatList a montar um índice bem à
+    frente do viewport atual, acelerando a cobertura de páginas que a subida gradual demoraria a
+    alcançar. Envolto em try/catch — sem `getItemLayout` a estimativa pode errar o índice exato, mas
+    isso é inofensivo (o próximo tick corrige).
   - `animatedFinal` salta sem animação pra ~1 viewport antes do alvo (conteúdo já montado) e faz só
     o último trecho animado → pouso suave sem depender de conteúdo não-renderizado.
   - Roda dentro de `InteractionManager.runAfterInteractions` pra não competir com o mount da FlatList.
-- **`renderBoost`: janela de renderização temporária.** Durante scroll automático, `windowSize` 3→9,
-  `maxToRenderPerBatch` 1→3 e `updateCellsBatchingPeriod` 100→30, pra as levas montarem rápido.
-  **É revertido assim que o scroll termina** (e o offset é reafirmado depois, já que desmontar itens
-  pode deslocar) — durante a leitura manual a janela apertada continua valendo, que é o que segura a
-  memória com páginas de 800×10000.
+- **`renderBoost`: janela de renderização temporária.** Durante scroll automático, `windowSize` 3→18,
+  `maxToRenderPerBatch` 1→5 e `updateCellsBatchingPeriod` 100→20 (v1.2.5 — 9/3/30 da v1.2.4 não bastava
+  pra cobrir capítulos inteiros antes do `stepScrollTo` desistir por estagnação). Trade-off: mais
+  memória ENQUANTO o boost dura (só o "ir pro fim"/restore, poucos segundos, com overlay cobrindo a
+  tela). **É revertido assim que o scroll termina** (e o offset é reafirmado ~150ms depois, já que
+  desmontar os itens fora da janela apertada pode fazer a altura medida oscilar) — durante a leitura
+  manual a janela apertada continua valendo, que é o que segura a memória com páginas de 800×10000.
 - **Cancelamento por token.** `autoScrollTokenRef` guarda o scroll automático em andamento.
-  `onScrollBeginDrag` (toque do usuário), `scrollToTop`, troca de capítulo e unmount cancelam.
+  `onScrollBeginDrag` (toque do usuário), `scrollToTop`, troca de capítulo e unmount cancelam — o
+  cancelamento funciona mesmo com o boost já desligado (não depende de `renderBoost`, só do token).
   Enquanto o token existe, `handleEndReached` fica **suspenso** — senão os pulos intermediários (que
   encostam na borda do conteúdo montado, não no fim do capítulo) marcariam o capítulo como lido no meio.
+- **`scrollToBottomSafe` chama `handleEndReached()` manualmente ao pousar** (v1.2.5). Antes disso, só
+  o `onScroll`/`onEndReached` nativos da FlatList disparavam a checagem de "fim" — mas depois de um
+  pouso 100% programático não sobra nenhum evento de scroll do usuário pra acioná-los, então o
+  capítulo só marcava como lido se o usuário tocasse a tela depois. A chamada manual roda de forma
+  síncrona logo após o token ser limpo (sem `await` entre as duas linhas), então um toque do usuário
+  não consegue se intercalar; só dispara se o pouso não foi cancelado no meio do caminho.
 - O botão "ir pro fim" para em `END_SAFE_GAP` (220px) **de propósito**: o `onScroll` marca como lido
-  em `contentSize - 120`, então o botão te leva pra perto do fim sem marcar; o último trocinho de
-  scroll é do usuário (e aí sim marca, via critério (b) acima).
+  em `contentSize - 120`, então o botão te leva pra perto do fim sem marcar; a chamada manual acima
+  é quem marca (via critério (b) do `handleEndReached`, altura ≥98% do total pré-calculado).
 - ⚠️ `pages` (useMemo) tem que ficar declarado **antes** do efeito de pré-cálculo — ele usa `pages` na
   dep array, que é avaliada durante o render (declarar depois = TDZ/`ReferenceError` a cada render).
+  A mesma regra vale pra qualquer `const`/`useCallback` referenciado na dep array de outro hook: pra
+  refs (não entram em dep arrays), a ordem de declaração não importa.
 - **Restaurar scroll = max(local, servidor).** Ao abrir um capítulo, lê o scroll local (AsyncStorage) E
   o do servidor (`GET .../scroll`) e usa o MAIOR. Se o local está mais adiantado, faz `PUT` (enfileira
   via `sync-queue` se falhar). Se o servidor está mais adiantado, atualiza o local. Offline → usa o local

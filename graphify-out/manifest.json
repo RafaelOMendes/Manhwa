@@ -180,8 +180,8 @@
     "semantic_hash": "b84f188a0aa80082acdf7831769e4604"
   },
   "mobile/src/components/CbzReader.tsx": {
-    "mtime": 1787746217.9672596,
-    "ast_hash": "d89adf2dd4d676ee1c856d8b707315ef",
+    "mtime": 1787764502.954619,
+    "ast_hash": "c77c15343c9b9f9c128869b5774e6986",
     "semantic_hash": ""
   },
   "mobile/src/components/ManhwaCard.tsx": {
@@ -245,8 +245,8 @@
     "semantic_hash": ""
   },
   "mobile/src/lib/version.ts": {
-    "mtime": 1787759446.6415496,
-    "ast_hash": "a106f4cbc767eeaea569d4f19db5b17e",
+    "mtime": 1787764563.5091002,
+    "ast_hash": "3d7a2f10d1e9bd667b701f24071801bc",
     "semantic_hash": ""
   },
   "mobile/src/nativewind-env.d.ts": {
@@ -350,13 +350,13 @@
     "semantic_hash": "2d3a37a405a8f9ffb72ff12bdd3b0adf"
   },
   "mobile/AGENTS.md": {
-    "mtime": 1787746217.9622586,
-    "ast_hash": "7ad21ebeae61444abab1f7c272fb83b0",
+    "mtime": 1787764556.150437,
+    "ast_hash": "975d801dbd4981de88b757f45d13eb8d",
     "semantic_hash": ""
   },
   "mobile/CHANGELOG.md": {
-    "mtime": 1787759456.1365955,
-    "ast_hash": "91c06b68e32b670b3ebc38a2e3d2d148",
+    "mtime": 1787764580.3437533,
+    "ast_hash": "34c67c03f96d88aca1a5ed17a98e4637",
     "semantic_hash": ""
   },
   "mobile/CLAUDE.md": {

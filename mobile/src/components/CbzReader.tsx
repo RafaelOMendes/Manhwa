@@ -50,12 +50,37 @@ const END_SAFE_GAP = 220;
 // - Boost: usado SÓ durante scroll automático (restore / ir pro fim), enquanto
 //   precisamos que a FlatList monte as próximas levas o mais rápido possível.
 //   É revertido assim que o scroll termina, pra memória voltar ao normal.
+//   9 (v1.2.4) não bastava pro "ir pro fim": o `stepScrollTo` desistia
+//   (stagnant) com a lista ainda tendo dezenas de páginas não-montadas —
+//   janela pequena demais pra acompanhar o empurrão. 18 é um trade-off:
+//   custa mais memória ENQUANTO o boost dura (curto, alguns segundos, com
+//   overlay cobrindo a tela), mas garante decodificar quase tudo antes de
+//   parar. Nunca fica assim durante leitura normal.
 const WINDOW_NORMAL = 3;
-const WINDOW_BOOST = 9;
+const WINDOW_BOOST = 18;
 const BATCH_NORMAL = 1;
-const BATCH_BOOST = 3;
+const BATCH_BOOST = 5;
 const BATCH_PERIOD_NORMAL = 100;
-const BATCH_PERIOD_BOOST = 30;
+const BATCH_PERIOD_BOOST = 20;
+
+// Fração da altura total pré-calculada (`totalContentHeightRef`) que conta
+// como "praticamente tudo renderizado". Critério de saída EXTRA do
+// `stepScrollTo`, além de "alcançou o offset alvo" — sem ele, o loop podia
+// sair só por ter empurrado o offset até o alvo (que já é ANTES do fim real,
+// por causa do `END_SAFE_GAP`), com muitas páginas seguintes ainda não
+// montadas pela FlatList.
+const RENDER_COMPLETE_RATIO = 0.95;
+
+// Tolerância de "conteúdo parou de crescer" (ticks sem crescimento) antes do
+// `stepScrollTo` desistir. Quando o alvo é um valor CONHECIDO (não-null —
+// tipicamente `totalContentHeightRef` pré-calculado), damos mais fôlego: a
+// FlatList pode só estar decodificando imagens grandes, não necessariamente
+// travada, e sabemos exatamente aonde queremos chegar. Quando o alvo é
+// desconhecido (fallback: espera o conteúdo parar de crescer pra DEFINIR o
+// alvo), o próprio stagnation JÁ é o sinal de "chegou" — esperar mais não
+// ajuda, só atrasa.
+const STAGNANT_LIMIT_KNOWN_TARGET = 15;
+const STAGNANT_LIMIT_FALLBACK = 8;
 
 /** Token de cancelamento de um scroll automático em andamento. */
 type ScrollToken = { cancelled: boolean };
@@ -149,6 +174,10 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     // pela FlatList. Não interfere no mount da FlatList nem no restore
     // (esses seguem o caminho da v1.1.12 — progressivo).
     const totalContentHeightRef = useRef(0);
+    // Espelha `totalPages` num ref pra `stepScrollTo` (useCallback com deps
+    // vazias, refeito só quando muda de identidade) ler o valor atual sem
+    // precisar recriar a função a cada carregamento de capítulo.
+    const totalPagesRef = useRef(0);
     // Token do scroll automático em andamento (restore OU "ir pro fim").
     // Enquanto não-null, o `handleEndReached` fica suspenso — senão os pulos
     // intermediários (que encostam na borda do conteúdo já montado) marcariam
@@ -198,6 +227,8 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     // que vai pro servidor como current_chapter.
     const currentFile = files && currentIndex >= 0 ? files[currentIndex] : undefined;
     const chapNum = currentFile?.chapter_number ?? chapterNumber ?? extractChapterNumber(filename);
+
+    useEffect(() => { totalPagesRef.current = totalPages; }, [totalPages]);
 
     // Load chapter info + saved scroll position
     useEffect(() => {
@@ -398,6 +429,14 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
             animatedFinal?: boolean;
             /** Aborta se o usuário tocar/arrastar (usado pelo restore). */
             abortOnUserScroll?: boolean;
+            /**
+             * Exige RENDER_COMPLETE_RATIO da altura total pré-calculada antes
+             * de aceitar "alcancei o alvo" — usado pelo "ir pro fim", que
+             * precisa da lista quase inteira montada/decodificada ao parar.
+             * O restore NÃO usa isso: ele só precisa cobrir o offset salvo
+             * (que pode ser bem menor que o capítulo inteiro), não o fim.
+             */
+            requireNearFullRender?: boolean;
         } = {},
     ): Promise<number | null> => {
         const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
@@ -405,27 +444,74 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
 
         let stagnant = 0;
         let attempts = 0;
-        const MAX_ATTEMPTS = 120;
+        const MAX_ATTEMPTS = 160;
 
         while (!aborted() && attempts < MAX_ATTEMPTS) {
             const target = getTarget();
             const prevHeight = contentHeightRef.current;
-            // Já há conteúdo suficiente pra POUSAR no alvo (é preciso
-            // target + uma viewport, senão o scroll clampa antes).
-            if (target !== null && prevHeight >= target + viewportHeightRef.current) break;
+            const knownTotal = totalContentHeightRef.current;
+
+            // Critério de saída duplo: (a) já empurramos o offset até o alvo
+            // (+ 1 viewport de folga, senão o scroll clampa antes de chegar) E
+            // (b), quando pedido, a FlatList já tem RENDER_COMPLETE_RATIO da
+            // altura total pré-calculada montada. Sem (b), o loop podia sair só
+            // por ter alcançado o alvo do "ir pro fim" — que já é ANTES do fim
+            // real por causa do `END_SAFE_GAP` — com dezenas de páginas
+            // seguintes ainda não montadas pela FlatList.
+            const reachedTarget = target !== null && prevHeight >= target + viewportHeightRef.current;
+            const nearFullyRendered =
+                !opts.requireNearFullRender || knownTotal <= 0 || prevHeight >= knownTotal * RENDER_COMPLETE_RATIO;
+            if (reachedTarget && nearFullyRendered) break;
 
             const edge = Math.max(prevHeight - SCREEN_WIDTH * 0.5, 0);
             const pushTo = target === null ? edge : Math.min(edge, target);
             flatListRef.current?.scrollToOffset({ offset: pushTo, animated: false });
+            attempts++;
+
+            // A cada poucos ticks, força a FlatList a montar um índice BEM à
+            // frente do viewport atual: `scrollToOffset` sozinho só empurra a
+            // borda do que já foi renderizado (avança devagar, meia tela por
+            // tick); `scrollToIndex` faz a lista computar/montar um índice
+            // específico mesmo fora da janela atual (estimativa por altura
+            // média — sem `getItemLayout` pode não acertar o pixel exato, mas
+            // já força a montagem). Só faz sentido quando queremos a lista
+            // inteira renderizada (requireNearFullRender) e já sabemos o total
+            // de páginas + altura média (pré-cálculo pronto).
+            if (
+                opts.requireNearFullRender &&
+                attempts % 3 === 0 &&
+                knownTotal > 0 &&
+                totalPagesRef.current > 0
+            ) {
+                const avgPageHeight = knownTotal / totalPagesRef.current;
+                const approxIndex = Math.min(Math.floor(prevHeight / avgPageHeight), totalPagesRef.current - 1);
+                const nudgeIndex = Math.min(approxIndex + 10, totalPagesRef.current - 1);
+                try {
+                    flatListRef.current?.scrollToIndex({ index: nudgeIndex, animated: false, viewPosition: 0 });
+                } catch {
+                    // Índice fora do alcance estimado (sem getItemLayout) —
+                    // ignora, o próximo scrollToOffset progressivo já cobre.
+                }
+                await sleep(60);
+                if (aborted()) return null;
+                // Volta pro offset progressivo: o nudge foi só pra forçar a
+                // montagem de itens à frente, não pra mudar a posição visível.
+                flatListRef.current?.scrollToOffset({ offset: pushTo, animated: false });
+            }
 
             await sleep(90);
-            attempts++;
 
             if (contentHeightRef.current <= prevHeight + 4) {
                 // Conteúdo parou de crescer: ou chegamos ao fim real, ou a
-                // decodificação empacou. Alguns ticks de tolerância e desiste.
+                // decodificação empacou. Com alvo CONHECIDO (não-null) damos
+                // mais fôlego — pode só estar decodificando imagens grandes, e
+                // sabemos exatamente aonde queremos chegar; sem alvo (fallback,
+                // esperando o conteúdo estabilizar pra definir o alvo) a
+                // estagnação em si já É o sinal de "chegou", esperar mais só
+                // atrasa.
                 stagnant++;
-                if (stagnant > 8) break;
+                const stagnantLimit = target !== null ? STAGNANT_LIMIT_KNOWN_TARGET : STAGNANT_LIMIT_FALLBACK;
+                if (stagnant > stagnantLimit) break;
             } else {
                 stagnant = 0;
             }
@@ -690,8 +776,9 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
      * funcionava: a FlatList só tem ~`windowSize` viewports montadas, então o
      * offset era clampado na altura renderizada e o scroll parava no meio (ou
      * engasgava enquanto as páginas seguintes decodificavam). Agora é o mesmo
-     * scroll progressivo do restore, com a janela de renderização em boost
-     * (revertida no fim, pra não segurar memória durante a leitura).
+     * scroll progressivo do restore, com `requireNearFullRender` — exige quase
+     * toda a lista montada antes de parar — e a janela de renderização em
+     * boost (revertida no fim, pra não segurar memória durante a leitura).
      *
      * Alvo: `totalContentHeightRef` (pré-calculado via `RNImage.getSize`,
      * exato). Se o pré-cálculo ainda não terminou/falhou, o alvo fica `null` e
@@ -717,21 +804,28 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
 
         InteractionManager.runAfterInteractions(() => {
             (async () => {
+                let landed: number | null = null;
                 try {
-                    const landed = await stepScrollTo(token, targetFromTotal, {
+                    landed = await stepScrollTo(token, targetFromTotal, {
                         resolveTarget: targetFromContent,
                         animatedFinal: true,
+                        requireNearFullRender: true,
                     });
-                    setAutoScrolling(false);
-                    // Volta aos parâmetros normais de renderização ANTES do
-                    // último ajuste: desligar o boost desmonta os itens fora da
-                    // janela (a FlatList os troca por espaçadores da altura já
-                    // medida) e reafirmamos o offset por segurança — invisível
-                    // se nada mudou.
+                    // Desliga o boost ANTES do ajuste final (ainda dentro do
+                    // try, com o token vivo — um toque do usuário nesse
+                    // meio-tempo continua podendo cancelar via cancelAutoScroll,
+                    // que não depende do renderBoost). Desmontar os itens fora
+                    // da janela apertada pode fazer a altura medida oscilar
+                    // (volta a depender de espaçador em vez de medição real);
+                    // reafirmar o offset DEPOIS disso garante que o pouso final
+                    // já considera essa possível oscilação, em vez de "pular
+                    // pra cima" quando a janela encolhe de novo.
                     setRenderBoost(false);
                     if (landed !== null && !token.cancelled) {
-                        await new Promise(r => setTimeout(r, 120));
-                        if (!token.cancelled) {
+                        await new Promise(r => setTimeout(r, 150));
+                        if (token.cancelled) {
+                            landed = null;
+                        } else {
                             flatListRef.current?.scrollToOffset({ offset: landed, animated: false });
                         }
                     }
@@ -743,9 +837,21 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                     setAutoScrolling(false);
                     if (!autoScrollTokenRef.current) setRenderBoost(false);
                 }
+
+                // Dispara a checagem de "fim" manualmente: depois do pouso
+                // automático não sobra nenhum onScroll do usuário pra acionar o
+                // onEndReached da FlatList — sem isso, o capítulo só marcava
+                // como lido quando o usuário tocava a tela depois. Só dispara
+                // se o pouso terminou de verdade (não abortado por um toque no
+                // meio do caminho) — código síncrono a partir daqui, sem await,
+                // então não corre risco de um toque intercalar entre o clear do
+                // token acima e esta chamada.
+                if (landed !== null && !token.cancelled) {
+                    handleEndReached();
+                }
             })();
         });
-    }, [cancelAutoScroll, stepScrollTo]);
+    }, [cancelAutoScroll, stepScrollTo, handleEndReached]);
 
     const goToChapter = (file: ChapterFile) => {
         onNavigate?.(file.name, file.chapter_number);
