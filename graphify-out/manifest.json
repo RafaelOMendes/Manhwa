@@ -25,8 +25,8 @@
     "semantic_hash": "7ef9f5edc693e896e11c7238d0f973ce"
   },
   "backend/main.py": {
-    "mtime": 1787697219.351802,
-    "ast_hash": "cbce0630a9422ae95c746499bfe80a8b",
+    "mtime": 1787706638.9967399,
+    "ast_hash": "9d61ffc98036513101f98fac487c3083",
     "semantic_hash": ""
   },
   "backend/models.py": {
@@ -145,8 +145,8 @@
     "semantic_hash": "0dd9dccdb4b08595bc83df70d6a154d3"
   },
   "mobile/package.json": {
-    "mtime": 1787706254.1134548,
-    "ast_hash": "d235e1f2a3ac3e53e185b97cf56b2652",
+    "mtime": 1787706448.658958,
+    "ast_hash": "abde99dc521755d68ce1aeda8072b951",
     "semantic_hash": ""
   },
   "mobile/plugins/withNotifeeForegroundServiceType.js": {
@@ -170,8 +170,8 @@
     "semantic_hash": "43e79d98675f7c8df85c6be62ce90d3c"
   },
   "mobile/src/app/index.tsx": {
-    "mtime": 1787687789.398458,
-    "ast_hash": "011a0cacb3425f3f091e73747dd173af",
+    "mtime": 1787706685.8614242,
+    "ast_hash": "066c2ff957ae8a595f8fccf4523015db",
     "semantic_hash": ""
   },
   "mobile/src/components/AddManhwaModal.tsx": {
@@ -245,8 +245,8 @@
     "semantic_hash": "451ca3a53df68a0fd3e1cbfe8b210980"
   },
   "mobile/src/lib/version.ts": {
-    "mtime": 1787706365.9733355,
-    "ast_hash": "a5337dc43ca3d83da60e867b732f4b09",
+    "mtime": 1787706813.6324413,
+    "ast_hash": "f1d967d8dc62b02324dfacce34a8cd23",
     "semantic_hash": ""
   },
   "mobile/src/nativewind-env.d.ts": {
@@ -320,8 +320,8 @@
     "semantic_hash": ""
   },
   "AGENT_INSTRUCTIONS.md": {
-    "mtime": 1787697313.7159657,
-    "ast_hash": "68f6667f2b640e0bd27a581e6f4319d5",
+    "mtime": 1787706810.7865007,
+    "ast_hash": "74f464ecf29c5d09470f59fafd8a987a",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -350,13 +350,13 @@
     "semantic_hash": "2d3a37a405a8f9ffb72ff12bdd3b0adf"
   },
   "mobile/AGENTS.md": {
-    "mtime": 1787706362.2868085,
-    "ast_hash": "afd4c8e9d5fb6be549f8ba3cda084640",
+    "mtime": 1787706456.4386718,
+    "ast_hash": "f2bc4a356136ea43600f4c0ca038ab9d",
     "semantic_hash": ""
   },
   "mobile/CHANGELOG.md": {
-    "mtime": 1787706382.510964,
-    "ast_hash": "3a1c8903a1cdb62f2cb0e31e2a456b61",
+    "mtime": 1787706821.9952354,
+    "ast_hash": "aeced3b0157b3cb2da35d88245c0d55a",
     "semantic_hash": ""
   },
   "mobile/CLAUDE.md": {
@@ -562,6 +562,11 @@
   "backend/test_auto_mark_read.py": {
     "mtime": 1787690430.883086,
     "ast_hash": "3dc8b9ee9b8332a2cd227b07014fde0f",
+    "semantic_hash": ""
+  },
+  "mobile/src/lib/connectivity.ts": {
+    "mtime": 1787706647.3012867,
+    "ast_hash": "889b9daf2cd7ec2261d5b9b8d45e6d57",
     "semantic_hash": ""
   }
 }

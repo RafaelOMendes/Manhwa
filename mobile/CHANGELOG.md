@@ -4,6 +4,19 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.3.0
+
+- **Detecção de conectividade no startup (`src/lib/connectivity.ts`).** A home agora faz um ping curto
+  em `GET /api/ping` (rota nova no backend, responde `{"status":"ok"}` sem banco e sem token) com
+  **timeout explícito de 10s** via `AbortController`. Antes, sem servidor alcançável, a home ficava
+  presa no spinner até o fetch da lista estourar o timeout padrão do RN (~1min) pra só então cair pro
+  cache; agora decide em no máximo 10s e mostra os manhwas baixados direto.
+- **Offline virou estado explícito.** O aviso "Offline" só some quando o usuário toca nele
+  (`tryReconnect`, que drena a fila e refaz a lista) ou quando o app é fechado e reaberto — nesse caso
+  a home refaz o `checkConnectivity()` no startup. Enquanto o app está em modo offline, os refreshes
+  automáticos da lista (ex.: ao voltar do leitor) servem o cache local sem tentar o servidor, em vez de
+  ficarem pendurados num fetch que vai falhar e fazerem o botão piscar.
+
 ## 1.2.4
 
 - **Corrige crash de render do leitor.** O `useEffect` de pré-cálculo (1.2.2) usava `pages` na dep

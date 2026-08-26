@@ -226,6 +226,7 @@ mobile/
     │   └── CbzReader.tsx     # Leitor nativo de arquivos CBZ (capítulos)
     ├── lib/
     │   ├── api.ts            # BASE_URL da API (Tailscale: http://100.78.119.19:8000)
+    │   ├── connectivity.ts   # checkConnectivity(): ping no servidor com timeout de 10s
     │   └── cache.ts          # Cache local de capítulos (AsyncStorage + FileSystem)
     ├── constants/
     │   └── theme.ts          # Paleta de cores (dark/light), fontes e espaçamentos
@@ -241,6 +242,23 @@ mobile/
 - **API Base:** `src/lib/api.ts` lê `EXPO_PUBLIC_API_BASE` com fallback para o IP Tailscale `http://100.78.119.19:8000`. Para sobrescrever, crie `mobile/.env` com `EXPO_PUBLIC_API_BASE=http://...`.
 - **Tema:** cores centralizadas em `src/constants/theme.ts` — altere lá para mudar a paleta do app.
 - **Tipagens:** `src/types/manhwa.ts` deve estar sincronizado com `backend/models.py` e `frontend/types/manhwa.ts` (sincronização manual, por enquanto sem pacote compartilhado).
+
+#### 📶 Detecção de conectividade / modo offline
+- **`src/lib/connectivity.ts`** exporta `checkConnectivity(): Promise<boolean>` — faz `GET ${API_BASE}/api/ping`
+  com **timeout explícito de 10s** (`AbortController` + `setTimeout`). Retorna `true` só em HTTP 200; erro de
+  rede, status diferente ou estouro do timeout → `false`. Nunca lança. Logs só sob `__DEV__`.
+- **`GET /api/ping`** (backend, `main.py`) responde `{"status": "ok"}` sem banco e **sem token** — está em
+  `PUBLIC_PATHS`, checado no início do `verify_token`. Precisa ser isento porque um 401 seria
+  indistinguível de "sem conexão". Mantenha a rota trivial: qualquer I/O ali atrasa a decisão.
+- **A home (`src/app/index.tsx`) roda `checkConnectivity()` no startup.** Se o ping falha, entra em offline
+  direto e mostra o cache local, sem esperar o timeout (bem mais longo) do fetch da lista.
+- **Offline é um estado EXPLÍCITO — não flutua sozinho.** `isOffline` só volta a `false` quando o usuário
+  toca no botão "Offline/Reconectando" (`tryReconnect` → `fetchManhwas({ force: true })`) ou quando o app é
+  reaberto (novo `checkConnectivity` no startup). Enquanto `isOffline` for `true`, `fetchManhwas()` sem
+  `force` **nem tenta o servidor** — serve o cache local direto. Isso evita o botão piscando a cada refresh
+  de tela e evita ficar pendurado em fetches que vão falhar.
+- `isOfflineRef` espelha o state porque os `useCallback` (estáveis) capturariam o `isOffline` do render em
+  que foram criados. Use `setOffline(v)` (atualiza ref + state juntos), nunca `setIsOffline` direto.
 
 #### 🖥️ Modo Tela Cheia (Imersivo) — apenas no leitor CBZ
 O modo imersivo (sem barra de status e sem barra de navegação) é ativado **somente ao abrir o `CbzReader`** e restaurado ao fechar. O restante do app exibe as barras normalmente.

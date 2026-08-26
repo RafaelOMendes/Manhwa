@@ -43,6 +43,11 @@ REVIEW_PARALLELISM = _env_int("REVIEW_PARALLELISM", 4, 1, 16)
 # No VPS, defina API_TOKEN no ambiente para exigir o token em todas as rotas.
 API_TOKEN = os.environ.get("API_TOKEN", "").strip()
 
+# Rotas isentas de token. `/api/ping` existe só pra o cliente testar se o
+# servidor está alcançável — precisa responder mesmo sem credenciais, senão
+# um 401 seria indistinguível de "sem conexão".
+PUBLIC_PATHS = {"/api/ping"}
+
 
 async def verify_token(request: Request):
     """Exige o token quando API_TOKEN está definido.
@@ -51,6 +56,8 @@ async def verify_token(request: Request):
     ou via query `?token=<token>` (usado pelas <img> das páginas, que não
     conseguem enviar headers).
     """
+    if request.url.path in PUBLIC_PATHS:
+        return
     if not API_TOKEN:
         return
     auth = request.headers.get("Authorization", "")
@@ -184,6 +191,15 @@ async def get_telegram_scraper():
 @app.get("/")
 def root():
     return {"message": "Manhwa Tracker API"}
+
+@app.get("/api/ping")
+async def ping():
+    """Teste de conectividade: responde na hora, sem banco e sem token.
+
+    Usado pelo mobile (`src/lib/connectivity.ts`) pra decidir se entra em modo
+    offline. Mantenha esta rota trivial — qualquer I/O aqui atrasa a decisão.
+    """
+    return {"status": "ok"}
 
 @app.get("/api/manhwas", response_model=List[Manhwa])
 async def get_manhwas(status: Optional[str] = None, db: AsyncSession = Depends(get_db)):

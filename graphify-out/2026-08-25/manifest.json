@@ -145,8 +145,8 @@
     "semantic_hash": "0dd9dccdb4b08595bc83df70d6a154d3"
   },
   "mobile/package.json": {
-    "mtime": 1787687789.3964586,
-    "ast_hash": "abde99dc521755d68ce1aeda8072b951",
+    "mtime": 1787706254.1134548,
+    "ast_hash": "d235e1f2a3ac3e53e185b97cf56b2652",
     "semantic_hash": ""
   },
   "mobile/plugins/withNotifeeForegroundServiceType.js": {
@@ -180,9 +180,9 @@
     "semantic_hash": "b84f188a0aa80082acdf7831769e4604"
   },
   "mobile/src/components/CbzReader.tsx": {
-    "mtime": 1787270115.6327512,
-    "ast_hash": "6e97cbc331499b2703f4617bbbe95673",
-    "semantic_hash": "6e97cbc331499b2703f4617bbbe95673"
+    "mtime": 1787706325.24816,
+    "ast_hash": "6b3a11d3ea72163fd8135d3ad45ee4fe",
+    "semantic_hash": ""
   },
   "mobile/src/components/ManhwaCard.tsx": {
     "mtime": 1779371142.776959,
@@ -245,8 +245,8 @@
     "semantic_hash": "451ca3a53df68a0fd3e1cbfe8b210980"
   },
   "mobile/src/lib/version.ts": {
-    "mtime": 1787705710.6445515,
-    "ast_hash": "1f66786acca9d18ed9093189f988a9d1",
+    "mtime": 1787706365.9733355,
+    "ast_hash": "a5337dc43ca3d83da60e867b732f4b09",
     "semantic_hash": ""
   },
   "mobile/src/nativewind-env.d.ts": {
@@ -350,13 +350,13 @@
     "semantic_hash": "2d3a37a405a8f9ffb72ff12bdd3b0adf"
   },
   "mobile/AGENTS.md": {
-    "mtime": 1787705676.631647,
-    "ast_hash": "a1981478356c4f5262e8f54c956ccca2",
+    "mtime": 1787706362.2868085,
+    "ast_hash": "afd4c8e9d5fb6be549f8ba3cda084640",
     "semantic_hash": ""
   },
   "mobile/CHANGELOG.md": {
-    "mtime": 1787705721.4914114,
-    "ast_hash": "6b20401df14bfba18224b7b8456c391f",
+    "mtime": 1787706382.510964,
+    "ast_hash": "3a1c8903a1cdb62f2cb0e31e2a456b61",
     "semantic_hash": ""
   },
   "mobile/CLAUDE.md": {

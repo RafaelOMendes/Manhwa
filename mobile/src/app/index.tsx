@@ -14,6 +14,7 @@ import {
     getLastReadMap,
 } from '../lib/cache';
 import { drainQueue } from '../lib/sync-queue';
+import { checkConnectivity } from '../lib/connectivity';
 import { APP_VERSION } from '../lib/version';
 
 const FILTERS = [
@@ -71,14 +72,32 @@ export default function Home() {
     const [isOffline, setIsOffline] = useState(false);
     const [isReconnecting, setIsReconnecting] = useState(false);
 
+    // Espelho do isOffline pra ler o valor atual dentro de callbacks estáveis
+    // (o useCallback captura o state do render em que foi criado).
+    const isOfflineRef = useRef(false);
+    const setOffline = useCallback((value: boolean) => {
+        isOfflineRef.current = value;
+        setIsOffline(value);
+    }, []);
+
     const refreshLastRead = useCallback(() => {
         getLastReadMap().then(setLastReadMap).catch(() => {});
     }, []);
 
-    useEffect(() => {
-        fetchManhwas();
-        refreshLastRead();
-    }, [refreshLastRead]);
+    // Lista offline: snapshot do AsyncStorage filtrado pra quem tem capítulos baixados.
+    const loadCachedManhwas = useCallback(async () => {
+        const cached = await loadManhwaList<Manhwa>();
+        if (!cached || cached.length === 0) {
+            setManhwas([]);
+            return;
+        }
+        const filtered: Manhwa[] = [];
+        for (const m of cached) {
+            const local = await getLocalChaptersSet(m.id);
+            if (local.size > 0) filtered.push(m);
+        }
+        setManhwas(filtered);
+    }, []);
 
     // Ao voltar pra home (ex.: depois de ler um capítulo), reavalia a última leitura local.
     useFocusEffect(refreshLastRead);
@@ -105,34 +124,54 @@ export default function Home() {
         }
     }, [menuOpen, menuAnim]);
 
-    const fetchManhwas = useCallback(async () => {
+    /**
+     * `force` = tentativa explícita do usuário (botão "Offline/Reconectando") ou
+     * checagem de startup. Sem ele, estando offline nem chega a bater no servidor:
+     * offline é um estado explícito, só sai dele por ação do usuário ou reabrindo
+     * o app — assim o botão não pisca sozinho a cada refresh de tela.
+     */
+    const fetchManhwas = useCallback(async (opts?: { force?: boolean }) => {
+        if (isOfflineRef.current && !opts?.force) {
+            await loadCachedManhwas().catch(() => setManhwas([]));
+            setIsLoading(false);
+            return;
+        }
         try {
             const response = await fetch(`${API_BASE}/api/manhwas`);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data: Manhwa[] = await response.json();
             setManhwas(data);
-            setIsOffline(false);
+            setOffline(false);
             saveManhwaList(data).catch(() => {});
         } catch (error) {
             console.warn('[fetch] manhwas falhou, tentando cache local:', error);
-            // Fallback offline: lista do AsyncStorage filtrada pra quem tem chapters baixados
-            const cached = await loadManhwaList<Manhwa>();
-            if (cached && cached.length > 0) {
-                const filtered: Manhwa[] = [];
-                for (const m of cached) {
-                    const local = await getLocalChaptersSet(m.id);
-                    if (local.size > 0) filtered.push(m);
-                }
-                setManhwas(filtered);
-                setIsOffline(true);
-            } else {
-                setManhwas([]);
-                setIsOffline(true);
-            }
+            await loadCachedManhwas().catch(() => setManhwas([]));
+            setOffline(true);
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [loadCachedManhwas, setOffline]);
+
+    // Startup: um ping curto (10s) decide se a home entra em modo offline. Se o
+    // servidor não responde, mostra direto o cache local sem esperar o timeout
+    // (bem mais longo) do fetch da lista.
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            const online = await checkConnectivity();
+            if (cancelled) return;
+            if (!online) {
+                setOffline(true);
+                await loadCachedManhwas().catch(() => setManhwas([]));
+                setIsLoading(false);
+                return;
+            }
+            setOffline(false);
+            await fetchManhwas({ force: true });
+        })();
+        refreshLastRead();
+        return () => { cancelled = true; };
+    }, [fetchManhwas, loadCachedManhwas, refreshLastRead, setOffline]);
 
     // Passado pros cards: ao fechar o leitor, recarrega lista + "último lido"
     // (re-ordena a home na hora, mesmo offline).
@@ -147,7 +186,7 @@ export default function Home() {
         try {
             // Drena fila de leituras offline e depois tenta refazer a lista
             await drainQueue().catch(() => {});
-            await fetchManhwas();
+            await fetchManhwas({ force: true });
         } finally {
             setIsReconnecting(false);
         }
