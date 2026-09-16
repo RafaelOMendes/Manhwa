@@ -3,12 +3,15 @@ import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, Alert, Inter
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, HardDrive, CloudDownload, Trash2, Download, FileText, CheckCircle2, Square } from 'lucide-react-native';
+import { ArrowLeft, HardDrive, CloudDownload, Trash2, Download, FileText, CheckCircle2, Square, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { Manhwa } from '../types/manhwa';
 import { API_BASE } from '../lib/api';
 import {
     getManhwaStorage,
     getLocalChaptersSet,
+    getLocalChaptersDetailed,
+    deleteChapterLocal,
+    LocalChapterDetail,
     getReadChaptersSet,
     getLocalCoverUri,
     removeManhwaLocal,
@@ -124,6 +127,11 @@ export default function Downloads() {
     const [loading, setLoading] = useState(true);
     const [unit, setUnit] = useState<Unit>('chapters');
 
+    // Expansão por manhwa: mostra a lista de capítulos baixados individualmente.
+    const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
+    const [chapterDetails, setChapterDetails] = useState<Record<number, LocalChapterDetail[]>>({});
+    const [chapterLoading, setChapterLoading] = useState<Record<number, boolean>>({});
+
     const anyDownloading = Object.values(progress).some(p => p.status === 'downloading');
 
     const loadAll = useCallback(async () => {
@@ -236,6 +244,59 @@ export default function Downloads() {
         );
     }, [refreshRow]);
 
+    const toggleExpand = useCallback((m: Manhwa) => {
+        setExpandedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(m.id)) {
+                next.delete(m.id);
+                // Descarta o cache detalhado ao colapsar: reabrir busca de novo
+                // do disco, refletindo qualquer mudança (novo download etc).
+                setChapterDetails(d => {
+                    if (!(m.id in d)) return d;
+                    const { [m.id]: _drop, ...rest } = d;
+                    return rest;
+                });
+            } else {
+                next.add(m.id);
+            }
+            return next;
+        });
+    }, []);
+
+    // Busca a lista detalhada quando um manhwa é expandido (efeito separado do
+    // toggle pra não duplicar lógica de "abrir vs fechar" acima).
+    useEffect(() => {
+        for (const id of expandedIds) {
+            if (chapterDetails[id] || chapterLoading[id]) continue;
+            setChapterLoading(l => ({ ...l, [id]: true }));
+            getLocalChaptersDetailed(id)
+                .then(details => setChapterDetails(d => ({ ...d, [id]: details })))
+                .finally(() => setChapterLoading(l => ({ ...l, [id]: false })));
+        }
+    }, [expandedIds, chapterDetails, chapterLoading]);
+
+    const handleRemoveChapter = useCallback((m: Manhwa, detail: LocalChapterDetail) => {
+        Alert.alert(
+            'Remover capítulo',
+            `Apagar o capítulo ${detail.chapterNumber} de "${m.title}" do aparelho?`,
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Apagar',
+                    style: 'destructive',
+                    onPress: async () => {
+                        await deleteChapterLocal(m.id, detail.filename);
+                        setChapterDetails(d => ({
+                            ...d,
+                            [m.id]: (d[m.id] ?? []).filter(c => c.filename !== detail.filename),
+                        }));
+                        await refreshRow(m);
+                    },
+                },
+            ]
+        );
+    }, [refreshRow]);
+
     const totalPendingCount = rows.reduce((s, r) => s + r.pendingCount, 0);
     const totalPendingMB = rows.reduce((s, r) => s + r.pendingMB, 0);
     const anyUnknown = rows.some(r => !r.filesLoaded);
@@ -312,6 +373,9 @@ export default function Downloads() {
         const prog = progress[m.id];
         const isDownloading = prog?.status === 'downloading';
         const coverUri = item.coverUri;
+        const isExpanded = expandedIds.has(m.id);
+        const details = chapterDetails[m.id];
+        const isChapterLoading = !!chapterLoading[m.id];
 
         let fraction = 0;
         let progLabel = '';
@@ -336,7 +400,12 @@ export default function Downloads() {
                         )}
                     </View>
 
-                    <View className="flex-1">
+                    <TouchableOpacity
+                        className="flex-1"
+                        activeOpacity={item.downloadedChapters === 0 ? 1 : 0.7}
+                        disabled={item.downloadedChapters === 0}
+                        onPress={() => toggleExpand(m)}
+                    >
                         <Text className="text-sm font-semibold text-white" numberOfLines={2}>{m.title}</Text>
                         <View className="flex-row items-center gap-3 mt-1">
                             <View className="flex-row items-center gap-1">
@@ -344,6 +413,11 @@ export default function Downloads() {
                                 <Text className="text-[11px] text-gray-400">{item.downloadedChapters} baixados</Text>
                             </View>
                             <Text className="text-[11px] text-gray-500">{formatBytes(item.localBytes)}</Text>
+                            {item.downloadedChapters > 0 && (
+                                isExpanded
+                                    ? <ChevronUp size={12} color="#6b7280" />
+                                    : <ChevronDown size={12} color="#6b7280" />
+                            )}
                         </View>
                         <Text className="text-[11px] mt-0.5 text-gray-500">
                             {!item.filesLoaded
@@ -352,7 +426,7 @@ export default function Downloads() {
                                 ? 'em dia'
                                 : `falta ${item.pendingCount} cap. · ${item.pendingMB.toFixed(1)} MB`}
                         </Text>
-                    </View>
+                    </TouchableOpacity>
 
                     {/* Ações */}
                     <View className="items-center justify-center gap-2">
@@ -378,6 +452,39 @@ export default function Downloads() {
                         </TouchableOpacity>
                     </View>
                 </View>
+
+                {/* Lista expandida de capítulos baixados individualmente */}
+                {isExpanded && (
+                    <View className="px-3 pb-3 border-t border-gray-800 pt-2">
+                        {isChapterLoading && !details ? (
+                            <View className="py-3 items-center">
+                                <ActivityIndicator size="small" color="#6b7280" />
+                            </View>
+                        ) : !details || details.length === 0 ? (
+                            <Text className="text-[11px] text-gray-500 py-2">Nenhum capítulo baixado.</Text>
+                        ) : (
+                            details.map(d => (
+                                <View
+                                    key={d.filename}
+                                    className="flex-row items-center justify-between py-1.5"
+                                >
+                                    <View className="flex-1 pr-2">
+                                        <Text className="text-[12px] text-gray-300">Capítulo {d.chapterNumber}</Text>
+                                        <Text className="text-[10px] text-gray-500" numberOfLines={1}>
+                                            {d.filename} · {formatBytes(d.sizeBytes)}
+                                        </Text>
+                                    </View>
+                                    <TouchableOpacity
+                                        onPress={() => handleRemoveChapter(m, d)}
+                                        className="w-7 h-7 rounded-full items-center justify-center bg-[#262525]"
+                                    >
+                                        <Trash2 size={13} color="#ef4444" />
+                                    </TouchableOpacity>
+                                </View>
+                            ))
+                        )}
+                    </View>
+                )}
 
                 {/* Barra de progresso (toque alterna caps/MB) */}
                 {prog && (

@@ -4,6 +4,18 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.5.3
+
+- **Deletar capítulos baixados individualmente na tela de Downloads.** Antes só dava pra apagar TODOS
+  os capítulos de um manhwa de uma vez (botão de lixeira no topo). Agora, tocando no título/linha de
+  um manhwa com capítulos baixados, a linha expande e mostra a lista de capítulos locais (número,
+  nome do arquivo e tamanho), cada um com seu próprio botão de apagar — útil pra remover um capítulo
+  específico corrompido/bugado sem perder o resto do download.
+- Novas funções em `cache.ts`: `getLocalChaptersDetailed` (lista capítulos + tamanho em disco de um
+  manhwa) e `deleteChapterLocal` (apaga um capítulo específico do índice E do disco — diferente do
+  `deleteChapterDirAsync` interno usado pelo trim/eviction, que só mexia no disco).
+- O botão de apagar tudo (lixeira no topo de cada manhwa) continua funcionando como antes.
+
 ## 1.5.2
 
 - **Corrige o botão "ir pro fim" do leitor parando cedo demais.** Na v1.2.4 o `stepScrollTo` desistia

@@ -153,6 +153,58 @@ export async function getLocalChaptersSet(manhwaId: number): Promise<Set<string>
     return new Set([...Object.keys(m.pending), ...Object.keys(m.cached)]);
 }
 
+export interface LocalChapterDetail {
+    filename: string;
+    chapterNumber: number;
+    sizeBytes: number;
+}
+
+/**
+ * Lista detalhada (filename + número do capítulo + tamanho em disco) dos
+ * capítulos baixados (pending + cached) de um manhwa, ordenada por número.
+ * Usada pra exibir/apagar capítulos individualmente na tela de Downloads.
+ */
+export async function getLocalChaptersDetailed(manhwaId: number): Promise<LocalChapterDetail[]> {
+    const index = await loadIndex();
+    const m = index[manhwaId];
+    if (!m) return [];
+
+    const entries = [
+        ...Object.entries(m.pending),
+        ...Object.entries(m.cached),
+    ];
+
+    const details = await Promise.all(
+        entries.map(async ([filename, entry]) => ({
+            filename,
+            chapterNumber: chapterNumberFor(entry, filename),
+            sizeBytes: await dirSizeBytes(chapterDir(manhwaId, filename).uri),
+        }))
+    );
+
+    details.sort((a, b) => a.chapterNumber - b.chapterNumber);
+    return details;
+}
+
+/**
+ * Remove UM capítulo específico (índice + disco) sem mexer nos demais.
+ * Diferente de `deleteChapterDirAsync` (usada internamente por trim/eviction),
+ * essa também tira a entrada de `pending`/`cached` — senão o índice continuaria
+ * achando que o capítulo está baixado depois dos arquivos terem sumido do disco.
+ */
+export async function deleteChapterLocal(manhwaId: number, filename: string): Promise<void> {
+    await withIndexLock(async () => {
+        const index = await loadIndex();
+        const m = index[manhwaId];
+        if (m) {
+            delete m.pending[filename];
+            delete m.cached[filename];
+            await saveIndex(index);
+        }
+    });
+    deleteChapterDirAsync(manhwaId, filename);
+}
+
 /**
  * Mantém só o último capítulo lido (MAIOR chapter_number) em disco.
  * Files dos demais são apagados do disco e a entrada some do `cached`
