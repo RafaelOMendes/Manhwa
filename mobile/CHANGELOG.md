@@ -4,6 +4,15 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.5.7
+
+- **Remove o delete de capítulo do leitor.** O botão de lixeira adicionado na toolbar do
+  `CbzReader.tsx` (introduzido na 1.5.6) foi removido por completo — junto com o handler
+  `handleDeleteChapter`, o estado `isLocalChapter` (usado só pra controlar a visibilidade desse
+  botão) e os imports `Trash2` e `deleteChapterLocal` que só serviam a essa função. Deletar
+  capítulos baixados continua existindo apenas na tela de Downloads (lixeira por capítulo na lista
+  expandida de cada manhwa), que já cobria esse fluxo corretamente.
+
 ## 1.5.6
 
 - **Deletar capítulo individual direto no leitor.** Toolbar do leitor (`CbzReader.tsx`) ganhou um
