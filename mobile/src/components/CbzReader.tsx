@@ -280,7 +280,13 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                 // - Server > Local: vai pro server, atualiza local.
                 // - Local > Server: vai pro local, empurra pro server (enfileira se falhar).
                 // - Offline: usa local; a fila já cuida do push ao reconectar.
-                const localScroll = (await getLocalScroll(manhwaId, filename)) ?? 0;
+                // Sanitiza: um valor corrompido/negativo/não-finito (storage
+                // pisado, resposta malformada) viraria o `target` do restore
+                // progressivo e o levaria pra uma posição sem sentido.
+                const sanitizeOffset = (v: unknown): number =>
+                    typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : 0;
+
+                const localScroll = sanitizeOffset(await getLocalScroll(manhwaId, filename));
                 let serverScroll: number | null = null;
                 // `updated_at` do banco: usado pra carimbar o valor local quando
                 // adotamos o do servidor (ver saveLocalScroll).
@@ -291,7 +297,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                     );
                     if (scrollRes.ok) {
                         const scrollData = await scrollRes.json();
-                        serverScroll = scrollData.scroll_position ?? 0;
+                        serverScroll = sanitizeOffset(scrollData.scroll_position);
                         serverScrollAt = scrollData.updated_at ?? null;
                     }
                 } catch {
@@ -384,7 +390,10 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                     try {
                         const { w, h } = await getSize(pages[i].url);
                         if (cancelled) return;
-                        if (w > 0 && h > 0) {
+                        // `RNImage.getSize` em `file://` já foi observado devolvendo
+                        // 0/NaN pra arquivos ainda sendo escritos/indexados — mantém
+                        // o fallback em vez de contaminar `totalContentHeightRef`.
+                        if (Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0) {
                             heights[i] = (SCREEN_WIDTH * h) / w;
                             aspectRatiosRef.current[i.toString()] = w / h;
                         }
@@ -522,24 +531,39 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         const target = getTarget() ?? opts.resolveTarget?.() ?? null;
         if (target === null) return null;
 
+        // O loop pode ter saído SEM alcançar `target` (estagnação ou
+        // MAX_ATTEMPTS) — o conteúdo montado (`contentHeightRef.current`) fica
+        // aquém dele. Saltar pro `target` mesmo assim seria pedir um offset
+        // ALÉM do que a FlatList já mediu: sem `getItemLayout`, ela clampa o
+        // scroll na borda do contentSize atual — ou seja, aterrissa no fim do
+        // POUCO que renderizou, dando a impressão de "foi pro final" enquanto
+        // pula tudo que ficaria no meio (o bug fica mais visível em capítulos
+        // baixados: o pré-cálculo via `RNImage.getSize` em `file://` resolve
+        // quase instantâneo, então páginas montam já na altura REAL — muitas
+        // vezes bem mais alta que o fallback — e cada `windowSize` cobre menos
+        // páginas em contagem, aumentando a chance de estagnar antes de
+        // alcançar o offset salvo). Trava o pouso no que está PROVADAMENTE
+        // renderizado em vez do alvo aspiracional.
+        const safeTarget = Math.min(target, Math.max(contentHeightRef.current, 0));
+
         if (opts.animatedFinal) {
             // Pouso suave: salta (sem animação) pra ~1 viewport antes do alvo —
             // já com o conteúdo montado — e faz só o último trecho animado.
-            const runway = Math.max(target - viewportHeightRef.current * 0.8, 0);
+            const runway = Math.max(safeTarget - viewportHeightRef.current * 0.8, 0);
             flatListRef.current?.scrollToOffset({ offset: runway, animated: false });
             await sleep(60);
             if (aborted()) return null;
-            flatListRef.current?.scrollToOffset({ offset: target, animated: true });
+            flatListRef.current?.scrollToOffset({ offset: safeTarget, animated: true });
             await sleep(360);
         } else {
             await sleep(40);
-            flatListRef.current?.scrollToOffset({ offset: target, animated: false });
+            flatListRef.current?.scrollToOffset({ offset: safeTarget, animated: false });
             await sleep(120);
             if (aborted()) return null;
-            flatListRef.current?.scrollToOffset({ offset: target, animated: false });
+            flatListRef.current?.scrollToOffset({ offset: safeTarget, animated: false });
         }
 
-        return aborted() ? null : target;
+        return aborted() ? null : safeTarget;
     }, []);
 
     /** Cancela o scroll automático em andamento (se houver). */

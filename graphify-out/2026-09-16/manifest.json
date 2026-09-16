@@ -25,8 +25,8 @@
     "semantic_hash": "7ef9f5edc693e896e11c7238d0f973ce"
   },
   "backend/main.py": {
-    "mtime": 1787746217.90226,
-    "ast_hash": "af849c2ab78c6ee3ab203a45b11e984e",
+    "mtime": 1789571675.8329606,
+    "ast_hash": "c99a4b03e69cd2941465482ecf526b0b",
     "semantic_hash": ""
   },
   "backend/models.py": {
@@ -165,8 +165,8 @@
     "semantic_hash": ""
   },
   "mobile/src/app/downloads.tsx": {
-    "mtime": 1787746217.9652593,
-    "ast_hash": "cf20ac5b530406439f186347903d0d27",
+    "mtime": 1789571221.2489808,
+    "ast_hash": "b2b26a6f6a20c3270c6f4ec6dbef7e1b",
     "semantic_hash": ""
   },
   "mobile/src/app/index.tsx": {
@@ -225,8 +225,8 @@
     "semantic_hash": ""
   },
   "mobile/src/lib/cache.ts": {
-    "mtime": 1787746217.9692607,
-    "ast_hash": "adedf38ec2d8abe3df6b7b8adb87fd78",
+    "mtime": 1789571675.8339598,
+    "ast_hash": "f402432d51b5bd5c3c68fe690ccd9479",
     "semantic_hash": ""
   },
   "mobile/src/lib/download-manager.ts": {
@@ -245,8 +245,8 @@
     "semantic_hash": ""
   },
   "mobile/src/lib/version.ts": {
-    "mtime": 1787764563.5091002,
-    "ast_hash": "3d7a2f10d1e9bd667b701f24071801bc",
+    "mtime": 1789571258.638077,
+    "ast_hash": "77a1c2219753274440a9b4d51d6c441a",
     "semantic_hash": ""
   },
   "mobile/src/nativewind-env.d.ts": {
@@ -320,7 +320,7 @@
     "semantic_hash": ""
   },
   "AGENT_INSTRUCTIONS.md": {
-    "mtime": 1787746232.6901567,
+    "mtime": 1789571103.8898494,
     "ast_hash": "adad6fd6ec1ad8597b6f028ec2228379",
     "semantic_hash": ""
   },
@@ -350,13 +350,13 @@
     "semantic_hash": "2d3a37a405a8f9ffb72ff12bdd3b0adf"
   },
   "mobile/AGENTS.md": {
-    "mtime": 1787764556.150437,
-    "ast_hash": "975d801dbd4981de88b757f45d13eb8d",
+    "mtime": 1789571696.0330377,
+    "ast_hash": "c053038e0f8648c7e380126052acdb81",
     "semantic_hash": ""
   },
   "mobile/CHANGELOG.md": {
-    "mtime": 1787764580.3437533,
-    "ast_hash": "34c67c03f96d88aca1a5ed17a98e4637",
+    "mtime": 1789571263.7315638,
+    "ast_hash": "dfee9cf0bfaf33dbea99db80306459fd",
     "semantic_hash": ""
   },
   "mobile/CLAUDE.md": {

@@ -85,6 +85,28 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
   - `animatedFinal` salta sem animação pra ~1 viewport antes do alvo (conteúdo já montado) e faz só
     o último trecho animado → pouso suave sem depender de conteúdo não-renderizado.
   - Roda dentro de `InteractionManager.runAfterInteractions` pra não competir com o mount da FlatList.
+  - **Pouso final travado no conteúdo PROVADAMENTE renderizado (v1.5.5, fix de teleporte).** Depois
+    do loop, o código sempre fazia `scrollToOffset({ offset: target })` — mesmo quando o loop tinha
+    DESISTIDO (estagnação/`MAX_ATTEMPTS`) sem nunca ter alcançado `target`. Sem `getItemLayout`, pedir
+    um offset além do `contentSize` que a FlatList já mediu faz ela CLAMPAR pra borda do pouco que
+    renderizou — ou seja, o leitor "pousava" no fim do trecho pequeno que carregou, dando a impressão
+    de ter pulado pro final do capítulo sem renderizar o meio. Batia bem mais em **capítulos
+    baixados**: o pré-cálculo (`RNImage.getSize` em `file://`) resolve quase instantâneo (leitura de
+    disco, sem rede), então as páginas já montam na altura REAL (pode ser bem mais alta que o
+    fallback 0.7) em vez de crescer aos poucos via `onLoad` — cada página tomando um pedaço maior do
+    orçamento de `windowSize` (medido em alturas de viewport, não em nº de itens), o que reduz quantas
+    páginas cabem na janela renderizada e aumenta a chance de estagnar antes de alcançar o offset
+    salvo. Reabrir o capítulo "resolvia" porque o disco/cache já estava quente na segunda tentativa.
+    Fix: `safeTarget = Math.min(target, contentHeightRef.current)` — o pouso final NUNCA ultrapassa o
+    que já foi medido de verdade. Quando o loop alcançou o alvo normalmente isso é um no-op (o
+    conteúdo medido já é `>= target`); quando desistiu, o leitor pousa no fim do que renderizou (e o
+    próximo `onScroll` do usuário salva essa posição real) em vez de saltar pra um offset fantasma.
+  - **Sanitização do offset salvo.** `savedScrollOffset` (merge local/servidor) passa por
+    `sanitizeOffset()` — descarta valores não-numéricos, não-finitos ou ≤0, virando `0` (chapter abre
+    do topo) em vez de virar o `target` de um restore para um offset corrompido.
+  - **`RNImage.getSize` também é validado com `Number.isFinite`** (além de `w > 0 && h > 0`) antes de
+    alimentar `totalContentHeightRef`/`aspectRatiosRef` — já observado devolvendo `NaN` pra arquivos
+    `file://` ainda sendo escritos/indexados.
 - **`renderBoost`: janela de renderização temporária.** Durante scroll automático, `windowSize` 3→18,
   `maxToRenderPerBatch` 1→5 e `updateCellsBatchingPeriod` 100→20 (v1.2.5 — 9/3/30 da v1.2.4 não bastava
   pra cobrir capítulos inteiros antes do `stepScrollTo` desistir por estagnação). Trade-off: mais

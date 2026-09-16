@@ -4,6 +4,21 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.5.5
+
+- **Corrige teleporte pro final ao abrir capítulos baixados.** Às vezes, ao entrar num capítulo
+  baixado pela primeira vez, o leitor "pulava" pro fim sem renderizar as páginas do meio — sair e
+  reabrir resolvia. Causa: o restore progressivo (`stepScrollTo`) podia desistir (estagnação/limite de
+  tentativas) SEM ter alcançado o offset salvo, mas mesmo assim fazia o pouso final nesse offset —
+  como a FlatList não tem `getItemLayout`, ela clampava o scroll na borda do pouco conteúdo já
+  renderizado, dando a impressão de "foi pro final" pulando o meio. Mais comum em capítulos baixados
+  porque o pré-cálculo de altura (`RNImage.getSize` em `file://`) resolve quase instantâneo (disco, sem
+  rede) — as páginas montam direto na altura real (geralmente bem maior que o fallback), consumindo
+  mais rápido o orçamento de renderização da FlatList e aumentando a chance de estagnar antes da hora.
+  Agora o pouso final trava no que foi PROVADAMENTE renderizado (`Math.min(alvo, altura medida)`) em
+  vez de saltar pro offset salvo às cegas. Também: `savedScrollOffset` é sanitizado (valores
+  inválidos/negativos viram 0) e `RNImage.getSize` valida `Number.isFinite` antes de usar o resultado.
+
 ## 1.5.4
 
 - **Detecta e remove capítulos `.cbz` quebrados/incompletos.** Downloads interrompidos no meio

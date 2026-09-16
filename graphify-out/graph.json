@@ -5267,7 +5267,7 @@
       "label": "styles",
       "file_type": "code",
       "source_file": "mobile/src/components/CbzReader.tsx",
-      "source_location": "L1094",
+      "source_location": "L1118",
       "_origin": "ast",
       "id": "components_cbzreader_styles",
       "community": 90,
@@ -8007,7 +8007,7 @@
       "label": "Cache local / leitura (`src/lib/cache.ts`)",
       "file_type": "document",
       "source_file": "mobile/AGENTS.md",
-      "source_location": "L122",
+      "source_location": "L144",
       "_origin": "ast",
       "id": "mobile_agents_cache_local_leitura_src_lib_cache_ts",
       "community": 49,
@@ -8017,7 +8017,7 @@
       "label": "Download (`src/lib/download-manager.ts` + `background-download.ts`)",
       "file_type": "document",
       "source_file": "mobile/AGENTS.md",
-      "source_location": "L154",
+      "source_location": "L176",
       "_origin": "ast",
       "id": "mobile_agents_download_src_lib_download_manager_ts_background_download_ts",
       "community": 49,
@@ -8027,7 +8027,7 @@
       "label": "\ud83d\udea8 Contrato do foreground service (`registerForegroundService`) \u2014 LER antes de mexer",
       "file_type": "document",
       "source_file": "mobile/AGENTS.md",
-      "source_location": "L168",
+      "source_location": "L190",
       "_origin": "ast",
       "id": "mobile_agents_contrato_do_foreground_service_registerforegroundservice_ler_antes_de_mexer",
       "community": 49,
@@ -8037,7 +8037,7 @@
       "label": "Fila offline (`src/lib/sync-queue.ts`)",
       "file_type": "document",
       "source_file": "mobile/AGENTS.md",
-      "source_location": "L224",
+      "source_location": "L246",
       "_origin": "ast",
       "id": "mobile_agents_fila_offline_src_lib_sync_queue_ts",
       "community": 49,
@@ -8047,7 +8047,7 @@
       "label": "Nativo / build",
       "file_type": "document",
       "source_file": "mobile/AGENTS.md",
-      "source_location": "L228",
+      "source_location": "L250",
       "_origin": "ast",
       "id": "mobile_agents_nativo_build",
       "community": 49,
@@ -8057,7 +8057,7 @@
       "label": "Performance",
       "file_type": "document",
       "source_file": "mobile/AGENTS.md",
-      "source_location": "L243",
+      "source_location": "L265",
       "_origin": "ast",
       "id": "mobile_agents_performance",
       "community": 49,
@@ -8067,7 +8067,7 @@
       "label": "Entregar via `eas update` (autorizado pro Claude)",
       "file_type": "document",
       "source_file": "mobile/AGENTS.md",
-      "source_location": "L247",
+      "source_location": "L269",
       "_origin": "ast",
       "id": "mobile_agents_entregar_via_eas_update_autorizado_pro_claude",
       "community": 49,
@@ -8080,7 +8080,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "mobile_changelog",
-      "community": 82,
+      "community": 80,
       "norm_label": "changelog.md"
     },
     {
@@ -8094,10 +8094,30 @@
       "norm_label": "changelog (mobile)"
     },
     {
-      "label": "1.5.3",
+      "label": "1.5.5",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
       "source_location": "L7",
+      "_origin": "ast",
+      "id": "mobile_changelog_1_5_5",
+      "community": 5,
+      "norm_label": "1.5.5"
+    },
+    {
+      "label": "1.5.4",
+      "file_type": "document",
+      "source_file": "mobile/CHANGELOG.md",
+      "source_location": "L22",
+      "_origin": "ast",
+      "id": "mobile_changelog_1_5_4",
+      "community": 5,
+      "norm_label": "1.5.4"
+    },
+    {
+      "label": "1.5.3",
+      "file_type": "document",
+      "source_file": "mobile/CHANGELOG.md",
+      "source_location": "L32",
       "_origin": "ast",
       "id": "mobile_changelog_1_5_3",
       "community": 5,
@@ -8107,7 +8127,7 @@
       "label": "1.5.2",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L19",
+      "source_location": "L44",
       "_origin": "ast",
       "id": "mobile_changelog_1_5_2",
       "community": 5,
@@ -8117,7 +8137,7 @@
       "label": "1.5.1",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L44",
+      "source_location": "L69",
       "_origin": "ast",
       "id": "mobile_changelog_1_5_1",
       "community": 5,
@@ -8127,7 +8147,7 @@
       "label": "1.5.0",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L56",
+      "source_location": "L81",
       "_origin": "ast",
       "id": "mobile_changelog_1_5_0",
       "community": 5,
@@ -8137,7 +8157,7 @@
       "label": "1.4.2",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L65",
+      "source_location": "L90",
       "_origin": "ast",
       "id": "mobile_changelog_1_4_2",
       "community": 5,
@@ -8147,7 +8167,7 @@
       "label": "1.4.1",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L92",
+      "source_location": "L117",
       "_origin": "ast",
       "id": "mobile_changelog_1_4_1",
       "community": 5,
@@ -8157,7 +8177,7 @@
       "label": "1.4.0",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L99",
+      "source_location": "L124",
       "_origin": "ast",
       "id": "mobile_changelog_1_4_0",
       "community": 5,
@@ -8167,7 +8187,7 @@
       "label": "1.3.1",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L127",
+      "source_location": "L152",
       "_origin": "ast",
       "id": "mobile_changelog_1_3_1",
       "community": 5,
@@ -8177,7 +8197,7 @@
       "label": "1.3.0",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L146",
+      "source_location": "L171",
       "_origin": "ast",
       "id": "mobile_changelog_1_3_0",
       "community": 5,
@@ -8187,7 +8207,7 @@
       "label": "1.2.4",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L159",
+      "source_location": "L184",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_4",
       "community": 5,
@@ -8197,7 +8217,7 @@
       "label": "1.2.3",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L189",
+      "source_location": "L214",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_3",
       "community": 5,
@@ -8207,7 +8227,7 @@
       "label": "1.2.2",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L202",
+      "source_location": "L227",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_2",
       "community": 5,
@@ -8217,7 +8237,7 @@
       "label": "1.2.1",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L220",
+      "source_location": "L245",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_1",
       "community": 5,
@@ -8227,7 +8247,7 @@
       "label": "1.2.0",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L230",
+      "source_location": "L255",
       "_origin": "ast",
       "id": "mobile_changelog_1_2_0",
       "community": 5,
@@ -8237,7 +8257,7 @@
       "label": "1.1.12",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L250",
+      "source_location": "L275",
       "_origin": "ast",
       "id": "mobile_changelog_1_1_12",
       "community": 5,
@@ -8247,7 +8267,7 @@
       "label": "1.1.11",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L259",
+      "source_location": "L284",
       "_origin": "ast",
       "id": "mobile_changelog_1_1_11",
       "community": 5,
@@ -8257,7 +8277,7 @@
       "label": "1.1.10",
       "file_type": "document",
       "source_file": "mobile/CHANGELOG.md",
-      "source_location": "L269",
+      "source_location": "L294",
       "_origin": "ast",
       "id": "mobile_changelog_1_1_10",
       "community": 5,
@@ -8372,7 +8392,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 86,
+      "community": 78,
       "norm_label": "manhwa tracker architecture overview",
       "id": "agent_instructions_overview"
     },
@@ -8385,7 +8405,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 86,
+      "community": 78,
       "norm_label": "backend (fastapi / python)",
       "id": "agent_instructions_backend"
     },
@@ -8398,7 +8418,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 86,
+      "community": 78,
       "norm_label": "frontend (next.js / react web)",
       "id": "agent_instructions_frontend"
     },
@@ -8411,7 +8431,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 86,
+      "community": 80,
       "norm_label": "mobile (expo / react native)",
       "id": "agent_instructions_mobile"
     },
@@ -8424,7 +8444,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 82,
+      "community": 80,
       "norm_label": "modo tela cheia (imersivo) no leitor cbz",
       "id": "agent_instructions_immersive_mode"
     },
@@ -8437,7 +8457,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 82,
+      "community": 80,
       "norm_label": "persistencia de progresso de leitura (scroll por capitulo)",
       "id": "agent_instructions_scroll_persistence"
     },
@@ -8450,7 +8470,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 86,
+      "community": 78,
       "norm_label": "sincronizacao manual de tipagens (backend/frontend/mobile)",
       "id": "agent_instructions_type_sync"
     },
@@ -8489,7 +8509,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 82,
+      "community": 78,
       "norm_label": "leitor .cbz integrado (web e mobile)",
       "id": "readme_cbz_reader_feature"
     },
@@ -8567,7 +8587,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 65,
+      "community": 78,
       "norm_label": "fastapi==0.109.0",
       "id": "backend_requirements_fastapi"
     },
@@ -8684,7 +8704,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 82,
+      "community": 80,
       "norm_label": "leitor (cbzreader + reader-store + readerhost)",
       "id": "mobile_agents_reader"
     },
@@ -8723,7 +8743,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 82,
+      "community": 80,
       "norm_label": "fila offline (sync-queue)",
       "id": "mobile_agents_sync_queue"
     },
@@ -8762,7 +8782,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 82,
+      "community": 80,
       "norm_label": "pre-calculo de layout do leitor (1.2.0-1.2.2)",
       "id": "mobile_changelog_layout_precompute"
     },
@@ -13733,9 +13753,9 @@
       "source_file": "backend/main.py",
       "source_location": "L297",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_297",
-      "target": "backend_main_scan_cbz_files",
-      "confidence_score": 1.0
+      "target": "backend_main_scan_cbz_files"
     },
     {
       "relation": "calls",
@@ -13765,9 +13785,9 @@
       "source_file": "backend/main.py",
       "source_location": "L335",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_335",
-      "target": "backend_main_list_cbz_files_async",
-      "confidence_score": 1.0
+      "target": "backend_main_list_cbz_files_async"
     },
     {
       "relation": "rationale_for",
@@ -13775,9 +13795,9 @@
       "source_file": "backend/main.py",
       "source_location": "L348",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_348",
-      "target": "backend_main_list_manhwa_files",
-      "confidence_score": 1.0
+      "target": "backend_main_list_manhwa_files"
     },
     {
       "relation": "references",
@@ -13807,9 +13827,9 @@
       "source_file": "backend/main.py",
       "source_location": "L379",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_379",
-      "target": "backend_main_parse_client_ts",
-      "confidence_score": 1.0
+      "target": "backend_main_parse_client_ts"
     },
     {
       "relation": "calls",
@@ -13924,9 +13944,9 @@
       "source_file": "backend/main.py",
       "source_location": "L400",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_400",
-      "target": "backend_main_to_utc",
-      "confidence_score": 1.0
+      "target": "backend_main_to_utc"
     },
     {
       "relation": "calls",
@@ -13945,9 +13965,9 @@
       "source_file": "backend/main.py",
       "source_location": "L409",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_409",
-      "target": "backend_main_iso_utc",
-      "confidence_score": 1.0
+      "target": "backend_main_iso_utc"
     },
     {
       "relation": "calls",
@@ -13977,9 +13997,9 @@
       "source_file": "backend/main.py",
       "source_location": "L415",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_415",
-      "target": "backend_main_cliente_esta_velho",
-      "confidence_score": 1.0
+      "target": "backend_main_cliente_esta_velho"
     },
     {
       "relation": "calls",
@@ -14072,9 +14092,9 @@
       "source_file": "backend/main.py",
       "source_location": "L434",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_434",
-      "target": "backend_main_mark_previous_chapters_read",
-      "confidence_score": 1.0
+      "target": "backend_main_mark_previous_chapters_read"
     },
     {
       "relation": "calls",
@@ -14167,9 +14187,9 @@
       "source_file": "backend/main.py",
       "source_location": "L474",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_474",
-      "target": "backend_main_update_current_chapter",
-      "confidence_score": 1.0
+      "target": "backend_main_update_current_chapter"
     },
     {
       "relation": "uses",
@@ -14218,9 +14238,9 @@
       "source_file": "backend/main.py",
       "source_location": "L539",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_539",
-      "target": "backend_main_update_scroll",
-      "confidence_score": 1.0
+      "target": "backend_main_update_scroll"
     },
     {
       "relation": "calls",
@@ -14239,9 +14259,9 @@
       "source_file": "backend/main.py",
       "source_location": "L586",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_586",
-      "target": "backend_main_get_scroll",
-      "confidence_score": 1.0
+      "target": "backend_main_get_scroll"
     },
     {
       "relation": "rationale_for",
@@ -14249,9 +14269,9 @@
       "source_file": "backend/main.py",
       "source_location": "L604",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_604",
-      "target": "backend_main_get_cbz_info",
-      "confidence_score": 1.0
+      "target": "backend_main_get_cbz_info"
     },
     {
       "relation": "rationale_for",
@@ -14259,9 +14279,9 @@
       "source_file": "backend/main.py",
       "source_location": "L630",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_630",
-      "target": "backend_main_download_cbz_file",
-      "confidence_score": 1.0
+      "target": "backend_main_download_cbz_file"
     },
     {
       "relation": "rationale_for",
@@ -14269,9 +14289,9 @@
       "source_file": "backend/main.py",
       "source_location": "L655",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_655",
-      "target": "backend_main_get_cbz_page",
-      "confidence_score": 1.0
+      "target": "backend_main_get_cbz_page"
     },
     {
       "relation": "calls",
@@ -14290,9 +14310,9 @@
       "source_file": "backend/main.py",
       "source_location": "L696",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_696",
-      "target": "backend_main_persist_sync_updates",
-      "confidence_score": 1.0
+      "target": "backend_main_persist_sync_updates"
     },
     {
       "relation": "calls",
@@ -14311,9 +14331,9 @@
       "source_file": "backend/main.py",
       "source_location": "L746",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_746",
-      "target": "backend_main_download_all_manhwas",
-      "confidence_score": 1.0
+      "target": "backend_main_download_all_manhwas"
     },
     {
       "relation": "rationale_for",
@@ -14321,9 +14341,9 @@
       "source_file": "backend/main.py",
       "source_location": "L974",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_974",
-      "target": "backend_main_review_all_manhwas",
-      "confidence_score": 1.0
+      "target": "backend_main_review_all_manhwas"
     },
     {
       "relation": "rationale_for",
@@ -14331,9 +14351,9 @@
       "source_file": "backend/main.py",
       "source_location": "L1325",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_1325",
-      "target": "backend_main_import_from_telegram",
-      "confidence_score": 1.0
+      "target": "backend_main_import_from_telegram"
     },
     {
       "relation": "rationale_for",
@@ -14341,9 +14361,9 @@
       "source_file": "backend/main.py",
       "source_location": "L1466",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_main_rationale_1466",
-      "target": "backend_main_test_telegram_config",
-      "confidence_score": 1.0
+      "target": "backend_main_test_telegram_config"
     },
     {
       "relation": "contains",
@@ -17635,9 +17655,9 @@
       "source_file": "mobile/src/app/downloads.tsx",
       "source_location": "L9",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "app_downloads",
-      "target": "lib_cache_deletechapterlocal",
-      "confidence_score": 1.0
+      "target": "lib_cache_deletechapterlocal"
     },
     {
       "relation": "imports",
@@ -17646,9 +17666,9 @@
       "source_file": "mobile/src/app/downloads.tsx",
       "source_location": "L9",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "app_downloads",
-      "target": "lib_cache_getlocalchaptersdetailed",
-      "confidence_score": 1.0
+      "target": "lib_cache_getlocalchaptersdetailed"
     },
     {
       "relation": "imports",
@@ -17734,9 +17754,9 @@
       "source_file": "mobile/src/app/downloads.tsx",
       "source_location": "L9",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "app_downloads",
-      "target": "lib_cache_localchapterdetail",
-      "confidence_score": 1.0
+      "target": "lib_cache_localchapterdetail"
     },
     {
       "relation": "imports",
@@ -19187,9 +19207,9 @@
       "source_file": "mobile/src/lib/cache.ts",
       "source_location": "L202",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_cache",
-      "target": "lib_cache_deletechapterlocal",
-      "confidence_score": 1.0
+      "target": "lib_cache_deletechapterlocal"
     },
     {
       "relation": "contains",
@@ -19257,9 +19277,9 @@
       "source_file": "mobile/src/lib/cache.ts",
       "source_location": "L174",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_cache",
-      "target": "lib_cache_getlocalchaptersdetailed",
-      "confidence_score": 1.0
+      "target": "lib_cache_getlocalchaptersdetailed"
     },
     {
       "relation": "contains",
@@ -19427,9 +19447,9 @@
       "source_file": "mobile/src/lib/cache.ts",
       "source_location": "L163",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_cache",
-      "target": "lib_cache_localchapterdetail",
-      "confidence_score": 1.0
+      "target": "lib_cache_localchapterdetail"
     },
     {
       "relation": "contains",
@@ -19702,9 +19722,9 @@
       "source_file": "mobile/src/lib/cache.ts",
       "source_location": "L212",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_cache_deletechapterlocal",
-      "target": "lib_cache_deletechapterdirasync",
-      "confidence_score": 1.0
+      "target": "lib_cache_deletechapterdirasync"
     },
     {
       "relation": "calls",
@@ -19768,9 +19788,9 @@
       "source_file": "mobile/src/lib/cache.ts",
       "source_location": "L175",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_cache_getlocalchaptersdetailed",
-      "target": "lib_cache_loadindex",
-      "confidence_score": 1.0
+      "target": "lib_cache_loadindex"
     },
     {
       "relation": "calls",
@@ -19966,9 +19986,9 @@
       "source_file": "mobile/src/lib/cache.ts",
       "source_location": "L203",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_cache_deletechapterlocal",
-      "target": "lib_cache_withindexlock",
-      "confidence_score": 1.0
+      "target": "lib_cache_withindexlock"
     },
     {
       "relation": "calls",
@@ -22416,8 +22436,28 @@
       "source_file": "mobile/CHANGELOG.md",
       "source_location": "L7",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "mobile_changelog_changelog_mobile",
-      "target": "mobile_changelog_1_5_3",
+      "target": "mobile_changelog_1_5_3"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "mobile/CHANGELOG.md",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "mobile_changelog_changelog_mobile",
+      "target": "mobile_changelog_1_5_4",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "mobile/CHANGELOG.md",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "mobile_changelog_changelog_mobile",
+      "target": "mobile_changelog_1_5_5",
       "confidence_score": 1.0
     },
     {
@@ -23790,5 +23830,5 @@
       "source_file": ".claude/skills/graphify/references/query.md"
     }
   ],
-  "built_at_commit": "88200f7919c1843c403fa22d4f17affb2042803a"
+  "built_at_commit": "2f619b3b9f658482cad4c4cc0e27c9c669f3f925"
 }
