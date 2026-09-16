@@ -164,6 +164,14 @@ export interface LocalChapterDetail {
     filename: string;
     chapterNumber: number;
     sizeBytes: number;
+    /**
+     * `true` quando `sizeBytes` está abaixo de `MIN_CBZ_SIZE_BYTES` (100KB) —
+     * indício de download incompleto/corrompido (conexão caiu no meio, disco
+     * cheio etc.) que passou pelas checagens de `downloadChapter`/backend (ex.:
+     * capítulo baixado antes desses filtros existirem). Só informativo: não
+     * deleta nada sozinho, a UI é quem decide o que mostrar/sugerir.
+     */
+    possiblyCorrupted: boolean;
 }
 
 /**
@@ -182,11 +190,15 @@ export async function getLocalChaptersDetailed(manhwaId: number): Promise<LocalC
     ];
 
     const details = await Promise.all(
-        entries.map(async ([filename, entry]) => ({
-            filename,
-            chapterNumber: chapterNumberFor(entry, filename),
-            sizeBytes: await dirSizeBytes(chapterDir(manhwaId, filename).uri),
-        }))
+        entries.map(async ([filename, entry]) => {
+            const sizeBytes = await dirSizeBytes(chapterDir(manhwaId, filename).uri);
+            return {
+                filename,
+                chapterNumber: chapterNumberFor(entry, filename),
+                sizeBytes,
+                possiblyCorrupted: sizeBytes < MIN_CBZ_SIZE_BYTES,
+            };
+        })
     );
 
     details.sort((a, b) => a.chapterNumber - b.chapterNumber);

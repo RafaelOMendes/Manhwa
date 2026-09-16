@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
     View, Text, TouchableOpacity, ActivityIndicator,
-    FlatList, Dimensions, StyleSheet, Animated, BackHandler,
+    FlatList, Dimensions, StyleSheet, Animated, BackHandler, Alert,
     Image as RNImage, InteractionManager,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { X, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, SkipForward } from 'lucide-react-native';
+import { X, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, SkipForward, Trash2 } from 'lucide-react-native';
 import { StatusBar, setStatusBarHidden } from 'expo-status-bar';
 import * as NavigationBar from 'expo-navigation-bar';
 import { API_BASE } from '../lib/api';
-import { getLocalChapter, markChapterReadLocal, saveLocalScroll, getLocalScroll, markManhwaRead } from '../lib/cache';
+import { getLocalChapter, markChapterReadLocal, saveLocalScroll, getLocalScroll, markManhwaRead, deleteChapterLocal } from '../lib/cache';
 import { enqueueChapterRead, enqueueScroll } from '../lib/sync-queue';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -142,6 +142,10 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     const [allPagesLoaded, setAllPagesLoaded] = useState(false);
     const [savedScrollOffset, setSavedScrollOffset] = useState(0);
     const [localPageUri, setLocalPageUri] = useState<((page: number) => string) | null>(null);
+    // Capítulo atual está baixado no aparelho — só nesse caso o botão de
+    // deletar (toolbar) aparece, já que `deleteChapterLocal` só faz sentido
+    // pra arquivos locais.
+    const [isLocalChapter, setIsLocalChapter] = useState(false);
     // `restoring`: roda o scroll progressivo até atingir `savedScrollOffset`.
     // Durante essa fase a UI fica coberta pelo spinner (pra esconder as
     // páginas "passando rápido") e a `FlatList` renderiza só uns poucos itens
@@ -247,6 +251,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         userHasInteracted.current = false;
         setSavedScrollOffset(0);
         setLocalPageUri(null);
+        setIsLocalChapter(false);
         aspectRatiosRef.current = {};
         loadedIdsRef.current = new Set();
         totalContentHeightRef.current = 0;
@@ -269,6 +274,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                 if (isLocal) {
                     setTotalPages(local.totalPages!);
                     setLocalPageUri(() => local.getPageUri!);
+                    setIsLocalChapter(true);
                 } else {
                     // Não-baixado: precisa do servidor pras páginas
                     const res = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}`);
@@ -881,6 +887,34 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         onNavigate?.(file.name, file.chapter_number);
     };
 
+    /**
+     * Deleta o capítulo ATUAL do aparelho (índice + disco, via `deleteChapterLocal`
+     * — mesmo caminho usado pela lixeira individual em Downloads) e fecha o leitor.
+     * Fechar em vez de navegar pro próximo/anterior evita reabrir um reader cujo
+     * `localPageUri` acabou de virar inválido.
+     */
+    const handleDeleteChapter = useCallback(() => {
+        Alert.alert(
+            'Deletar capítulo',
+            `Apagar o capítulo ${chapNum} do aparelho? Você pode baixá-lo de novo depois.`,
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Apagar',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            await deleteChapterLocal(manhwaId, filename);
+                        } catch (e) {
+                            console.warn('[reader] deleteChapterLocal:', e);
+                        }
+                        onClose();
+                    },
+                },
+            ]
+        );
+    }, [manhwaId, filename, chapNum, onClose]);
+
     // renderItem ESTÁVEL: depende só de toggleUI/handlePageLoaded (memoizados).
     // Assim, quando o reader re-renderiza (toast, reachedEnd, header), o FlatList
     // não reprocessa os itens.
@@ -982,6 +1016,11 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                             <Text style={styles.headerBtnText}>Próximo</Text>
                             <ChevronRight size={20} color="white" />
                         </TouchableOpacity>
+                        {isLocalChapter && (
+                            <TouchableOpacity onPress={handleDeleteChapter} style={styles.closeBtn}>
+                                <Trash2 size={20} color="#f87171" />
+                            </TouchableOpacity>
+                        )}
                         <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
                             <X size={22} color="white" />
                         </TouchableOpacity>

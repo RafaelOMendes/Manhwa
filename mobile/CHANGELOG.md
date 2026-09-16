@@ -4,6 +4,19 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.5.6
+
+- **Deletar capítulo individual direto no leitor.** Toolbar do leitor (`CbzReader.tsx`) ganhou um
+  botão de lixeira ao lado do X de fechar, visível só quando o capítulo aberto está baixado
+  localmente. Confirma com `Alert` destrutivo ("Deletar capítulo X?"), chama `deleteChapterLocal`
+  (mesmo caminho usado pela lixeira individual em Downloads) e fecha o leitor em seguida — igual ao
+  botão voltar do Android. Erros (ex.: arquivo já removido) só logam, não quebram o fluxo.
+- **Aviso de capítulo possivelmente corrompido em Downloads.** `getLocalChaptersDetailed` (`cache.ts`)
+  agora expõe `possiblyCorrupted` (tamanho em disco abaixo de 100KB, mesmo limiar usado pra barrar
+  `.cbz` quebrados no download). A lista expandida de capítulos na tela de Downloads mostra um badge
+  "possivelmente corrompido" ao lado do número do capítulo nesses casos — só informativo, não apaga
+  nada sozinho; sugere ao usuário deletar (lixeira já existente) e re-baixar.
+
 ## 1.5.5
 
 - **Corrige teleporte pro final ao abrir capítulos baixados.** Às vezes, ao entrar num capítulo

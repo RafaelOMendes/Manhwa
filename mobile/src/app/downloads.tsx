@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, Alert, Inter
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, HardDrive, CloudDownload, Trash2, Download, FileText, CheckCircle2, Square, ChevronDown, ChevronUp } from 'lucide-react-native';
+import { ArrowLeft, HardDrive, CloudDownload, Trash2, Download, FileText, CheckCircle2, Square, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react-native';
 import { Manhwa } from '../types/manhwa';
 import { API_BASE } from '../lib/api';
 import {
@@ -469,7 +469,15 @@ export default function Downloads() {
                                     className="flex-row items-center justify-between py-1.5"
                                 >
                                     <View className="flex-1 pr-2">
-                                        <Text className="text-[12px] text-gray-300">Capítulo {d.chapterNumber}</Text>
+                                        <View className="flex-row items-center gap-1.5">
+                                            <Text className="text-[12px] text-gray-300">Capítulo {d.chapterNumber}</Text>
+                                            {d.possiblyCorrupted && (
+                                                <View className="flex-row items-center gap-1 bg-amber-500/15 px-1.5 py-0.5 rounded">
+                                                    <AlertTriangle size={10} color="#fbbf24" />
+                                                    <Text className="text-[9px] text-amber-400">possivelmente corrompido</Text>
+                                                </View>
+                                            )}
+                                        </View>
                                         <Text className="text-[10px] text-gray-500" numberOfLines={1}>
                                             {d.filename} · {formatBytes(d.sizeBytes)}
                                         </Text>
