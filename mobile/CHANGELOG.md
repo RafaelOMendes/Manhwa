@@ -4,6 +4,16 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.5.4
+
+- **Detecta e remove capítulos `.cbz` quebrados/incompletos.** Downloads interrompidos no meio
+  (conexão caiu, disco cheio) deixavam um `.cbz` minúsculo que aparecia normalmente na lista e
+  quebrava a leitura. Agora `downloadChapter` (`cache.ts`) checa o tamanho do `.cbz` baixado ANTES de
+  extrair — abaixo de 100KB é tratado como quebrado, cai no cleanup que já existia (apaga
+  `_chapter.cbz` + pasta do capítulo) e conta como erro no sync. O backend também para de listar
+  esses arquivos em `/api/manhwas/{id}/files` (mesmo limiar de 100KB em `_scan_cbz_files`), então a
+  home e a tela de Downloads nem chegam a oferecer esses capítulos pra baixar.
+
 ## 1.5.3
 
 - **Deletar capítulos baixados individualmente na tela de Downloads.** Antes só dava pra apagar TODOS

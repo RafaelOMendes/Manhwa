@@ -73,6 +73,13 @@ const MAX_CACHED = 1;
 const CHAPTER_CONCURRENCY = 5;
 /** Teto pra baixar UM capítulo. Ver o comentário em `downloadChapter`. */
 const CHAPTER_TIMEOUT_MS = 5 * 60 * 1000;
+/**
+ * Abaixo disso o .cbz baixado é considerado quebrado/incompleto (conexão caiu
+ * no meio, disco cheio etc.) — mesmo limiar do backend (`MIN_CBZ_SIZE_BYTES`
+ * em `main.py`), que já filtra esses arquivos da listagem. Serve de segunda
+ * linha de defesa pra quem baixou antes do filtro existir no servidor.
+ */
+const MIN_CBZ_SIZE_BYTES = 100 * 1024;
 
 async function loadIndex(): Promise<CacheIndex> {
     try {
@@ -279,6 +286,9 @@ async function downloadChapter(manhwaId: number, filename: string): Promise<numb
                 );
             }),
         ]);
+        if (cbzTemp.size < MIN_CBZ_SIZE_BYTES) {
+            throw new Error(`CBZ quebrado/incompleto: ${cbzTemp.size} bytes (< ${MIN_CBZ_SIZE_BYTES})`);
+        }
         const sizeMB = (cbzTemp.size / (1024 * 1024)).toFixed(1);
         const dlMs = Date.now() - t0;
         console.log(`[download]   📦 #${manhwaId}/${filename} CBZ recebido — ${sizeMB}MB em ${dlMs}ms`);

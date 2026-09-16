@@ -206,6 +206,15 @@ Pra depurar: os logs são prefixados `[fgs]` — `handler iniciado` → `encerra
 - **Limpeza** (`cleanupCorrupted`): remove do disco o que está órfão/corrompido (pastas de manhwa/cap
   fora do índice, capítulos sem `page_0.jpg`, `_chapter.cbz` residual). Roda na tela de Downloads
   quando NÃO há download ativo — resolve o caso "X GB usado mas 0 baixado" de downloads interrompidos.
+- **CBZ quebrado/incompleto é barrado em duas camadas.** O backend (`_scan_cbz_files` em
+  `backend/main.py`) já filtra do `/api/manhwas/{id}/files` qualquer `.cbz` abaixo de
+  `MIN_CBZ_SIZE_BYTES` (100KB) — download interrompido no meio, disco cheio etc. nunca aparecem na
+  listagem, então nem a home nem a tela de Downloads chegam a oferecer esses capítulos. O mobile
+  reforça com o MESMO limiar em `downloadChapter` (`cache.ts`): depois do `File.downloadFileAsync`,
+  antes de extrair, `cbzTemp.size < MIN_CBZ_SIZE_BYTES` joga um erro — cai no catch existente, que já
+  apaga `_chapter.cbz` e a pasta do capítulo e conta como erro no `syncManhwaLocal`. Essa segunda
+  camada cobre quem baixou de um servidor sem o filtro (ou uma conexão que morreu no meio do
+  download local mesmo com o arquivo remoto íntegro).
 - Tela de Downloads carrega **progressivamente** (linhas aparecem conforme prontas) e lê o índice uma
   única vez (`getManhwasWithLocalData`) pra abrir rápido.
 - ⚠️ **NÃO mexer no botão "Baixar tudo" (`downloads.tsx`) sem pedir permissão ao usuário.** O usuário

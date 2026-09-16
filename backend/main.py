@@ -286,6 +286,13 @@ def _extract_chapter_number(filename: str) -> float:
     return 0
 
 
+# Abaixo disso um .cbz é considerado quebrado/incompleto (download interrompido
+# no meio, disco cheio etc.) — capítulo real com páginas de manhwa nunca fica
+# tão pequeno. Excluído da listagem em vez de marcado, pra manter o contrato
+# da resposta simples (sem campo `broken` pro mobile ter que filtrar).
+MIN_CBZ_SIZE_BYTES = 100 * 1024
+
+
 def _scan_cbz_files(download_dir: str) -> List[dict]:
     """Lista os .cbz de um diretório já ordenados pelo número do capítulo.
 
@@ -307,6 +314,9 @@ def _scan_cbz_files(download_dir: str) -> List[dict]:
                 except OSError:
                     # Arquivo sumiu no meio da varredura (download em andamento,
                     # por exemplo). Ignorar é melhor que derrubar a listagem toda.
+                    continue
+                if tamanho < MIN_CBZ_SIZE_BYTES:
+                    # Quebrado/incompleto — não entra na listagem.
                     continue
                 raw_files.append({
                     "name": entrada.name,
