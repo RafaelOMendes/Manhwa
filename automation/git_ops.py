@@ -19,6 +19,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from proc_utils import resolve_command
+from logging_setup import get_logger
+
+logger = get_logger(__name__)
 
 GIT_CMD = resolve_command("git")
 
@@ -43,6 +46,9 @@ def _run(repo_dir: Path, *args: str) -> GitResult:
         errors="replace",
     )
     output = (proc.stdout or "") + (proc.stderr or "")
+    logger.debug(f"git {' '.join(args)} -> returncode={proc.returncode}")
+    if proc.returncode != 0:
+        logger.warning(f"git {' '.join(args)} falhou: {output[:300]}")
     return GitResult(ok=proc.returncode == 0, output=output)
 
 
@@ -76,19 +82,25 @@ def prepare_base_branch(repo_dir: Path, base_branch: str) -> None:
     você, ou por outra execução) faria esse push falhar por non-fast-forward.
     Lança GitError se a árvore estiver suja ou se não conseguir atualizar."""
     if not is_clean(repo_dir):
-        raise GitError(
+        err = GitError(
             f"A árvore de trabalho tem mudanças não commitadas. Não vou mexer em "
             f"'{base_branch}' pra não misturar coisas. Rode `git status` em {repo_dir} "
             f"e resolva (commit, stash ou descarte) antes de deixar a automação continuar."
         )
+        logger.error(str(err))
+        raise err
 
     checkout = _run(repo_dir, "checkout", base_branch)
     if not checkout.ok:
-        raise GitError(f"Não consegui fazer checkout de '{base_branch}': {checkout.output}")
+        err = GitError(f"Não consegui fazer checkout de '{base_branch}': {checkout.output}")
+        logger.error(str(err))
+        raise err
 
     pull = _run(repo_dir, "pull", "--ff-only", "origin", base_branch)
     if not pull.ok:
-        raise GitError(f"Não consegui atualizar '{base_branch}' com o remoto: {pull.output}")
+        err = GitError(f"Não consegui atualizar '{base_branch}' com o remoto: {pull.output}")
+        logger.error(str(err))
+        raise err
 
 
 def automation_version(repo_dir: Path) -> str:

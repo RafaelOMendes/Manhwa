@@ -29,6 +29,10 @@ import os
 import shutil
 import sys
 
+from logging_setup import get_logger
+
+logger = get_logger(__name__)
+
 # Extensões que o Windows NÃO tenta resolver sozinho quando você só dá o nome sem
 # extensão (.CMD/.BAT/.EXE geralmente já estão na PATHEXT do usuário, mas cobrimos
 # de novo aqui só por garantia; .PS1 quase nunca está).
@@ -69,6 +73,7 @@ def resolve_command(name: str) -> list[str]:
         )
 
     resolved = shutil.which(name) or _manual_path_search(name) or name
+    logger.debug(f"resolve_command({name!r}) -> {resolved!r}")
 
     if resolved.lower().endswith(".ps1"):
         return ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", resolved]

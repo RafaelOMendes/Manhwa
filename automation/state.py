@@ -17,6 +17,10 @@ import threading
 from pathlib import Path
 from typing import Any
 
+from logging_setup import get_logger
+
+logger = get_logger(__name__)
+
 STATE_PATH = Path(__file__).parent / "state.json"
 
 _lock = threading.Lock()
@@ -40,6 +44,7 @@ def load() -> dict[str, Any]:
             with open(STATE_PATH, "r", encoding="utf-8") as f:
                 data = json.load(f)
         except (json.JSONDecodeError, OSError):
+            logger.error(f"Falha ao ler {STATE_PATH}, usando estado padrão", exc_info=True)
             return _default_state()
         data.setdefault("cards", {})
         data.setdefault("last_build_signature", None)

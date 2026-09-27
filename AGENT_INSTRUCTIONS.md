@@ -402,7 +402,19 @@ no ar): `cd backend && venv/Scripts/python.exe test_timestamp_sync.py`.
   `telegram_notify.py`, `state.py` (estado local em `state.json`, não versionado -
   por card: branch, session_id, model/effort escolhidos, áreas alteradas),
   `proc_utils.py` (resolve o caminho completo de `claude`/`git` antes de chamar
-  subprocess).
+  subprocess), `logging_setup.py` (configura logging pro console + arquivo).
+- **Logging:** `logging_setup.py` centraliza a configuração - stdlib `logging`, sem
+  dependência nova. `watcher.py` chama `logging_setup.setup_logging()` antes de
+  qualquer outro import do projeto; os demais módulos pegam um logger filho com
+  `get_logger(__name__)`. Grava em DOIS lugares ao mesmo tempo: console (nível INFO) e
+  um arquivo com timestamp em `automation/logs/<data>_<hora>.log` (nível DEBUG, com
+  `RotatingFileHandler`: 10MB por arquivo, máximo 5 arquivos - não versionado, ver
+  `.gitignore`). A função `log()` do `watcher.py` continua existindo como wrapper fino
+  de `logger.info()`, pra não quebrar as chamadas já espalhadas pelo arquivo. Convenção
+  de nível: `DEBUG` pra detalhe de troubleshooting (IDs de card, session_id, comandos
+  resolvidos), `INFO` pro fluxo normal, `WARNING` pra situação degradada mas
+  recuperável (bloqueio de branch, timeout, rate limit, falha de push), `ERROR` pra
+  exceção/falha real (com `exc_info=True` ou `logger.exception()` quando há traceback).
 - **Configuração:** `automation/.env` (não versionado — copie de `.env.example`).
   Passo a passo completo em `automation/SETUP.md`.
 - **Roda local**, disparado manualmente via `iniciaAutomation.bat` (não sobe pra

@@ -67,15 +67,19 @@ from pathlib import Path
 
 from proc_utils import resolve_command
 from telegram_notify import send_telegram_message
+from logging_setup import get_logger
 
 try:
     from zoneinfo import ZoneInfo
 except ImportError:  # não deveria acontecer no Python usado aqui, só por garantia
     ZoneInfo = None  # type: ignore
 
+logger = get_logger(__name__)
+
 
 def _log(msg: str) -> None:
-    print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)
+    """Mantido por compatibilidade - vira logger.info() (arquivo + console)."""
+    logger.info(msg)
 
 
 EXEC_ALLOWED_TOOLS = "Bash,Read,Edit,Write,Glob,Grep,WebFetch,WebSearch"
@@ -197,7 +201,7 @@ def run_claude_code(
         if result.ok or not _looks_like_usage_limit(result.result_text):
             return result
         if attempt > USAGE_LIMIT_MAX_RETRIES:
-            _log(f"Limite de uso atingido {USAGE_LIMIT_MAX_RETRIES}x seguidas - desistindo, devolvendo a falha.")
+            logger.error(f"Limite de uso atingido {USAGE_LIMIT_MAX_RETRIES}x seguidas - desistindo, devolvendo a falha.")
             return result
 
         reset_at = _parse_usage_limit_reset(result.result_text)
@@ -213,7 +217,7 @@ def run_claude_code(
             f"Vou aguardar até {reset_label} e retomar automaticamente de onde parei - "
             f"não vou ficar tentando de novo a cada poll."
         )
-        _log(msg)
+        logger.warning(msg)
         send_telegram_message(msg)
 
         time.sleep(wait_seconds)
@@ -267,9 +271,13 @@ def _run_once(
     # do watcher fica muda o tempo todo - o log abaixo é só pra você acompanhar que
     # ainda está rodando (e não travado) enquanto espera.
     kind = "execução autônoma (edita arquivos/roda comandos)" if permission_mode else "rascunho de prompt (só leitura)"
-    _log(
+    logger.info(
         f"Chamando Claude Code - {kind}, modelo={model or 'padrão da conta'}, "
         f"effort={effort or 'padrão'}, limite={timeout // 60}min..."
+    )
+    logger.debug(
+        f"Args do Claude Code: resume_session_id={resume_session_id} allowed_tools={allowed_tools} "
+        f"permission_mode={permission_mode} timeout={timeout}"
     )
 
     start = time.monotonic()
@@ -294,6 +302,7 @@ def _run_once(
             timeout=timeout,
         )
     except subprocess.TimeoutExpired as exc:
+        logger.warning(f"Timeout depois de {timeout}s rodando o Claude Code.")
         raw = (exc.stdout or "") + (exc.stderr or "")
         return ClaudeRunResult(
             ok=False,
@@ -306,6 +315,7 @@ def _run_once(
         # Ex: WinError 87/2 no Windows quando o executável não foi resolvido
         # corretamente. Devolve o comando exato que tentamos rodar, pra facilitar o
         # diagnóstico (fica no log e no comentário do card).
+        logger.error(f"Não consegui executar o Claude Code: {exc}", exc_info=True)
         return ClaudeRunResult(
             ok=False,
             result_text=(
@@ -325,7 +335,7 @@ def _run_once(
         heartbeat.join(timeout=2)
 
     elapsed_min = (time.monotonic() - start) / 60
-    _log(f"Claude Code terminou em {elapsed_min:.1f}min (returncode={proc.returncode}).")
+    logger.info(f"Claude Code terminou em {elapsed_min:.1f}min (returncode={proc.returncode}).")
 
     raw_output = (proc.stdout or "") + (proc.stderr or "")
 
@@ -352,6 +362,9 @@ def _run_once(
         total_cost_usd = None
 
     ok = proc.returncode == 0 and bool(result_text)
+    logger.debug(f"Claude Code session_id={session_id} total_cost_usd={total_cost_usd} ok={ok}")
+    if not ok:
+        logger.error(f"Claude Code falhou (returncode={proc.returncode}): {result_text[:500]}")
     return ClaudeRunResult(
         ok=ok,
         result_text=result_text or "(Claude Code não devolveu texto de resultado)",

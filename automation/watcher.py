@@ -49,6 +49,12 @@ from dotenv import load_dotenv
 AUTOMATION_DIR = Path(__file__).resolve().parent
 REPO_DIR = AUTOMATION_DIR.parent
 
+# Configurado antes de qualquer outro módulo do projeto, pra capturar tudo (inclusive
+# logs disparados no nível de módulo pelos imports abaixo) desde o início.
+import logging_setup  # noqa: E402
+logging_setup.setup_logging()
+logger = logging_setup.get_logger(__name__)
+
 load_dotenv(AUTOMATION_DIR / ".env")
 
 # Import depois do load_dotenv pra garantir que os módulos que leem env var no import
@@ -65,7 +71,9 @@ BASE_BRANCH = os.environ.get("BASE_BRANCH", "main")
 
 
 def log(msg: str) -> None:
-    print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)
+    """Wrapper mantido por compatibilidade com todas as chamadas existentes - vira
+    logger.info() (arquivo + console) em vez de só print()."""
+    logger.info(msg)
 
 
 def card_url(card: dict) -> str:
@@ -155,6 +163,10 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
     is_fix_round = bool(card_state.get("session_id"))
     branch = card_state.get("branch")  # só não-None em cards antigos (compat)
     before_commit = None
+    logger.debug(
+        f"handle_dev: card_id={card_id} is_fix_round={is_fix_round} branch={branch} "
+        f"session_id={card_state.get('session_id')} stage={card_state.get('stage')}"
+    )
 
     try:
         if branch:
@@ -170,7 +182,7 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
             send_telegram_message(f"⚠️ Card '{card['name']}' travado: {exc}")
             client.comment_card(card_id, f"⚠️ Automação travada ao preparar o git:\n{exc}")
             state_mod.set_card(state, card_id, blocked_notified=True)
-        log(f"BLOQUEADO ({card['name']}): {exc}")
+        logger.warning(f"BLOQUEADO ({card['name']}): {exc}")
         return  # não atualiza last_list_id -> tenta de novo no próximo poll
 
     if is_fix_round and card_state.get("stage") == "prompted":
@@ -267,7 +279,7 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
     push_target = branch or BASE_BRANCH
     push_res = git_ops.push(REPO_DIR, push_target)
     if not push_res.ok:
-        log(f"AVISO: não consegui dar push de '{push_target}': {push_res.output[:200]}")
+        logger.warning(f"AVISO: não consegui dar push de '{push_target}': {push_res.output[:200]}")
 
     where = f"branch `{branch}`" if branch else f"direto em `{BASE_BRANCH}`"
 
@@ -279,7 +291,7 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
                 f"⚠️ Execução falhou:\n{result.result_text}\n\nLog:\n{result.raw_output[-2000:]}",
             )
             state_mod.set_card(state, card_id, blocked_notified=True, branch=branch, model=model_choice, effort=effort_choice)
-        log(f"FALHA ({card['name']}): {result.result_text[:200]}")
+        logger.error(f"FALHA ({card['name']}): {result.result_text[:200]}")
         return  # tenta de novo no próximo poll
 
     client.comment_card(
@@ -335,7 +347,7 @@ def handle_done(client: TrelloClient, card: dict, state: dict) -> None:
             send_telegram_message(f"⚠️ Merge de '{card['name']}' (branch {branch}) deu conflito. Resolva manualmente.")
             client.comment_card(card_id, f"⚠️ Merge automático falhou, resolva manualmente:\n{res.output[-1500:]}")
             state_mod.set_card(state, card_id, stage="merge_failed")
-        log(f"CONFLITO ao mergear '{card['name']}': {res.output[:200]}")
+        logger.error(f"CONFLITO ao mergear '{card['name']}': {res.output[:200]}")
         return  # não atualiza last_list_id -> tenta de novo (e reconhece se você resolver na mão) a cada poll
 
     # Sempre sobe pro remoto depois do merge, consistente com o fluxo atual (que
@@ -343,7 +355,7 @@ def handle_done(client: TrelloClient, card: dict, state: dict) -> None:
     # só na sua máquina.
     push_res = git_ops.push(REPO_DIR, BASE_BRANCH)
     if not push_res.ok:
-        log(f"AVISO: não consegui dar push de '{BASE_BRANCH}' depois do merge: {push_res.output[:200]}")
+        logger.warning(f"AVISO: não consegui dar push de '{BASE_BRANCH}' depois do merge: {push_res.output[:200]}")
 
     git_ops.delete_branch(REPO_DIR, branch)
     state_mod.set_card(state, card_id, last_list_id=card["idList"], stage="merged", built=False)
@@ -376,7 +388,7 @@ def tick(client: TrelloClient, list_ids: dict) -> None:
                 state_mod.set_card(state, card_id, last_list_id=cur_list)
         except Exception:
             err = traceback.format_exc()
-            log(f"ERRO processando card '{card['name']}':\n{err}")
+            logger.error(f"ERRO processando card '{card['name']}'", exc_info=True)
             if not card_state.get("blocked_notified"):
                 send_telegram_message(f"❌ Erro inesperado processando '{card['name']}': {err.splitlines()[-1][:300]}")
                 state_mod.set_card(state, card_id, blocked_notified=True)
@@ -418,7 +430,7 @@ def main() -> None:
             loop_error_notified = False
         except Exception:
             err = traceback.format_exc()
-            log(f"ERRO no loop principal:\n{err}")
+            logger.error("ERRO no loop principal", exc_info=True)
             if not loop_error_notified:
                 send_telegram_message(f"❌ Erro no watcher: {err.splitlines()[-1][:300]}")
                 loop_error_notified = True

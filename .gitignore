@@ -7,3 +7,4 @@ automation/.env
 automation/state.json
 automation/venv/
 automation/__pycache__/
+automation/logs/

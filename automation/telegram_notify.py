@@ -10,20 +10,28 @@ import os
 
 import requests
 
+from logging_setup import get_logger
+
 API_BASE = "https://api.telegram.org"
+
+logger = get_logger(__name__)
 
 
 def send_telegram_message(text: str) -> None:
     token = os.environ.get("TELEGRAM_BOT_TOKEN")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID")
     if not token or not chat_id:
-        print(f"[telegram desativado - sem TELEGRAM_BOT_TOKEN/CHAT_ID] {text}")
+        logger.debug(f"[telegram desativado - sem TELEGRAM_BOT_TOKEN/CHAT_ID] {text}")
         return
 
-    resp = requests.post(
-        f"{API_BASE}/bot{token}/sendMessage",
-        json={"chat_id": chat_id, "text": text, "disable_web_page_preview": False},
-        timeout=15,
-    )
+    try:
+        resp = requests.post(
+            f"{API_BASE}/bot{token}/sendMessage",
+            json={"chat_id": chat_id, "text": text, "disable_web_page_preview": False},
+            timeout=15,
+        )
+    except requests.RequestException:
+        logger.error("Falha ao enviar mensagem pro Telegram (erro de conexão)", exc_info=True)
+        return
     if not resp.ok:
-        print(f"[telegram] falha ao enviar mensagem ({resp.status_code}): {resp.text}")
+        logger.warning(f"[telegram] falha ao enviar mensagem ({resp.status_code}): {resp.text}")

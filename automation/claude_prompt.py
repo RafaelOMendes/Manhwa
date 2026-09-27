@@ -35,6 +35,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from claude_runner import GRAPHIFY_REMINDER, run_claude_code
+from logging_setup import get_logger
+
+logger = get_logger(__name__)
 
 DRAFT_ALLOWED_TOOLS = "Read,Glob,Grep"
 
@@ -155,8 +158,11 @@ def _choose_model_and_effort(repo_dir: Path, title: str, description: str) -> tu
         timeout_seconds=90,
     )
     if not result.ok:
+        logger.warning(f"Escolha de modelo/effort falhou pro card '{title}', caindo pro fallback do .env")
         return None, None
-    return _parse_choice(result.result_text)
+    model, effort = _parse_choice(result.result_text)
+    logger.debug(f"Modelo/effort escolhidos pro card '{title}': model={model} effort={effort}")
+    return model, effort
 
 
 def build_prompt(repo_dir: Path, title: str, description: str, comments: list[str]) -> PromptDraft:
@@ -185,6 +191,7 @@ def build_prompt(repo_dir: Path, title: str, description: str, comments: list[st
         append_system_prompt=GRAPHIFY_REMINDER,
     )
     if not result.ok:
+        logger.error(f"Claude Code (rascunho do prompt) falhou pro card '{title}': {result.result_text}")
         raise RuntimeError(f"Claude Code (rascunho do prompt) falhou: {result.result_text}")
 
     return PromptDraft(prompt=result.result_text, model=model_choice, effort=effort_choice)
