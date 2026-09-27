@@ -191,6 +191,24 @@ O projeto Manhwa Tracker é composto por três partes principais:
   - Testes: `backend/test_auto_mark_read.py` (SQLite em memória + diretório temporário, sem Postgres e sem
     servidor no ar) cobre avanço, preservação de scroll real, regressão, idempotência, capítulo fracionário,
     manhwa sem arquivos em disco e a integridade do `GET /files`.
+- **🔢 `total_chapters` = quantos `.cbz` válidos existem em disco no servidor**, não quantos o celular
+  baixou. É metadado do acervo (mesma natureza de `medium_reaction`/`rating`), recalculado pelo
+  `POST /api/manhwas/review-all` e pelo `download-all`. Como o campo é `nullable` e nem todo caminho de
+  criação/importação o preenche, ele fica `null` em vários manhwas — e é isso que faz o card mostrar
+  `Cap: 10` sem o `/ 300`. Por isso:
+  - `GET /api/manhwas/{id}/files` devolve **`total_chapters: len(files)`** junto de `files`/`path`/
+    `current_chapter`. É a mesma lista já filtrada por `MIN_CBZ_SIZE_BYTES`, então `.cbz` truncado não
+    infla a contagem.
+  - O mobile (`ManhwaCard.handleCardClick`) usa esse número pra ressincronizar o banco: ao abrir a lista
+    de capítulos, se o valor difere do `manhwa.total_chapters`, dispara um `PUT /api/manhwas/{id}`
+    fire-and-forget (não bloqueia a abertura; falha é silenciosa, porque a lista exibida já está certa).
+    Só acontece **online** — offline a lista é só a dos capítulos baixados, escrever esse tamanho
+    zeraria o total real.
+  - ⚠️ O `PUT /api/manhwas/{id}` **substitui a linha inteira** (`ManhwaUpdate.model_dump()` faz
+    `setattr` de todos os campos, inclusive os ausentes → `None`). Qualquer escrita de um campo só tem
+    que mandar o objeto completo; e `current_chapter` vai pelo **maior** entre o snapshot da home e o
+    valor fresco do `/files` (que já reflete a fila offline drenada), senão sincronizar o total
+    regrediria progresso de leitura.
 - **Variáveis de ambiente (`backend/.env`):**
   - `DATABASE_URL` — string `postgresql+asyncpg://...` (default: `postgres:postgres@localhost:5432/manhwa_tracker`).
   - `DOWNLOAD_DIR` — pasta onde os `.cbz` baixados ficam (default: `D:\Manhwas`). Altere aqui para mover a biblioteca.

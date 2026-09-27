@@ -356,10 +356,17 @@ async def list_manhwa_files(manhwa_id: int, db: AsyncSession = Depends(get_db)):
 
     # Diretório inexistente já cai em [] dentro do scan — sem checagem extra
     # aqui, a resposta tem sempre o mesmo formato (inclusive `current_chapter`).
+    files = await _list_cbz_files_async(download_dir)
+
+    # `total_chapters` = quantos .cbz válidos existem em disco AGORA (mesma
+    # semântica do campo no banco, que o review-all recalcula). Vai na resposta
+    # pra o cliente poder ressincronizar o valor do banco quando ele estiver
+    # `null` — ver mobile/src/components/ManhwaCard.tsx.
     return {
-        "files": await _list_cbz_files_async(download_dir),
+        "files": files,
         "path": download_dir,
         "current_chapter": manhwa.current_chapter or 0,
+        "total_chapters": len(files),
     }
 
 # ============================================================

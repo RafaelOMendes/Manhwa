@@ -107,6 +107,7 @@ function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                 let loadedFiles: { name: string; size_mb: number; chapter_number: number }[] = [];
                 let loadedCurrentChapter = 0;
                 let fetchedOnline = false;
+                let serverTotal: number | null = null;
 
                 try {
                     // Drena leituras offline ANTES de buscar o current_chapter,
@@ -120,6 +121,9 @@ function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                     const fullList = (data.files || []) as { name: string; size_mb: number }[];
                     loadedFiles = fullList.map((f, i) => ({ name: f.name, size_mb: f.size_mb, chapter_number: i + 1 }));
                     loadedCurrentChapter = data.current_chapter || 0;
+                    // Builds antigas do backend não mandam `total_chapters` —
+                    // o tamanho da lista completa é a mesma contagem.
+                    serverTotal = typeof data.total_chapters === 'number' ? data.total_chapters : fullList.length;
                     fetchedOnline = true;
                     saveManhwaFiles(manhwa.id, loadedFiles).catch(() => {});
                 } catch (error) {
@@ -144,6 +148,27 @@ function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
 
                 setFiles(loadedFiles);
                 setCurrentChapter(loadedCurrentChapter);
+
+                // `total_chapters` no banco pode estar `null` (manhwa criado/importado
+                // sem esse campo) — é o que faz o card mostrar "Cap: 10" sem o "/ 300".
+                // Aqui já sabemos a contagem real do servidor, então ressincroniza em
+                // background. Só online (offline a lista é a dos baixados, menor que o
+                // total) e só quando difere, pra não gerar PUT a cada abertura.
+                if (fetchedOnline && serverTotal !== null && serverTotal > 0 && serverTotal !== manhwa.total_chapters) {
+                    // O PUT substitui a linha inteira, então `current_chapter` vai pelo
+                    // MAIOR entre o snapshot da home e o valor fresco do servidor (que já
+                    // inclui o que a fila offline acabou de drenar) — sincronizar o total
+                    // nunca pode regredir progresso de leitura.
+                    fetch(`${API_BASE}/api/manhwas/${manhwa.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            ...manhwa,
+                            current_chapter: Math.max(loadedCurrentChapter, manhwa.current_chapter || 0),
+                            total_chapters: serverTotal,
+                        }),
+                    }).catch(() => { });
+                }
 
                 // Reconcilia o set de lidos com o current_chapter do servidor,
                 // mas SÓ quando temos um valor fresco (online). Offline não mexe

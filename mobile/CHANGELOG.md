@@ -4,6 +4,17 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.5.8
+
+- **Card da home volta a mostrar o total de capítulos ("Cap: 10 / 300").** O `total_chapters` ficava
+  `null` no banco pra manhwas cuja criação/importação não preencheu o campo, então o card só exibia o
+  capítulo atual. Agora `GET /api/manhwas/{id}/files` devolve `total_chapters` (contagem dos `.cbz`
+  listados) e, ao abrir a lista de capítulos, o `ManhwaCard` dispara um `PUT /api/manhwas/{id}` em
+  background quando esse número difere do que está no banco — sem bloquear a abertura da lista e sem
+  alarme se falhar. Só online (offline a lista é só a dos baixados, não o total). O PUT manda o
+  `current_chapter` pelo maior entre o snapshot da home e o valor fresco do servidor, pra sincronizar o
+  total nunca regredir progresso de leitura.
+
 ## 1.5.7
 
 - **Remove o delete de capítulo do leitor.** O botão de lixeira adicionado na toolbar do
