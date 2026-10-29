@@ -22,6 +22,7 @@ from database import (
 )
 from models import Manhwa as ManhwaModel, ChapterProgress
 from error_logger import log_error
+from chapter_progress_dedup import remover_duplicatas_progress
 
 DOWNLOAD_DIR = os.environ.get("DOWNLOAD_DIR", r"D:\Manhwas")
 
@@ -73,6 +74,16 @@ async def lifespan(app: FastAPI):
     """Gerencia o ciclo de vida da aplicação"""
     # Startup: criar tabelas
     await create_tables()
+    # Limpa duplicatas antigas de chapter_progress (idempotente). Falha aqui não
+    # derruba o servidor: as rotas já toleram duplicata e limpam o par que tocam.
+    try:
+        async with async_session_maker() as db:
+            removidas = await remover_duplicatas_progress(db)
+            await db.commit()
+        if removidas:
+            print(f"[startup] chapter_progress: {removidas} duplicata(s) removida(s)")
+    except Exception as exc:
+        log_error(exc, context="Limpeza de duplicatas de chapter_progress no startup")
     yield
     # Shutdown: limpeza (se necessário)
 
@@ -468,6 +479,33 @@ class UpdateCurrentChapter(BaseModel):
     updated_at: Optional[str] = None
 
 
+async def _remover_duplicatas_progress(db: AsyncSession, manhwa_id: int, filename: str | List[str]) -> int:
+    """Garante no máximo um ChapterProgress por (manhwa_id, filename).
+
+    Chamado depois de inserir: se já havia linha pro mesmo capítulo (corrida
+    entre requisições ou dado antigo), fica só a mais recente — maior
+    `updated_at`, desempate por `id` — e as outras são apagadas. Só toca os
+    arquivos informados; o resto do histórico do manhwa fica intacto. Não faz
+    commit. Devolve quantas linhas apagou.
+    """
+    filenames = [filename] if isinstance(filename, str) else filename
+    return await remover_duplicatas_progress(db, manhwa_id=manhwa_id, filenames=filenames)
+
+
+async def _buscar_progress(db: AsyncSession, manhwa_id: int, filename: str) -> List[ChapterProgress]:
+    """Linhas de ChapterProgress do capítulo, a mais recente primeiro.
+
+    Normalmente vem 0 ou 1; mais que isso é duplicata, e a primeira é a mesma
+    que _remover_duplicatas_progress manteria.
+    """
+    result = await db.execute(
+        select(ChapterProgress)
+        .where((ChapterProgress.manhwa_id == manhwa_id) & (ChapterProgress.filename == filename))
+        .order_by(ChapterProgress.updated_at.desc(), ChapterProgress.id.desc())
+    )
+    return list(result.scalars().all())
+
+
 async def _mark_previous_chapters_read(db: AsyncSession, manhwa: ManhwaModel, current_chapter: int) -> int:
     """Registra como lidos todos os capítulos anteriores ao capítulo atual.
 
@@ -497,14 +535,17 @@ async def _mark_previous_chapters_read(db: AsyncSession, manhwa: ManhwaModel, cu
     )
     ja_registrados = set(result.scalars().all())
 
-    novos = 0
+    novos = []
     for filename in anteriores:
         if filename in ja_registrados:
             continue
         db.add(ChapterProgress(manhwa_id=manhwa.id, filename=filename, scroll_position=0))
-        novos += 1
+        novos.append(filename)
 
-    return novos
+    # Outra requisição pode ter criado algum desses entre o select e aqui.
+    await _remover_duplicatas_progress(db, manhwa.id, novos)
+
+    return len(novos)
 
 
 @app.patch("/api/manhwas/{manhwa_id}/current-chapter")
@@ -580,11 +621,11 @@ async def update_scroll(manhwa_id: int, filename: str, body: ScrollUpdate, db: A
     o cliente for mais recente; senão devolve `success: false` + a posição que
     está no banco, pra o cliente adotar ela.
     """
-    result = await db.execute(select(ChapterProgress).where(
-        (ChapterProgress.manhwa_id == manhwa_id) &
-        (ChapterProgress.filename == filename)
-    ))
-    progress = result.scalar_one_or_none()
+    linhas = await _buscar_progress(db, manhwa_id, filename)
+    progress = linhas[0] if linhas else None
+    if len(linhas) > 1:
+        # Duplicata que escapou de uma corrida: fica só a mais recente (`progress`).
+        await _remover_duplicatas_progress(db, manhwa_id, filename)
 
     if progress:
         # `scroll_position == 0` é indistinguível de "sem progresso nenhum" — o
@@ -608,6 +649,10 @@ async def update_scroll(manhwa_id: int, filename: str, body: ScrollUpdate, db: A
         # Linha nova: não há o que comparar, o dado do cliente é o único que existe.
         progress = ChapterProgress(manhwa_id=manhwa_id, filename=filename, scroll_position=body.scroll_position)
         db.add(progress)
+        # Outra requisição pode ter criado o mesmo capítulo entre o select e
+        # aqui; se a nossa linha não for a que sobrou, devolve a que sobrou.
+        if await _remover_duplicatas_progress(db, manhwa_id, filename):
+            progress = (await _buscar_progress(db, manhwa_id, filename))[0]
 
     await db.commit()
     # `updated_at` vem de server_default/onupdate — só existe no objeto depois
@@ -626,11 +671,8 @@ async def get_scroll(manhwa_id: int, filename: str, db: AsyncSession = Depends(g
     Devolve junto o `updated_at` da linha (None se nunca houve progresso), pra o
     cliente saber quando o banco recebeu esse valor.
     """
-    result = await db.execute(select(ChapterProgress).where(
-        (ChapterProgress.manhwa_id == manhwa_id) &
-        (ChapterProgress.filename == filename)
-    ))
-    progress = result.scalar_one_or_none()
+    linhas = await _buscar_progress(db, manhwa_id, filename)
+    progress = linhas[0] if linhas else None
 
     return {
         "scroll_position": progress.scroll_position if progress else 0,

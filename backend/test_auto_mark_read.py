@@ -21,6 +21,8 @@ from database import Base
 from models import ChapterProgress, Manhwa as ManhwaModel
 
 CAPITULOS = [f"Cap {n:02d}.cbz" for n in range(1, 9)]
+# Abaixo de MIN_CBZ_SIZE_BYTES o .cbz é tratado como quebrado e some da listagem.
+CONTEUDO_CBZ = b"x" * (main.MIN_CBZ_SIZE_BYTES + 1)
 
 falhas = []
 
@@ -53,10 +55,10 @@ async def rodar():
     os.makedirs(manhwa_dir)
     for nome in CAPITULOS:
         with open(os.path.join(manhwa_dir, nome), "wb") as f:
-            f.write(b"x" * 1024)
+            f.write(CONTEUDO_CBZ)
     # Arquivo sem número no nome: não deve ser marcado como lido por chute.
     with open(os.path.join(manhwa_dir, "Extra.cbz"), "wb") as f:
-        f.write(b"x" * 1024)
+        f.write(CONTEUDO_CBZ)
 
     main.DOWNLOAD_DIR = tmp
 
@@ -161,7 +163,7 @@ async def rodar():
     # --- 7: capítulos fracionários ---------------------------------------
     print("\n7) Capítulo fracionário (Cap 08.5)")
     with open(os.path.join(manhwa_dir, "Cap 08.5.cbz"), "wb") as f:
-        f.write(b"x" * 1024)
+        f.write(CONTEUDO_CBZ)
     await patch_chapter(session_maker, mid, 9)
     atuais = set(await registros(session_maker, mid))
     check("Cap 08.5.cbz" in atuais, "Cap 08.5 marcado como lido ao avançar pro 9")

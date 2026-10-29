@@ -16,6 +16,8 @@ O projeto Manhwa Tracker é composto por três partes principais:
   - `telegram_scraper.py`: Integração com Telegram (Telethon) — scraping de tópicos e download paralelo de `.cbz`.
   - `init_db.py`: Script para criar/resetar as tabelas (`python init_db.py [--reset]`).
   - `add_col.py`: Migração ad-hoc (adiciona coluna `andamento`). Use só se atualizar um banco antigo.
+  - `chapter_progress_dedup.py`: Remove duplicatas de `chapter_progress` (mesmo `manhwa_id` + `filename`),
+    mantendo a mais recente. Idempotente; roda no startup e como script. Ver "🧹 No máximo um `ChapterProgress`".
   - `error_logger.py`: `log_error(exc, context="...")` grava erro + traceback em
     `backend/logs/<YYYY-MM-DD>/<timestamp>_error.log`, criando a pasta do dia automaticamente.
     `backend/logs/` não é versionado (`.gitignore`). Desligável via `ERROR_LOGGING_ENABLED=0` no
@@ -191,6 +193,25 @@ O projeto Manhwa Tracker é composto por três partes principais:
   - Testes: `backend/test_auto_mark_read.py` (SQLite em memória + diretório temporário, sem Postgres e sem
     servidor no ar) cobre avanço, preservação de scroll real, regressão, idempotência, capítulo fracionário,
     manhwa sem arquivos em disco e a integridade do `GET /files`.
+- **🧹 No máximo um `ChapterProgress` por (`manhwa_id`, `filename`).** Cada linha é UM capítulo; várias
+  linhas do mesmo `manhwa_id` com arquivos diferentes são o histórico de leitura e **nunca** devem ser
+  apagadas juntas. A tabela não tem UNIQUE no par (o projeto não tem migrações — `create_all` não altera
+  tabela existente), então duplicata pode surgir por corrida entre requisições ("insere se não existe"
+  simultâneo) ou dado antigo. Regras:
+  - **Toda inserção em `chapter_progress` chama `_remover_duplicatas_progress(db, manhwa_id, filename|lista)`**
+    (`main.py`) logo depois do `db.add`. Ele mantém a linha mais recente — maior `updated_at`, desempate pelo
+    maior `id` — e apaga as outras **só dos arquivos informados**. Hoje é chamado em
+    `_mark_previous_chapters_read()` e no ramo de criação do `PUT .../scroll`. Não faz commit.
+  - Leitura de um capítulo usa `_buscar_progress()` (mais recente primeiro), não `scalar_one_or_none()`
+    — com duplicata, este último levantava `MultipleResultsFound` e virava 500. O `PUT .../scroll` também
+    limpa o par se encontrar mais de uma linha.
+  - **Limpeza global idempotente:** `remover_duplicatas_progress()` em `backend/chapter_progress_dedup.py`
+    (um `DELETE ... WHERE EXISTS` só, vale pra Postgres e SQLite). Roda sozinha no startup (`lifespan`;
+    falha vai pro `log_error` e não derruba o servidor) e também como script:
+    `cd backend && venv/Scripts/python.exe chapter_progress_dedup.py` (usa o `DATABASE_URL`, ou seja, o banco real).
+  - Se um dia quiser `UniqueConstraint("manhwa_id", "filename")` no modelo: precisa de um `ALTER TABLE`
+    manual (estilo `add_col.py`) e a limpeza tem que rodar **antes**, senão o ALTER falha.
+  - Testes: `backend/test_chapter_progress_dedup.py` (SQLite em memória + arquivo temporário pro script).
 - **🔢 `total_chapters` = quantos `.cbz` válidos existem em disco no servidor**, não quantos o celular
   baixou. É metadado do acervo (mesma natureza de `medium_reaction`/`rating`), recalculado pelo
   `POST /api/manhwas/review-all` e pelo `download-all`. Como o campo é `nullable` e nem todo caminho de
@@ -465,6 +486,7 @@ Ao receber um prompt do usuário pedindo uma alteração, analise se a alteraç�
 - Frontend e Mobile compartilham a mesma paleta de cores e estilo visual (Tailwind/NativeWind).
 - Respeite as tipagens estritas em TypeScript.
 - No Backend, documente novos endpoints via tipagem do Pydantic/FastAPI, que gera o Swagger em `/docs`.
+- Todo novo ponto que insere em `chapter_progress` deve chamar `_remover_duplicatas_progress()` depois do `db.add` (ver "🧹 No máximo um `ChapterProgress`").
 
 ---
 
