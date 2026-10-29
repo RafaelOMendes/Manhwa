@@ -8,7 +8,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import select, update, func
 import os
 import re
 from contextlib import asynccontextmanager
@@ -139,6 +139,9 @@ class Manhwa(ManhwaBase):
     medium_reaction: Optional[int] = None
     created_at: str
     updated_at: str
+    # MAX(ChapterProgress.updated_at) do manhwa; só preenchido na listagem
+    # (GET /api/manhwas). None = nunca lido. Ver `get_manhwas`.
+    last_read_at: Optional[str] = None
 
 class TelegramImportRequest(BaseModel):
     channel_link: str
@@ -203,15 +206,43 @@ async def ping():
 
 @app.get("/api/manhwas", response_model=List[Manhwa])
 async def get_manhwas(status: Optional[str] = None, db: AsyncSession = Depends(get_db)):
-    """Retorna todos os manhwas, opcionalmente filtrados por status"""
-    query = select(ManhwaModel)
+    """Retorna todos os manhwas, opcionalmente filtrados por status.
+
+    Ordem: último lido primeiro (`last_read_at` = MAX(ChapterProgress.updated_at)
+    do manhwa, calculado na consulta — sem coluna nova). Quem nunca teve
+    progresso vai pro fim; desempate por id decrescente. Usar `Manhwa.updated_at`
+    aqui seria errado: ele muda com sync de capítulos/total_chapters, não só
+    com leitura. Web e mobile seguem a mesma regra (o mobile ainda sobrepõe a
+    leitura local, pra funcionar offline).
+    """
+    last_read = (
+        select(
+            ChapterProgress.manhwa_id.label("manhwa_id"),
+            func.max(ChapterProgress.updated_at).label("last_read_at"),
+        )
+        .group_by(ChapterProgress.manhwa_id)
+        .subquery()
+    )
+    query = select(ManhwaModel, last_read.c.last_read_at).outerjoin(
+        last_read, last_read.c.manhwa_id == ManhwaModel.id
+    )
     if status:
         query = query.where(ManhwaModel.status == status)
-    
+
     result = await db.execute(query)
-    manhwas = result.scalars().all()
-    
-    return [manhwa.to_dict() for manhwa in manhwas]
+    rows = result.all()
+
+    # Ordena em Python (e não com NULLS LAST) pra não depender do dialeto do banco.
+    def _ordem(row):
+        lido_em = _to_utc(row[1])
+        return (lido_em.timestamp() if lido_em else float("-inf"), row[0].id)
+
+    rows.sort(key=_ordem, reverse=True)
+
+    return [
+        {**manhwa.to_dict(), "last_read_at": _iso_utc(last_read_at)}
+        for manhwa, last_read_at in rows
+    ]
 
 @app.get("/api/manhwas/{manhwa_id}", response_model=Manhwa)
 async def get_manhwa(manhwa_id: int, db: AsyncSession = Depends(get_db)):

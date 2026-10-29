@@ -224,6 +224,12 @@ O projeto Manhwa Tracker é composto por três partes principais:
   - `/frontend/types`: Tipagens TypeScript, como `manhwa.ts`.
 - **Rodando o frontend:** Acesse o diretório e execute `npm run dev` na porta 3000.
 
+#### 🔀 Ordenação da lista da home (web + mobile + backend) — por ÚLTIMO LIDO
+A lista principal da home (todos os filtros, **exceto `top30`**, que continua por `medium_reaction`) ordena pelo manhwa **lido mais recentemente**, não por `Manhwa.updated_at` (que muda com sync de capítulos/`total_chapters`).
+- **Fonte:** `GET /api/manhwas` devolve o campo extra `last_read_at` = `MAX(ChapterProgress.updated_at)` por manhwa (calculado na consulta com outer join, **sem coluna/migração nova**; `null` = nunca lido). Só a listagem preenche; os endpoints de manhwa único devolvem `null`.
+- **Regra:** `last_read_at` decrescente → nunca lidos no fim → desempate por `id` decrescente. O backend já devolve nessa ordem; o `frontend/app/page.tsx` reaplica o sort explicitamente.
+- **Mobile (`src/app/index.tsx`):** `recencyOf = max(lastReadMap local, last_read_at)`. O `lastReadMap` (AsyncStorage, `markManhwaRead` em `cache.ts`) mantém a ordenação instantânea/offline; `m.updated_at` **não** entra mais na ordenação.
+
 ### 3. Mobile (Expo / React Native)
 - **Diretório:** `/mobile`
 - **Descrição:** Aplicativo mobile cross-platform construído com **Expo SDK 54**, **React Native** e **NativeWind**. Consome a mesma API do backend via Tailscale.

@@ -271,10 +271,12 @@ export default function Home() {
         }
 
         // Mais recém-lido primeiro. Usa o maior entre a leitura local (instantânea,
-        // funciona offline) e o updated_at do servidor.
+        // funciona offline) e o last_read_at do servidor (MAX do progresso de
+        // capítulos). NÃO usar m.updated_at: ele muda com sync/total_chapters.
+        // Nunca lidos (0) vão pro fim; desempate por id decrescente.
         const recencyOf = (m: Manhwa) => {
             const local = lastReadMap[String(m.id)] ? Date.parse(lastReadMap[String(m.id)]) : 0;
-            const server = m.updated_at ? Date.parse(m.updated_at) : 0;
+            const server = m.last_read_at ? Date.parse(m.last_read_at) : 0;
             return Math.max(local, server);
         };
         const byRecent = (a: Manhwa, b: Manhwa) => {

@@ -77,21 +77,32 @@ export default function Home() {
                 .slice(0, 30)
         }
 
-        return result.filter(manhwa => {
-            if (filter === 'all') return true
-            if (filter === 'reading') {
-                if (manhwa.status !== 'reading') return false
-                if (showOnlyDownloaded && !manhwa.download) return false
-                if (showOnlyNew) {
-                    return manhwa.total_chapters !== undefined &&
-                        manhwa.total_chapters !== null &&
-                        manhwa.current_chapter !== undefined &&
-                        manhwa.total_chapters > manhwa.current_chapter
+        // Último lido primeiro (`last_read_at` vem do backend); nunca lidos no fim,
+        // desempate por id decrescente. O backend já devolve nessa ordem — o sort
+        // aqui só mantém a regra explícita e independente da ordem da API.
+        const lastReadOf = (m: Manhwa) => (m.last_read_at ? Date.parse(m.last_read_at) : 0)
+        const byRecent = (a: Manhwa, b: Manhwa) => {
+            const diff = lastReadOf(b) - lastReadOf(a)
+            return diff !== 0 ? diff : b.id - a.id
+        }
+
+        return result
+            .filter(manhwa => {
+                if (filter === 'all') return true
+                if (filter === 'reading') {
+                    if (manhwa.status !== 'reading') return false
+                    if (showOnlyDownloaded && !manhwa.download) return false
+                    if (showOnlyNew) {
+                        return manhwa.total_chapters !== undefined &&
+                            manhwa.total_chapters !== null &&
+                            manhwa.current_chapter !== undefined &&
+                            manhwa.total_chapters > manhwa.current_chapter
+                    }
+                    return true
                 }
-                return true
-            }
-            return manhwa.status === filter
-        })
+                return manhwa.status === filter
+            })
+            .sort(byRecent)
     })()
 
     return (

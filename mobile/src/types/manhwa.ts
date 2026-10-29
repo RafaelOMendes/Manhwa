@@ -12,6 +12,8 @@ export interface Manhwa {
   medium_reaction?: number
   created_at?: string
   updated_at?: string
+  /** Última leitura (MAX do progresso de capítulos). Só vem na listagem; null = nunca lido. */
+  last_read_at?: string | null
 }
 
 export interface CreateManhwaDto {

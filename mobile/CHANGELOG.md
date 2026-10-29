@@ -4,6 +4,16 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.5.9
+
+- **Home ordena pelos manhwas lidos mais recentemente.** Antes a ordenação usava
+  `max(leitura local, m.updated_at)`, e o `updated_at` do manhwa muda com qualquer alteração (sync de
+  capítulos, `total_chapters`), então um manhwa sincronizado depois passava na frente de um recém-lido.
+  Agora o servidor expõe `last_read_at` (`MAX(ChapterProgress.updated_at)`) em `GET /api/manhwas` e a
+  home usa `max(lastReadMap local, last_read_at)`. Nunca lidos vão pro fim, com desempate por `id`
+  decrescente. A ordenação do filtro "Top 30" não mudou. Requer o backend atualizado (sem ele,
+  `last_read_at` não vem e a ordem cai só na leitura local).
+
 ## 1.5.8
 
 - **Card da home volta a mostrar o total de capítulos ("Cap: 10 / 300").** O `total_chapters` ficava
