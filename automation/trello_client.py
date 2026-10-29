@@ -13,12 +13,19 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-from logging_setup import get_logger
+from logging_setup import get_logger, network_reason
 
 API_BASE = "https://api.trello.com/1"
 REQUEST_TIMEOUT_SECONDS = 20
 
 logger = get_logger(__name__)
+
+# Erros de rede tratados como transitórios (o watcher faz backoff em vez de alarmar).
+NETWORK_ERRORS = (requests.exceptions.ConnectionError, requests.exceptions.Timeout)
+
+
+class TrelloNetworkError(Exception):
+    """Trello inalcançável (DNS, conexão ou timeout, depois dos retries do adapter)."""
 
 
 def _build_session() -> requests.Session:
@@ -51,35 +58,32 @@ class TrelloClient:
     def _auth(self) -> dict[str, str]:
         return {"key": self.key, "token": self.token}
 
-    def _get(self, path: str, **params: Any) -> Any:
-        logger.debug(f"GET {path} params={ {k: v for k, v in params.items()} }")
+    def _request(self, method: str, path: str, **params: Any) -> Any:
+        logger.debug(f"{method} {path} params={ {k: v for k, v in params.items()} }")
         try:
-            resp = self._session.get(f"{API_BASE}{path}", params={**self._auth(), **params}, timeout=REQUEST_TIMEOUT_SECONDS)
+            send = getattr(self._session, method.lower())
+            resp = send(f"{API_BASE}{path}", params={**self._auth(), **params}, timeout=REQUEST_TIMEOUT_SECONDS)
             resp.raise_for_status()
+        except NETWORK_ERRORS as exc:
+            # Falha transitória de rede (DNS, conexão recusada, timeout): não é bug nem
+            # erro da API, então uma linha curta de WARNING, sem traceback. A mensagem
+            # original do requests carrega a URL com key/token, por isso não é repassada.
+            reason = network_reason(exc)
+            logger.warning(f"Trello {method} {path} indisponível: {reason}")
+            raise TrelloNetworkError(reason) from None
         except requests.RequestException:
-            logger.error(f"Falha na chamada Trello GET {path}", exc_info=True)
+            logger.error(f"Falha na chamada Trello {method} {path}", exc_info=True)
             raise
         return resp.json()
+
+    def _get(self, path: str, **params: Any) -> Any:
+        return self._request("GET", path, **params)
 
     def _post(self, path: str, **params: Any) -> Any:
-        logger.debug(f"POST {path} params={ {k: v for k, v in params.items()} }")
-        try:
-            resp = self._session.post(f"{API_BASE}{path}", params={**self._auth(), **params}, timeout=REQUEST_TIMEOUT_SECONDS)
-            resp.raise_for_status()
-        except requests.RequestException:
-            logger.error(f"Falha na chamada Trello POST {path}", exc_info=True)
-            raise
-        return resp.json()
+        return self._request("POST", path, **params)
 
     def _put(self, path: str, **params: Any) -> Any:
-        logger.debug(f"PUT {path} params={ {k: v for k, v in params.items()} }")
-        try:
-            resp = self._session.put(f"{API_BASE}{path}", params={**self._auth(), **params}, timeout=REQUEST_TIMEOUT_SECONDS)
-            resp.raise_for_status()
-        except requests.RequestException:
-            logger.error(f"Falha na chamada Trello PUT {path}", exc_info=True)
-            raise
-        return resp.json()
+        return self._request("PUT", path, **params)
 
     # -- board / lists -----------------------------------------------------
 

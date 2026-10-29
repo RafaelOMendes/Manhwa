@@ -16,6 +16,7 @@ disparem logging no nível do módulo).
 from __future__ import annotations
 
 import logging
+import re
 import time
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
@@ -27,6 +28,35 @@ _LOG_FORMAT = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 _DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 _configured = False
+
+# Credenciais que o requests/urllib3 embutem nas mensagens de exceção (a URL completa,
+# com a query string): `key=`/`token=` do Trello e o `/bot<token>/` da API do Telegram.
+_SECRET_QUERY_RE = re.compile(r"(?i)\b(key|token|api_key|access_token)=[^&\s'\"<>)]+")
+_TELEGRAM_BOT_RE = re.compile(r"/bot[^/\s'\"]+/")
+
+
+def redact(text: str) -> str:
+    """Troca valores de key=/token= (e o token do bot na URL do Telegram) por `***`."""
+    text = _SECRET_QUERY_RE.sub(r"\1=***", text)
+    return _TELEGRAM_BOT_RE.sub("/bot***/", text)
+
+
+def network_reason(exc: BaseException) -> str:
+    """Resumo curto (sem URL nem credenciais) do motivo de uma falha de rede."""
+    text = str(exc)
+    if "getaddrinfo" in text or "NameResolutionError" in text or "Name or service not known" in text:
+        return "falha de resolução DNS (sem internet?)"
+    if any(cls.__name__.endswith("Timeout") for cls in type(exc).__mro__):
+        return "timeout"
+    return f"erro de conexão ({type(exc).__name__})"
+
+
+class RedactingFormatter(logging.Formatter):
+    """Redige credenciais na linha final já formatada - cobre a mensagem, os args e o
+    traceback (exc_info) de uma vez, então nenhum log vaza token nem em exceção."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        return redact(super().format(record))
 
 
 def setup_logging(level: int = logging.DEBUG) -> logging.Logger:
@@ -41,7 +71,7 @@ def setup_logging(level: int = logging.DEBUG) -> logging.Logger:
     LOGS_DIR.mkdir(parents=True, exist_ok=True)
     log_file = LOGS_DIR / f"{time.strftime('%Y-%m-%d_%H-%M-%S')}.log"
 
-    formatter = logging.Formatter(_LOG_FORMAT, datefmt=_DATE_FORMAT)
+    formatter = RedactingFormatter(_LOG_FORMAT, datefmt=_DATE_FORMAT)
 
     file_handler = RotatingFileHandler(
         log_file, maxBytes=10 * 1024 * 1024, backupCount=5, encoding="utf-8"

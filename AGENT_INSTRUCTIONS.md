@@ -403,6 +403,7 @@ no ar): `cd backend && venv/Scripts/python.exe test_timestamp_sync.py`.
   por card: branch, session_id, model/effort escolhidos, áreas alteradas),
   `proc_utils.py` (resolve o caminho completo de `claude`/`git` antes de chamar
   subprocess), `logging_setup.py` (configura logging pro console + arquivo).
+- **Erros de rede e credenciais nos logs:** `logging_setup.RedactingFormatter` redige `key=`/`token=` e `/bot<token>/` como `***` na linha final (mensagem + traceback), então nenhum log leva token. `trello_client.py` converte `ConnectionError`/`Timeout` em `TrelloNetworkError` (WARNING curto, sem traceback); `watcher.py` trata isso como falha transitória (WARNING, sem Telegram, backoff do polling até `NETWORK_BACKOFF_MAX_SECONDS`, padrão 300s, e volta ao normal no 1º sucesso). `telegram_notify.py` loga WARNING curto em falha de conexão. Erros inesperados continuam `ERROR` com traceback.
 - **Logging:** `logging_setup.py` centraliza a configuração - stdlib `logging`, sem
   dependência nova. `watcher.py` chama `logging_setup.setup_logging()` antes de
   qualquer outro import do projeto; os demais módulos pegam um logger filho com

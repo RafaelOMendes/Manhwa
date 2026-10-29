@@ -53,6 +53,7 @@ REPO_DIR = AUTOMATION_DIR.parent
 # logs disparados no nível de módulo pelos imports abaixo) desde o início.
 import logging_setup  # noqa: E402
 logging_setup.setup_logging()
+from logging_setup import network_reason, redact  # noqa: E402
 logger = logging_setup.get_logger(__name__)
 
 load_dotenv(AUTOMATION_DIR / ".env")
@@ -60,7 +61,7 @@ load_dotenv(AUTOMATION_DIR / ".env")
 # Import depois do load_dotenv pra garantir que os módulos que leem env var no import
 # já vejam as variáveis carregadas.
 import state as state_mod  # noqa: E402
-from trello_client import TrelloClient, resolve_list_ids  # noqa: E402
+from trello_client import NETWORK_ERRORS, TrelloClient, TrelloNetworkError, resolve_list_ids  # noqa: E402
 from claude_prompt import build_prompt  # noqa: E402
 from claude_runner import run_claude_code, GRAPHIFY_REMINDER, MOBILE_EAS_UPDATE_REMINDER  # noqa: E402
 from telegram_notify import send_telegram_message  # noqa: E402
@@ -68,6 +69,9 @@ import git_ops  # noqa: E402
 
 POLL_INTERVAL_SECONDS = int(os.environ.get("POLL_INTERVAL_SECONDS", "30"))
 BASE_BRANCH = os.environ.get("BASE_BRANCH", "main")
+# Teto do backoff quando a rede cai: o intervalo de polling dobra a cada falha seguida
+# até aqui e volta ao normal no primeiro tick que dá certo.
+NETWORK_BACKOFF_MAX_SECONDS = int(os.environ.get("NETWORK_BACKOFF_MAX_SECONDS", "300"))
 
 
 def log(msg: str) -> None:
@@ -386,8 +390,10 @@ def tick(client: TrelloClient, list_ids: dict) -> None:
                 # entrou numa lista que não gerenciamos (ex: voltou pra "A Fazer") -
                 # só atualiza o estado, sem ação.
                 state_mod.set_card(state, card_id, last_list_id=cur_list)
+        except (TrelloNetworkError, *NETWORK_ERRORS):
+            raise  # rede caiu: sobe pro loop principal (backoff), não é erro deste card
         except Exception:
-            err = traceback.format_exc()
+            err = redact(traceback.format_exc())
             logger.error(f"ERRO processando card '{card['name']}'", exc_info=True)
             if not card_state.get("blocked_notified"):
                 send_telegram_message(f"❌ Erro inesperado processando '{card['name']}': {err.splitlines()[-1][:300]}")
@@ -423,18 +429,32 @@ def main() -> None:
     # alguns minutos) - sem isso, cada poll (a cada POLL_INTERVAL_SECONDS) durante
     # uma instabilidade manda outro alerta no Telegram, o que vira spam rápido.
     loop_error_notified = False
+    network_failures = 0  # falhas de rede seguidas (0 = rede ok)
 
     while True:
+        delay = POLL_INTERVAL_SECONDS
         try:
             tick(client, list_ids)
+            if network_failures:
+                log(f"Rede restabelecida após {network_failures} falha(s) seguida(s).")
+            network_failures = 0
             loop_error_notified = False
+        except (TrelloNetworkError, *NETWORK_ERRORS) as exc:
+            # Queda de DNS/conexão/timeout é transitória: WARNING curto (sem traceback,
+            # sem Telegram - sem rede ele também falharia) e backoff até o teto.
+            network_failures += 1
+            delay = min(POLL_INTERVAL_SECONDS * 2 ** network_failures, max(NETWORK_BACKOFF_MAX_SECONDS, POLL_INTERVAL_SECONDS))
+            logger.warning(
+                f"Sem conexão com o Trello ({exc if isinstance(exc, TrelloNetworkError) else network_reason(exc)}) - falha {network_failures} seguida, "
+                f"nova tentativa em {delay}s."
+            )
         except Exception:
-            err = traceback.format_exc()
+            err = redact(traceback.format_exc())
             logger.error("ERRO no loop principal", exc_info=True)
             if not loop_error_notified:
                 send_telegram_message(f"❌ Erro no watcher: {err.splitlines()[-1][:300]}")
                 loop_error_notified = True
-        time.sleep(POLL_INTERVAL_SECONDS)
+        time.sleep(delay)
 
 
 if __name__ == "__main__":

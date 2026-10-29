@@ -10,7 +10,7 @@ import os
 
 import requests
 
-from logging_setup import get_logger
+from logging_setup import get_logger, network_reason
 
 API_BASE = "https://api.telegram.org"
 
@@ -30,8 +30,10 @@ def send_telegram_message(text: str) -> None:
             json={"chat_id": chat_id, "text": text, "disable_web_page_preview": False},
             timeout=15,
         )
-    except requests.RequestException:
-        logger.error("Falha ao enviar mensagem pro Telegram (erro de conexão)", exc_info=True)
+    except requests.RequestException as exc:
+        # Sem rede o Telegram também cai: aviso curto, sem traceback (a exceção do
+        # requests carregaria a URL com o token do bot) e sem tentar de novo.
+        logger.warning(f"[telegram] mensagem não enviada: {network_reason(exc)}")
         return
     if not resp.ok:
         logger.warning(f"[telegram] falha ao enviar mensagem ({resp.status_code}): {resp.text}")
