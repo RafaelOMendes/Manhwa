@@ -78,13 +78,13 @@ async function buildRow(m: Manhwa): Promise<RowInfo> {
     let pendingMB = 0;
     let filesLoaded = false;
 
-    // Um capítulo conta como "lido" se está no set local OU se está abaixo do
-    // current_chapter do servidor (mesma inferência que o syncManhwaLocal faz
-    // antes de baixar). Sem isso, manhwas nunca abertos no aparelho mostrariam
-    // todos os capítulos como pendentes.
-    const tally = (files: { name: string; size_mb?: number }[], currentChapter: number) => {
+    // Um capítulo conta como "lido" se está no set local, se o servidor diz que
+    // está (`read` do GET /files) OU se está abaixo do current_chapter (mesma
+    // regra que o syncManhwaLocal usa antes de baixar). Sem isso, manhwas nunca
+    // abertos no aparelho mostrariam todos os capítulos como pendentes.
+    const tally = (files: { name: string; size_mb?: number; read?: boolean }[], currentChapter: number) => {
         files.forEach((f, i) => {
-            const isRead = readSet.has(f.name) || i < currentChapter;
+            const isRead = readSet.has(f.name) || f.read === true || i < currentChapter;
             if (!isRead && !localSet.has(f.name)) {
                 pendingCount++;
                 pendingMB += f.size_mb ?? 0;
@@ -96,7 +96,7 @@ async function buildRow(m: Manhwa): Promise<RowInfo> {
         const res = await fetch(`${API_BASE}/api/manhwas/${m.id}/files`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        const files: { name: string; size_mb?: number }[] = data.files ?? [];
+        const files: { name: string; size_mb?: number; read?: boolean }[] = data.files ?? [];
         filesLoaded = true;
         tally(files, data.current_chapter ?? m.current_chapter ?? 0);
     } catch {

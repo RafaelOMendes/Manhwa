@@ -11,6 +11,7 @@ import asyncio
 import os
 import sys
 import tempfile
+import zipfile
 
 from fastapi import HTTPException
 from sqlalchemy import select
@@ -47,6 +48,21 @@ async def patch_chapter(session_maker, manhwa_id: int, chapter: int):
         return await main.update_current_chapter(
             manhwa_id, main.UpdateCurrentChapter(current_chapter=chapter), s
         )
+
+
+def criar_cbz(caminho: str, paginas: int = 2):
+    """CBZ de verdade (zip com imagens), acima de MIN_CBZ_SIZE_BYTES."""
+    tamanho_pagina = main.MIN_CBZ_SIZE_BYTES // paginas + 1
+    with zipfile.ZipFile(caminho, "w", zipfile.ZIP_STORED) as zf:
+        for i in range(paginas):
+            zf.writestr(f"page_{i:03d}.jpg", b"\xff" * tamanho_pagina)
+
+
+async def lidos(session_maker, manhwa_id: int) -> dict:
+    """filename → flag `read` devolvida pela GET /files."""
+    async with session_maker() as s:
+        body = await main.list_manhwa_files(manhwa_id, s)
+    return {f["name"]: f["read"] for f in body["files"]}
 
 
 async def rodar():
@@ -168,6 +184,75 @@ async def rodar():
     atuais = set(await registros(session_maker, mid))
     check("Cap 08.5.cbz" in atuais, "Cap 08.5 marcado como lido ao avançar pro 9")
     check("Extra.cbz" not in atuais, "Extra.cbz continua fora mesmo após vários avanços")
+
+    # --- 8: flag `read` da GET /files (o que web e mobile mostram) ---------
+    print("\n8) Flag `read` na GET /files")
+    caps_ui = [f"Cap {n:02d}.cbz" for n in range(1, 7)]
+    ui_dir = os.path.join(tmp, "Leitura UI")
+    os.makedirs(ui_dir)
+    for nome in caps_ui:
+        criar_cbz(os.path.join(ui_dir, nome))
+    async with session_maker() as s:
+        ui = ManhwaModel(title="Leitura UI", status="reading", current_chapter=0)
+        s.add(ui)
+        await s.commit()
+        await s.refresh(ui)
+        ui_id = ui.id
+
+    flags = await lidos(session_maker, ui_id)
+    check(not any(flags.values()), "nada lido antes de qualquer leitura")
+
+    # Leitura real do 5 (o leitor salva scroll antes de chegar ao fim e mandar o PATCH).
+    async with session_maker() as s:
+        await main.update_scroll(ui_id, "Cap 05.cbz", main.ScrollUpdate(scroll_position=900), s)
+    body = await patch_chapter(session_maker, ui_id, 5)
+    check(body["chapters_marked_read"] == 4, "PATCH 5 marca 4 anteriores")
+    flags = await lidos(session_maker, ui_id)
+    check(all(flags[n] for n in caps_ui[:5]), "capítulos 1-5 aparecem lidos depois do PATCH 5")
+    check(not flags["Cap 06.cbz"], "capítulo 6 continua não lido")
+
+    print("   capítulo 6 em andamento (scroll salvo, sem PATCH)")
+    async with session_maker() as s:
+        await main.update_scroll(ui_id, "Cap 06.cbz", main.ScrollUpdate(scroll_position=300), s)
+    flags = await lidos(session_maker, ui_id)
+    check(not flags["Cap 06.cbz"], "capítulo em andamento NÃO aparece como lido")
+    check(all(flags[n] for n in caps_ui[:5]), "1-5 continuam lidos")
+
+    print("   regressão de 5 para 3")
+    antes = sorted(await registros(session_maker, ui_id))
+    body = await patch_chapter(session_maker, ui_id, 3)
+    depois = sorted(await registros(session_maker, ui_id))
+    check(body["current_chapter"] == 3, "current_chapter = 3")
+    check(depois == antes, f"nenhum ChapterProgress removido (obtido: {depois})")
+    flags = await lidos(session_maker, ui_id)
+    check(flags["Cap 04.cbz"] and flags["Cap 05.cbz"], "4 e 5 continuam lidos após a regressão")
+    check(not flags["Cap 06.cbz"], "6 continua em andamento")
+
+    print("   GET .../read/{filename} e GET .../scroll")
+    async with session_maker() as s:
+        info = await main.get_cbz_info(ui_id, "Cap 03.cbz", s)
+        scroll_auto = await main.get_scroll(ui_id, "Cap 03.cbz", s)
+        scroll_real = await main.get_scroll(ui_id, "Cap 05.cbz", s)
+        scroll_andamento = await main.get_scroll(ui_id, "Cap 06.cbz", s)
+    check(info["total_pages"] == 2, f"GET /read/Cap 03 devolve as páginas (obtido: {info})")
+    check(scroll_auto["scroll_position"] == 0 and scroll_auto["updated_at"], "scroll do marcado automático = 0, com updated_at")
+    check(scroll_real["scroll_position"] == 900, "scroll real do 5 (900) intacto depois de avanço + regressão")
+    check(scroll_andamento["scroll_position"] == 300, "scroll do capítulo em andamento intacto")
+
+    # --- 9: regra pura, sem banco ------------------------------------------
+    print("\n9) _preencher_lidos (bordas da regra)")
+    arqs = [{"name": f"c{n}"} for n in range(1, 6)]
+    main._preencher_lidos(arqs, {"c1", "c2", "c3", "c4", "c5"}, 3)
+    check(
+        [f["read"] for f in arqs] == [True, True, True, True, False],
+        "regressão sem capítulo em andamento: o mais adiantado (5) volta a contar como em andamento",
+    )
+    arqs = [{"name": f"c{n}"} for n in range(1, 4)]
+    main._preencher_lidos(arqs, set(), 0)
+    check(not any(f["read"] for f in arqs), "sem progresso e current_chapter 0: nada lido")
+    arqs = [{"name": f"c{n}"} for n in range(1, 4)]
+    main._preencher_lidos(arqs, {"c3"}, 2)
+    check([f["read"] for f in arqs] == [True, True, False], "linha só no capítulo seguinte = em andamento")
 
     await engine.dispose()
 

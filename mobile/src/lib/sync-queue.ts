@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE } from './api';
-import { adoptServerCurrentChapter, saveLocalScroll } from './cache';
+import { adoptServerCurrentChapter, markReadThroughLocal, saveLocalScroll } from './cache';
 
 /**
  * Fila persistida de operações que precisam ir pro servidor.
@@ -95,6 +95,8 @@ interface SyncResponse {
     updated_at?: string | null;
     current_chapter?: number;
     scroll_position?: number;
+    /** Quantos ChapterProgress de capítulos anteriores o PATCH current-chapter criou. */
+    chapters_marked_read?: number;
 }
 
 /**
@@ -190,6 +192,16 @@ export async function drainQueue(): Promise<DrainResult> {
                     }
                     rejected++;
                 } else {
+                    // Aceito: o servidor marcou os anteriores como lidos
+                    // (`chapters_marked_read`); o set local acompanha.
+                    const accepted = typeof data.current_chapter === 'number' ? data.current_chapter : op.chapNum;
+                    if (data.chapters_marked_read) {
+                        console.log(
+                            `[sync] manhwa #${manhwaIdStr}: cap ${accepted} aceito, ` +
+                            `${data.chapters_marked_read} anteriores marcados no servidor`
+                        );
+                    }
+                    await markReadThroughLocal(Number(manhwaIdStr), accepted);
                     sent++;
                 }
                 delete q.chapterReads[manhwaIdStr];

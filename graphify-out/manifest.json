@@ -30,9 +30,9 @@
     "semantic_hash": "7ef9f5edc693e896e11c7238d0f973ce"
   },
   "backend/main.py": {
-    "mtime": 1793296901.8904667,
-    "seen": 1793297120.3964293,
-    "ast_hash": "540d5084dc498a1ed1dab1a1b1410017",
+    "mtime": 1793313425.1773155,
+    "seen": 1793313774.2554543,
+    "ast_hash": "82237a93f50447e683c2ac6559ac7606",
     "semantic_hash": ""
   },
   "backend/models.py": {
@@ -72,16 +72,16 @@
     "semantic_hash": "cf24ed031662e3f64c421f9a4b2691b8"
   },
   "frontend/components/CbzReader.tsx": {
-    "mtime": 1779372006.4374287,
-    "seen": 1793296517.7309318,
-    "ast_hash": "326ccb634f9345cd9b0b9f17c4a294c1",
-    "semantic_hash": "326ccb634f9345cd9b0b9f17c4a294c1"
+    "mtime": 1793313475.3127193,
+    "seen": 1793313774.2554543,
+    "ast_hash": "323ac324ee71dddcec3c498a3658a10b",
+    "semantic_hash": ""
   },
   "frontend/components/ManhwaCard.tsx": {
-    "mtime": 1779371975.1406503,
-    "seen": 1793296517.7309318,
-    "ast_hash": "60e7c02c386a834d28273b4f573f4d96",
-    "semantic_hash": "60e7c02c386a834d28273b4f573f4d96"
+    "mtime": 1793313470.108298,
+    "seen": 1793313774.2554543,
+    "ast_hash": "4ae11c01d1b65ae8d4536a708ac4b191",
+    "semantic_hash": ""
   },
   "frontend/lib/api.ts": {
     "mtime": 1779371932.3991945,
@@ -180,9 +180,9 @@
     "semantic_hash": ""
   },
   "mobile/src/app/downloads.tsx": {
-    "mtime": 1789572851.118989,
-    "seen": 1793296517.7324376,
-    "ast_hash": "110d1624d26f0a5667e67a22eb3c95dc",
+    "mtime": 1793313623.347154,
+    "seen": 1793313774.2569625,
+    "ast_hash": "6b0b8ac1ceab697158731081134212a9",
     "semantic_hash": ""
   },
   "mobile/src/app/index.tsx": {
@@ -204,9 +204,9 @@
     "semantic_hash": ""
   },
   "mobile/src/components/ManhwaCard.tsx": {
-    "mtime": 1790552840.2328393,
-    "seen": 1793296517.7324376,
-    "ast_hash": "38590689f962cd2f5885ef9035ee7fe1",
+    "mtime": 1793313623.3481598,
+    "seen": 1793313774.2569625,
+    "ast_hash": "8344f40c39fa479eae293b814224f321",
     "semantic_hash": ""
   },
   "mobile/src/components/ReaderHost.tsx": {
@@ -252,15 +252,15 @@
     "semantic_hash": ""
   },
   "mobile/src/lib/cache.ts": {
-    "mtime": 1789572841.823684,
-    "seen": 1793296517.7324376,
-    "ast_hash": "7a1eb4e7d5b64ab5e588eca8b7b708ad",
+    "mtime": 1793313623.349159,
+    "seen": 1793313774.2569625,
+    "ast_hash": "7481347530399114165001b3ade1ce20",
     "semantic_hash": ""
   },
   "mobile/src/lib/download-manager.ts": {
-    "mtime": 1787746217.9712584,
-    "seen": 1793296517.7324376,
-    "ast_hash": "83b779d5d8ebfbf0191f694cc5d75beb",
+    "mtime": 1793313623.349159,
+    "seen": 1793313774.2569625,
+    "ast_hash": "76745ff090c46379cf08b09cfc12daff",
     "semantic_hash": ""
   },
   "mobile/src/lib/reader-store.ts": {
@@ -270,15 +270,15 @@
     "semantic_hash": "9fc207a3e91eda0a0c4101b6a8622dd7"
   },
   "mobile/src/lib/sync-queue.ts": {
-    "mtime": 1787746217.972259,
-    "seen": 1793296517.7324376,
-    "ast_hash": "8c960e71d5be2c9ce3620c2fe171a656",
+    "mtime": 1793313623.3506658,
+    "seen": 1793313774.2569625,
+    "ast_hash": "b607a8c2e9e0646d5a56e350c551f4f9",
     "semantic_hash": ""
   },
   "mobile/src/lib/version.ts": {
-    "mtime": 1793300283.1580608,
-    "seen": 1793300484.4685056,
-    "ast_hash": "0bac917f84f77f55b2098207a1e90f3e",
+    "mtime": 1793313735.561107,
+    "seen": 1793313774.2569625,
+    "ast_hash": "daaf2ec1645b00f3437d437ef77b1d26",
     "semantic_hash": ""
   },
   "mobile/src/nativewind-env.d.ts": {
@@ -312,9 +312,9 @@
     "semantic_hash": "817fe671013b35ae0bc9301dfe449a87"
   },
   "AGENT_INSTRUCTIONS.md": {
-    "mtime": 1793296943.952998,
-    "seen": 1793297120.3964293,
-    "ast_hash": "0bcc6e1ea14870ca24914b23fc836e2f",
+    "mtime": 1793313708.6483548,
+    "seen": 1793313774.2569625,
+    "ast_hash": "b88fa7cb3c0270a83cfd1415c7d25879",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -330,9 +330,9 @@
     "semantic_hash": ""
   },
   "backend/README.md": {
-    "mtime": 1787746217.9012582,
-    "seen": 1793296517.7324376,
-    "ast_hash": "6c82c4811fe822bb9e6645899d972d79",
+    "mtime": 1793313733.2519484,
+    "seen": 1793313774.2569625,
+    "ast_hash": "5348943c16e674421978e25eef589b18",
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
@@ -342,15 +342,15 @@
     "semantic_hash": "5a9309c07733e6e50e60ec877982781e"
   },
   "mobile/AGENTS.md": {
-    "mtime": 1793300282.2369022,
-    "seen": 1793300484.4685056,
-    "ast_hash": "007144b7e2d044461228d57f7f6e1f79",
+    "mtime": 1793313724.1254973,
+    "seen": 1793313774.2569625,
+    "ast_hash": "3a03217ba7b396d6096454ea02bc2dac",
     "semantic_hash": ""
   },
   "mobile/CHANGELOG.md": {
-    "mtime": 1793300291.0483508,
-    "seen": 1793300484.4685056,
-    "ast_hash": "30b790b80e1e13056754419064c9ed7d",
+    "mtime": 1793313739.9838219,
+    "seen": 1793313774.2569625,
+    "ast_hash": "6a100241f59301e1a5b8b7ec3cf71b0a",
     "semantic_hash": ""
   },
   "mobile/CLAUDE.md": {
@@ -582,9 +582,9 @@
     "semantic_hash": ""
   },
   "backend/test_auto_mark_read.py": {
-    "mtime": 1793296463.0018659,
-    "seen": 1793296517.7309318,
-    "ast_hash": "e5001ab5ac92b397002336cbe018f3dc",
+    "mtime": 1793313456.809173,
+    "seen": 1793313774.2554543,
+    "ast_hash": "fd4e5312b56a9d5eba8f2cb2640ca584",
     "semantic_hash": ""
   },
   "mobile/src/lib/connectivity.ts": {

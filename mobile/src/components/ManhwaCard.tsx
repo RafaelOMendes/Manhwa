@@ -64,8 +64,7 @@ function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
     useEffect(() => {
         if (!showFiles || isLoadingFiles || hasAutoScrolledRef.current || files.length === 0) return;
 
-        // Índice do primeiro filename que NÃO está em readChapters
-        const firstUnreadIdx = files.findIndex(f => !readChapters.has(f.name));
+        const firstUnreadIdx = files.findIndex(f => !isChapterRead(f));
         // Se não tem unread ou o primeiro unread já é o topo, não precisa rolar
         if (firstUnreadIdx <= 0) return;
 
@@ -85,7 +84,7 @@ function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
         };
         const initial = setTimeout(tryScroll, 320);
         return () => clearTimeout(initial);
-    }, [showFiles, isLoadingFiles, files.length, readChapters]);
+    }, [showFiles, isLoadingFiles, files.length, readChapters, currentChapter]);
 
     const hasLink = manhwa.notes && manhwa.notes.startsWith('http');
     const hasTelegramLink = manhwa.notes && manhwa.notes.includes('t.me');
@@ -108,6 +107,8 @@ function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                 let loadedCurrentChapter = 0;
                 let fetchedOnline = false;
                 let serverTotal: number | null = null;
+                // Lista completa do servidor, com o `read` de cada arquivo, pra reconciliar.
+                let serverFiles: { name: string; read?: boolean }[] = [];
 
                 try {
                     // Drena leituras offline ANTES de buscar o current_chapter,
@@ -118,8 +119,9 @@ function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                     const data = await response.json();
                     // chapter_number = POSIÇÃO na lista ordenada completa (1-based),
                     // que é o que o servidor usa como current_chapter.
-                    const fullList = (data.files || []) as { name: string; size_mb: number }[];
+                    const fullList = (data.files || []) as { name: string; size_mb: number; read?: boolean }[];
                     loadedFiles = fullList.map((f, i) => ({ name: f.name, size_mb: f.size_mb, chapter_number: i + 1 }));
+                    serverFiles = fullList;
                     loadedCurrentChapter = data.current_chapter || 0;
                     // Builds antigas do backend não mandam `total_chapters` —
                     // o tamanho da lista completa é a mesma contagem.
@@ -136,14 +138,18 @@ function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                         loadedFiles = saved
                             .filter(f => local.has(f.name))
                             .map(f => ({ name: f.name, size_mb: f.size_mb, chapter_number: positionByName.get(f.name) ?? 0 }));
+                        loadedCurrentChapter = manhwa.current_chapter || 0;
                     } else {
                         loadedFiles = [...local].sort().map((name, i) => ({
                             name,
                             size_mb: 0,
                             chapter_number: i + 1,
                         }));
+                        // Sem snapshot, a numeração acima é só a ordem dos baixados e não
+                        // casa com a posição que o current_chapter usa: inferir "lido"
+                        // por ela marcaria capítulos errados. Fica só o set local.
+                        loadedCurrentChapter = 0;
                     }
-                    loadedCurrentChapter = manhwa.current_chapter || 0;
                 }
 
                 setFiles(loadedFiles);
@@ -170,12 +176,12 @@ function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                     }).catch(() => { });
                 }
 
-                // Reconcilia o set de lidos com o current_chapter do servidor,
-                // mas SÓ quando temos um valor fresco (online). Offline não mexe
-                // pra não regredir leituras com um valor defasado.
-                if (fetchedOnline && loadedFiles.length > 0) {
+                // Reconcilia o set de lidos com o servidor (`read` de cada arquivo +
+                // current_chapter), mas SÓ quando temos um valor fresco (online).
+                // Offline não mexe pra não regredir leituras com um valor defasado.
+                if (fetchedOnline && serverFiles.length > 0) {
                     try {
-                        await reconcileReadsWithServer(manhwa.id, loadedCurrentChapter, loadedFiles);
+                        await reconcileReadsWithServer(manhwa.id, loadedCurrentChapter, serverFiles);
                         const updated = await getReadChaptersSet(manhwa.id);
                         setReadChapters(updated);
                     } catch (e) {
@@ -255,19 +261,25 @@ function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
     };
 
     const handleChapterRead = (chapterNum: number, filename: string) => {
-        // Mantém o currentChapter cumulativo (usado no card "Cap: X/Y" e no servidor),
-        // mas marca per-chapter pra UI da lista.
+        // Mantém o currentChapter cumulativo (usado no card "Cap: X/Y" e no servidor).
+        // Ler o capítulo N conta 1..N-1 como lidos, igual ao backend e ao
+        // markChapterReadLocal — sem esperar a próxima abertura online.
         if (chapterNum > currentChapter) setCurrentChapter(chapterNum);
         setReadChapters(prev => {
-            if (prev.has(filename)) return prev;
+            const toAdd = [filename, ...files.filter(f => f.chapter_number > 0 && f.chapter_number < chapterNum).map(f => f.name)];
+            if (toAdd.every(name => prev.has(name))) return prev;
             const next = new Set(prev);
-            next.add(filename);
+            toAdd.forEach(name => next.add(name));
             return next;
         });
     };
 
-    const isChapterRead = (filename: string): boolean => {
-        return readChapters.has(filename);
+    // Lido = set local (já reconciliado com o `read` do servidor quando online)
+    // OU posição <= current_chapter. A segunda parte cobre o modo offline: o
+    // current_chapter da home já reflete o servidor, e o set local pode não ter
+    // passado por uma reconciliação ainda.
+    const isChapterRead = (file: CbzFile): boolean => {
+        return readChapters.has(file.name) || (file.chapter_number > 0 && file.chapter_number <= currentChapter);
     };
 
     const getStatusBadge = () => {
@@ -290,7 +302,7 @@ function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
         return 'Planejo Ler';
     };
 
-    const readCount = files.filter(f => isChapterRead(f.name)).length;
+    const readCount = files.filter(isChapterRead).length;
 
     // Prefere a cover local (modo offline funciona); senão, fallback pra remota
     const imageUrl = localCoverUri
@@ -463,7 +475,7 @@ function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                                         )}
                                     </Text>
                                     {files.map((file, i) => {
-                                        const read = isChapterRead(file.name);
+                                        const read = isChapterRead(file);
                                         const chapterNumber = file.chapter_number || i + 1;
                                         return (
                                             <TouchableOpacity

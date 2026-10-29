@@ -100,11 +100,14 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         setMarkedAsRead(true)
 
         try {
-            await fetch(`${API_BASE}/api/manhwas/${manhwaId}/current-chapter`, {
+            const res = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/current-chapter`, {
                 method: 'PATCH',
                 headers: authHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({ current_chapter: chapNum }),
             })
+            // Erro HTTP (ex.: 503 do banco) não persistiu nada: cai no catch, que
+            // libera uma nova tentativa no próximo scroll até o fim.
+            if (!res.ok) throw new Error(`HTTP ${res.status}`)
             onChapterRead?.(chapNum)
             setShowToast(true)
             setTimeout(() => setShowToast(false), 3000)

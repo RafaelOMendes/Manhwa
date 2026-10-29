@@ -386,7 +386,7 @@ export function getLocalCoverUri(manhwaId: number): string | null {
 export async function syncManhwaLocal(
     manhwaId: number,
     currentChapter: number,
-    files: { name: string; chapter_number: number; size_mb?: number }[],
+    files: { name: string; chapter_number: number; size_mb?: number; read?: boolean }[],
     coverUrl?: string | null,
     onProgress?: (p: SyncProgress) => void,
     shouldCancel?: () => boolean
@@ -404,8 +404,8 @@ export async function syncManhwaLocal(
         if (!index[manhwaId]) index[manhwaId] = { pending: {}, cached: {}, read: {} };
         const m = index[manhwaId];
 
-        // Reconcilia o set de lidos com o current_chapter do servidor: o app passa a
-        // refletir EXATAMENTE 1..current_chapter (a fila offline é drenada antes do
+        // Reconcilia o set de lidos com o servidor: o app passa a refletir
+        // EXATAMENTE o que ele considera lido (a fila offline é drenada antes do
         // sync, então o servidor já tem as leituras feitas offline).
         if (files.length > 0) {
             applyReadReconcile(m, currentChapter, files);
@@ -536,12 +536,35 @@ export async function syncManhwaLocal(
 }
 
 /**
- * Marca um chapter como lido (per-chapter, não cumulativo).
+ * Acrescenta `names` ao set de lidos. Quem já estava mantém a data original.
+ * Devolve quantos entraram.
+ */
+function addReads(m: ManhwaCache, names: string[], now: string): number {
+    let added = 0;
+    for (const name of names) {
+        if (!m.read[name]) {
+            m.read[name] = now;
+            added++;
+        }
+    }
+    return added;
+}
+
+/**
+ * Marca um chapter como lido.
  * - Sempre adiciona ao set `read` persistente (mesmo se o chapter não estava em pending).
+ * - Também marca os capítulos ANTERIORES a ele (posição no snapshot da lista
+ *   completa) — espelho local do `_mark_previous_chapters_read` do backend, pra
+ *   o card mostrar 1..N-1 como lidos mesmo offline. Só acrescenta.
  * - Se estava em pending, move pra cached.
  */
 export async function markChapterReadLocal(manhwaId: number, filename: string): Promise<void> {
-    const { alreadyRead, movedToCached, evicted } = await withIndexLock(async () => {
+    // Snapshot fica em outra chave do AsyncStorage: pode ser lido fora do lock.
+    const snapshot = await loadManhwaFiles(manhwaId);
+    const position = snapshot ? snapshot.findIndex(f => f.name === filename) : -1;
+    const previous = position > 0 ? snapshot!.slice(0, position).map(f => f.name) : [];
+
+    const { alreadyRead, movedToCached, evicted, previousMarked } = await withIndexLock(async () => {
         const index = await loadIndex();
         if (!index[manhwaId]) index[manhwaId] = { pending: {}, cached: {}, read: {} };
         const m = index[manhwaId];
@@ -549,6 +572,7 @@ export async function markChapterReadLocal(manhwaId: number, filename: string): 
         const now = new Date().toISOString();
         const alreadyRead = !!m.read[filename];
         m.read[filename] = now;
+        const previousMarked = addReads(m, previous, now);
 
         let movedToCached = false;
         if (m.pending[filename]) {
@@ -560,7 +584,7 @@ export async function markChapterReadLocal(manhwaId: number, filename: string): 
         const evicted = trimCached(m, manhwaId);
 
         await saveIndex(index);
-        return { alreadyRead, movedToCached, evicted };
+        return { alreadyRead, movedToCached, evicted, previousMarked };
     });
     // Registra "último lido" (ordena a home na hora, mesmo offline).
     await markManhwaRead(manhwaId);
@@ -568,6 +592,7 @@ export async function markChapterReadLocal(manhwaId: number, filename: string): 
     console.log(
         `[cache] ✓ markRead #${manhwaId}/${filename} — ` +
         `${alreadyRead ? 'já estava em read' : 'NOVO em read'}` +
+        `${previousMarked > 0 ? `, +${previousMarked} anteriores` : ''}` +
         `${movedToCached ? ', pending→cached' : ''}` +
         `${evicted.length > 0 ? `, evictou ${evicted.length} antigos (${evicted.join(', ')})` : ''}`
     );
@@ -606,38 +631,42 @@ export async function getReadChaptersSet(manhwaId: number): Promise<Set<string>>
 }
 
 /**
- * Reconcilia o set de "lidos" com o current_chapter do servidor (fonte de
- * verdade): lido = capítulos nas posições 1..current_chapter. Reescreve o set,
- * fazendo o app refletir EXATAMENTE o que está online (remove leituras além do
- * current_chapter). As leituras offline são drenadas pra fila ANTES de reconciliar,
- * então já estão no servidor — por isso usamos o valor do servidor direto.
+ * Reconcilia o set de "lidos" com o servidor (fonte de verdade). Reescreve o
+ * set, fazendo o app refletir EXATAMENTE o que está online:
+ * - `read` de cada arquivo do GET /files, quando o backend manda (inclui os
+ *   capítulos marcados ao avançar e o histórico mantido numa regressão);
+ * - posições 1..current_chapter (única regra de backend antigo, sem `read`).
+ * As leituras offline são drenadas pra fila ANTES de reconciliar, então já estão
+ * no servidor — por isso usamos o valor do servidor direto.
  */
 function applyReadReconcile(
     m: ManhwaCache,
     currentChapter: number,
-    files: { name: string }[]
+    files: { name: string; read?: boolean }[]
 ): void {
     const cutoff = Math.min(Math.max(currentChapter || 0, 0), files.length);
     const reconciled: Record<string, string> = {};
     const now = new Date().toISOString();
-    for (let i = 0; i < cutoff; i++) {
-        const name = files[i].name;
-        reconciled[name] = m.read[name] ?? now;
-    }
+    files.forEach((f, i) => {
+        if (i < cutoff || f.read === true) {
+            reconciled[f.name] = m.read[f.name] ?? now;
+        }
+    });
     m.read = reconciled;
     m.migratedAt = m.migratedAt ?? now;
 }
 
 /**
- * Reconcilia o estado de leitura local com o current_chapter FRESCO do servidor.
+ * Reconcilia o estado de leitura local com o estado FRESCO do servidor
+ * (`current_chapter` + `read` de cada arquivo do GET /files, na ordem dele).
  * Use ao sincronizar ou ao abrir o manhwa online (onde há um valor confiável).
  * IMPORTANTE: drene a fila offline (drainQueue) ANTES de chamar, pra que leituras
- * feitas offline já estejam refletidas no current_chapter do servidor.
+ * feitas offline já estejam refletidas no servidor.
  */
 export async function reconcileReadsWithServer(
     manhwaId: number,
     currentChapter: number,
-    files: { name: string }[]
+    files: { name: string; read?: boolean }[]
 ): Promise<void> {
     if (files.length === 0) return;
     await withIndexLock(async () => {
@@ -668,6 +697,32 @@ export async function adoptServerCurrentChapter(manhwaId: number, currentChapter
         await reconcileReadsWithServer(manhwaId, currentChapter, files);
     } catch (e) {
         console.warn('[cache] adoptServerCurrentChapter:', e);
+    }
+}
+
+/**
+ * Marca localmente como lidas as posições 1..`currentChapter` do snapshot da
+ * lista completa. Chamado quando o servidor ACEITA um current_chapter vindo da
+ * fila offline: ele acabou de marcar os anteriores, e o local se alinha sem
+ * esperar a próxima abertura online. Só acrescenta (quem remove é a
+ * reconciliação online, com dados frescos).
+ *
+ * Nunca propaga erro, pelo mesmo motivo do `adoptServerCurrentChapter`.
+ */
+export async function markReadThroughLocal(manhwaId: number, currentChapter: number): Promise<void> {
+    try {
+        const files = await loadManhwaFiles(manhwaId);
+        if (!files || files.length === 0 || currentChapter <= 0) return;
+        const names = files.slice(0, currentChapter).map(f => f.name);
+        await withIndexLock(async () => {
+            const index = await loadIndex();
+            if (!index[manhwaId]) index[manhwaId] = { pending: {}, cached: {}, read: {} };
+            if (addReads(index[manhwaId], names, new Date().toISOString()) > 0) {
+                await saveIndex(index);
+            }
+        });
+    } catch (e) {
+        console.warn('[cache] markReadThroughLocal:', e);
     }
 }
 

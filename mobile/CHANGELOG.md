@@ -4,6 +4,19 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.5.11
+
+- **Capítulos anteriores aparecem como lidos ao avançar, inclusive offline.** Terminar o capítulo N
+  agora marca 1..N-1 no cache local na hora (`markChapterReadLocal` usa o snapshot da lista). Antes,
+  só o próprio N entrava, e os anteriores dependiam de abrir a lista online de novo. O card também
+  conta como lido tudo até o `current_chapter` da home, e o drain da fila offline alinha o local
+  quando o servidor aceita a leitura.
+- **O servidor decide o que está lido.** O `GET /files` passou a mandar `read` em cada capítulo
+  (inclui os marcados automaticamente pelo backend). A reconciliação online usa esse campo em vez de
+  reescrever o set pra `1..current_chapter`. Assim, voltar pra reler um capítulo antigo não apaga
+  mais da lista os capítulos já lidos depois dele. O capítulo em andamento continua não lido e
+  continua sendo baixado.
+
 ## 1.5.10
 
 - **Corrige a RAM subindo até estourar ao abrir capítulos (principalmente baixados).** O pré-cálculo

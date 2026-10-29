@@ -402,6 +402,28 @@ async def _list_cbz_files_async(download_dir: str) -> List[dict]:
     return await asyncio.to_thread(_scan_cbz_files, download_dir)
 
 
+def _preencher_lidos(files: List[dict], com_progresso: set, current_chapter: int) -> None:
+    """Grava `read` (bool) em cada arquivo da listagem — a regra de "lido" dos clients.
+
+    Lido = posição (1-based, na ordem da listagem) <= `current_chapter`, que é a
+    convenção que web e mobile usam ao mandar o PATCH, OU existir ChapterProgress
+    pro arquivo — é assim que os capítulos marcados por
+    `_mark_previous_chapters_read` continuam lidos depois de uma regressão.
+
+    Exceção: o ChapterProgress mais adiantado ACIMA do `current_chapter` é o
+    capítulo em andamento. A linha nasce no primeiro PUT de scroll, bem antes de
+    o usuário terminar; sem essa exceção, abrir o próximo capítulo e ler metade
+    já o mostraria como lido (e o mobile deixaria de baixá-lo).
+    """
+    acima = [
+        pos for pos, f in enumerate(files, start=1)
+        if pos > current_chapter and f["name"] in com_progresso
+    ]
+    em_andamento = max(acima, default=None)
+    for pos, f in enumerate(files, start=1):
+        f["read"] = pos <= current_chapter or (f["name"] in com_progresso and pos != em_andamento)
+
+
 @app.get("/api/manhwas/{manhwa_id}/files")
 async def list_manhwa_files(manhwa_id: int, db: AsyncSession = Depends(get_db)):
     """Lista os arquivos .cbz baixados de um manhwa em D:\\Manhwas\\{titulo}\\"""
@@ -416,6 +438,15 @@ async def list_manhwa_files(manhwa_id: int, db: AsyncSession = Depends(get_db)):
     # Diretório inexistente já cai em [] dentro do scan — sem checagem extra
     # aqui, a resposta tem sempre o mesmo formato (inclusive `current_chapter`).
     files = await _list_cbz_files_async(download_dir)
+    current_chapter = manhwa.current_chapter or 0
+
+    # Campo aditivo `read` em cada arquivo: o servidor decide o que está lido
+    # (ver _preencher_lidos) e os clients só refletem.
+    if files:
+        result = await db.execute(
+            select(ChapterProgress.filename).where(ChapterProgress.manhwa_id == manhwa.id)
+        )
+        _preencher_lidos(files, set(result.scalars().all()), current_chapter)
 
     # `total_chapters` = quantos .cbz válidos existem em disco AGORA (mesma
     # semântica do campo no banco, que o review-all recalcula). Vai na resposta
@@ -424,7 +455,7 @@ async def list_manhwa_files(manhwa_id: int, db: AsyncSession = Depends(get_db)):
     return {
         "files": files,
         "path": download_dir,
-        "current_chapter": manhwa.current_chapter or 0,
+        "current_chapter": current_chapter,
         "total_chapters": len(files),
     }
 

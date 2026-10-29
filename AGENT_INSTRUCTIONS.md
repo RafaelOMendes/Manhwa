@@ -170,8 +170,8 @@ O projeto Manhwa Tracker é composto por três partes principais:
   Regras da implementação (`_mark_previous_chapters_read()` em `main.py`):
   1. **"Lido" = existir uma linha em `ChapterProgress` para aquele filename.** A criação usa
      `scroll_position=0`, que é indistinguível de "sem registro" para o `GET .../scroll` (ele já devolvia
-     `0` quando não achava nada) — por isso a mudança é **puramente aditiva** e não altera nada na UI
-     do web nem do mobile.
+     `0` quando não achava nada). Quem transforma isso em UI é o campo `read` do `GET /files` — ver
+     "👁️ Lido na interface" logo abaixo.
   2. **Nunca sobrescreve registro existente.** Um capítulo que já tem posição de scroll real gravada é
      pulado, senão avançar de capítulo apagaria onde o usuário parou. Só as linhas que faltavam são criadas.
   3. **Nada é deletado — regressão preserva histórico.** Voltar o `current_chapter` de 5 para 3 só muda o
@@ -192,7 +192,38 @@ O projeto Manhwa Tracker é composto por três partes principais:
     e o mesmo número de capítulo — se divergirem, o app marca o arquivo errado como lido.
   - Testes: `backend/test_auto_mark_read.py` (SQLite em memória + diretório temporário, sem Postgres e sem
     servidor no ar) cobre avanço, preservação de scroll real, regressão, idempotência, capítulo fracionário,
-    manhwa sem arquivos em disco e a integridade do `GET /files`.
+    manhwa sem arquivos em disco, a integridade do `GET /files`, a flag `read` e as rotas
+    `GET .../read/{filename}` e `GET .../scroll`.
+- **👁️ Lido na interface: o servidor decide, web e mobile refletem (campo `read` do `GET /files`).**
+  Até a v1.5.10 do app, a marcação acima não tinha efeito visível: nenhum client lia `ChapterProgress`.
+  Os dois só usavam "posição ≤ `current_chapter`", e o mobile ainda reescrevia o set local pra
+  exatamente `1..current_chapter`, apagando da tela o histórico numa regressão. Agora:
+  - **Backend (`_preencher_lidos()` em `main.py`)**: cada arquivo do `GET /api/manhwas/{id}/files` ganha
+    o campo aditivo `read: bool`. Lido = **posição (1-based, na ordem da listagem) ≤ `current_chapter`**
+    (a convenção que web e mobile usam ao mandar o PATCH) **OU existe `ChapterProgress`** pro arquivo.
+  - **Exceção: o `ChapterProgress` mais adiantado ACIMA do `current_chapter` é o capítulo em andamento**
+    e não conta como lido. A linha nasce no primeiro `PUT .../scroll`, bem antes de o usuário terminar.
+    Sem essa exceção, abrir o próximo capítulo e ler metade já o mostraria como "Lido", e o mobile
+    deixaria de baixá-lo. Efeito colateral aceito: numa regressão (7 → 3) **sem** capítulo em andamento
+    acima, o capítulo 7 volta a aparecer como não lido (4..6 continuam lidos).
+  - **Web (`frontend/components/ManhwaCard.tsx`)**: `isChapterRead(i) = files[i].read || i + 1 <= currentChapter`.
+    A segunda parte cobre o que foi lido na sessão (o `CbzReader` chama `onChapterRead`) antes de a
+    lista ser buscada de novo. O autoscroll mira o primeiro não lido de verdade. O `CbzReader` checa
+    `res.ok` no PATCH: erro HTTP (ex.: 503 do banco) não conta mais como lido, e o próximo scroll até
+    o fim tenta de novo.
+  - **Mobile**: ver "Cache local / leitura" em `mobile/AGENTS.md`. Resumo: a reconciliação online usa
+    `read` (+ posição ≤ `current_chapter`), `markChapterReadLocal` marca os anteriores localmente
+    (offline), o drain da fila marca `1..N` localmente quando o servidor aceita o PATCH, e o card
+    também infere "lido" por posição ≤ `current_chapter`.
+  - **Backend antigo (sem `read`)**: os clients caem só na regra da posição, que é o comportamento de antes.
+  - ⚠️ **Divergência conhecida, número vs. posição.** Os clients mandam `current_chapter` como **posição**
+    na lista. O `_mark_previous_chapters_read` compara com o **número extraído do nome**
+    (`0 < chapter_number < X`), e o teste `test_auto_mark_read.py` fixa isso (arquivo sem número fica
+    de fora; `Cap 08.5` entra no PATCH 9). As duas regras coincidem quando os arquivos são `Cap 1..N`.
+    Com capítulos fracionários ou sem número antes do ponto lido, a marcação por número pode passar
+    da posição lida. Com 1 ou 2 desses arquivos a exceção do "em andamento" esconde a sobra; a partir
+    de 3 aparece capítulo não lido marcado como lido. Pra alinhar, a marcação teria que passar a usar a posição e o
+    teste mudaria junto.
 - **🧹 No máximo um `ChapterProgress` por (`manhwa_id`, `filename`).** Cada linha é UM capítulo; várias
   linhas do mesmo `manhwa_id` com arquivos diferentes são o histórico de leitura e **nunca** devem ser
   apagadas juntas. A tabela não tem UNIQUE no par (o projeto não tem migrações — `create_all` não altera

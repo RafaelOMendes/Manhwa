@@ -198,9 +198,9 @@
     "semantic_hash": "b84f188a0aa80082acdf7831769e4604"
   },
   "mobile/src/components/CbzReader.tsx": {
-    "mtime": 1789577881.7511265,
-    "seen": 1793296517.7324376,
-    "ast_hash": "65612fad2bb0833488bd80b9270ff03f",
+    "mtime": 1793300222.4478865,
+    "seen": 1793300484.4685056,
+    "ast_hash": "0762be0d3c8aa3aaeb081a3e47c00f9b",
     "semantic_hash": ""
   },
   "mobile/src/components/ManhwaCard.tsx": {
@@ -276,9 +276,9 @@
     "semantic_hash": ""
   },
   "mobile/src/lib/version.ts": {
-    "mtime": 1793295878.9812756,
-    "seen": 1793296517.7324376,
-    "ast_hash": "6c87baf414e07f7c3ca045edfb80ea7d",
+    "mtime": 1793300283.1580608,
+    "seen": 1793300484.4685056,
+    "ast_hash": "0bac917f84f77f55b2098207a1e90f3e",
     "semantic_hash": ""
   },
   "mobile/src/nativewind-env.d.ts": {
@@ -342,15 +342,15 @@
     "semantic_hash": "5a9309c07733e6e50e60ec877982781e"
   },
   "mobile/AGENTS.md": {
-    "mtime": 1789572664.089275,
-    "seen": 1793296517.7324376,
-    "ast_hash": "8e524eaab6a013a33e1fcd315196d368",
+    "mtime": 1793300282.2369022,
+    "seen": 1793300484.4685056,
+    "ast_hash": "007144b7e2d044461228d57f7f6e1f79",
     "semantic_hash": ""
   },
   "mobile/CHANGELOG.md": {
-    "mtime": 1793295878.9799862,
-    "seen": 1793296517.7324376,
-    "ast_hash": "991cde216dff1cd6808b23f6733221ae",
+    "mtime": 1793300291.0483508,
+    "seen": 1793300484.4685056,
+    "ast_hash": "30b790b80e1e13056754419064c9ed7d",
     "semantic_hash": ""
   },
   "mobile/CLAUDE.md": {
@@ -492,9 +492,9 @@
     "semantic_hash": ""
   },
   "automation/claude_runner.py": {
-    "mtime": 1790553270.297003,
-    "seen": 1793296517.7309318,
-    "ast_hash": "f341529397f2f6b33fbd5d70fb219628",
+    "mtime": 1793297912.1469102,
+    "seen": 1793300484.4685056,
+    "ast_hash": "2c97ec53f9e04625e46f31e4e64cf637",
     "semantic_hash": ""
   },
   "automation/git_ops.py": {
@@ -528,9 +528,9 @@
     "semantic_hash": ""
   },
   "automation/watcher.py": {
-    "mtime": 1793295649.330913,
-    "seen": 1793296517.7309318,
-    "ast_hash": "68ff4e7e15c532aece9fc6d0bdc78cde",
+    "mtime": 1793297912.271587,
+    "seen": 1793300484.4685056,
+    "ast_hash": "f09bf33680b259d7eae62d000b4c1c9a",
     "semantic_hash": ""
   },
   "automation/SETUP.md": {
@@ -633,6 +633,12 @@
     "mtime": 1793296915.2578049,
     "seen": 1793297120.3964293,
     "ast_hash": "c3164610184e88f6740ba5a6c7089f2f",
+    "semantic_hash": ""
+  },
+  "mobile/src/lib/image-size.ts": {
+    "mtime": 1793300013.74353,
+    "seen": 1793300484.4685056,
+    "ast_hash": "5a5b5815b46615a9aa28b496b3de7bd7",
     "semantic_hash": ""
   },
   "frontend/package-lock.json": {

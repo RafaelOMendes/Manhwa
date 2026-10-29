@@ -56,7 +56,7 @@ backend/
 | PUT | `/api/manhwas/{id}` | Atualiza um manhwa |
 | DELETE | `/api/manhwas/{id}` | Exclui um manhwa |
 | PATCH | `/api/manhwas/{id}/current-chapter` | Atualiza o capítulo atual e marca os anteriores como lidos |
-| GET | `/api/manhwas/{id}/files` | Lista `.cbz` em `DOWNLOAD_DIR/{título}/` |
+| GET | `/api/manhwas/{id}/files` | Lista `.cbz` em `DOWNLOAD_DIR/{título}/`. Cada arquivo traz `read` (bool): lido segundo o servidor (posição ≤ `current_chapter` ou `ChapterProgress` existente, menos o capítulo em andamento) |
 | GET | `/api/manhwas/{id}/read/{filename}` | Info do CBZ (nº de páginas) |
 | GET | `/api/manhwas/{id}/read/{filename}/page/{n}` | Serve uma página |
 | GET/PUT | `/api/manhwas/{id}/read/{filename}/scroll` | Posição de scroll salva |
@@ -81,6 +81,7 @@ Teste rápido: `curl http://localhost:8000/api/telegram/test`.
 - **"password authentication failed"** — senha do `.env` não bate com a do usuário `postgres`.
 - **"database does not exist"** — rode `CREATE DATABASE manhwa_tracker;` no psql.
 - **"No module named 'asyncpg'"** — instale dentro do venv: `.\venv\Scripts\python.exe -m pip install asyncpg psycopg2-binary`.
+- **"No module named 'aiosqlite'" nos `test_*.py`** — os testes usam SQLite em memória e precisam dele (não está no `requirements.txt`): `.\venv\Scripts\python.exe -m pip install aiosqlite`.
 
 ## Detalhes técnicos
 

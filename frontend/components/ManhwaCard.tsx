@@ -10,6 +10,8 @@ interface CbzFile {
     name: string
     size_mb: number
     chapter_number: number
+    /** Lido segundo o servidor (ChapterProgress ou posição <= current_chapter). Ausente em backend antigo. */
+    read?: boolean
 }
 
 interface ManhwaCardProps {
@@ -134,8 +136,11 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
         setCurrentChapter(chapterNum)
     }
 
+    // O servidor decide o que está lido (`read`, inclui os capítulos marcados ao
+    // avançar e mantém o histórico numa regressão). A posição <= currentChapter
+    // cobre o que foi lido nesta sessão, antes de a lista ser buscada de novo.
     const isChapterRead = (index: number): boolean => {
-        return index + 1 <= currentChapter
+        return files[index]?.read === true || index + 1 <= currentChapter
     }
 
     const getStatusBadge = () => {
@@ -153,6 +158,7 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
     }
 
     const readCount = files.filter((_, i) => isChapterRead(i)).length
+    const firstUnreadIndex = files.findIndex((_, i) => !isChapterRead(i))
 
     return (
         <>
@@ -305,7 +311,7 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                                         return (
                                             <div
                                                 key={i}
-                                                ref={i === currentChapter ? firstUnreadRef : null}
+                                                ref={i === firstUnreadIndex ? firstUnreadRef : null}
                                                 onClick={() => {
                                                     setShowFiles(false)
                                                     setReadingChapterNum(chapterNumber)

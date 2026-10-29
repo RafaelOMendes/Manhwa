@@ -91,6 +91,9 @@ interface FileInfo {
     name: string;
     chapter_number: number;
     size_mb?: number;
+    /** Lido segundo o servidor (GET /files). O syncManhwaLocal reconcilia o set local com ele
+     *  e não baixa o que já está lido. Ausente em backend antigo. */
+    read?: boolean;
 }
 
 /**

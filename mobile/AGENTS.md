@@ -188,10 +188,20 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
   load/save do índice é atômico. Qualquer nova função que faça load→mutate→save do índice deve
   passar pelo `withIndexLock`.
 - Páginas extraídas em disco: `Paths.document/manhwas/{id}/{filename}/page_N.jpg` (+ `cover.jpg`).
-- **Modelo de leitura é cumulativo, alinhado ao servidor** (`current_chapter` = posição na lista ordenada
-  completa, 1-based — mesma convenção da web). `reconcileReadsWithServer()` reescreve o set `read` para
-  `1..current_chapter` ao sincronizar e ao abrir online (drena a fila antes pra não regredir leitura
-  offline ainda não enviada). Ler um cap anterior faz o progresso regredir (igual ao back).
+- **"Lido" vem do servidor** (`current_chapter` = posição na lista ordenada completa, 1-based, mesma
+  convenção da web). O `GET /files` manda `read` em cada arquivo (posição ≤ `current_chapter` OU
+  `ChapterProgress` existente, menos o capítulo em andamento; regra em `_preencher_lidos` no backend).
+  `reconcileReadsWithServer()`/`applyReadReconcile` reescrevem o set `read` pra exatamente esses
+  arquivos ao sincronizar e ao abrir online. A fila é drenada antes, pra não regredir leitura offline
+  ainda não enviada. Backend antigo, sem `read`, cai em `1..current_chapter`.
+- **Offline-first: ler o capítulo N marca 1..N-1 localmente.** `markChapterReadLocal` também acrescenta
+  os anteriores (posição no snapshot `loadManhwaFiles`), espelhando o `_mark_previous_chapters_read`.
+  O drain da fila chama `markReadThroughLocal(id, N)` quando o servidor ACEITA o PATCH. As duas funções
+  só acrescentam; quem remove é a reconciliação online. O `ManhwaCard` ainda infere lido por
+  `chapter_number ≤ current_chapter`, exceto no fallback offline sem snapshot, onde a numeração é só a
+  ordem dos baixados (lá `currentChapter` fica 0).
+- Ler um cap anterior faz o `current_chapter` regredir (igual ao back), mas os capítulos com
+  `ChapterProgress` continuam lidos (nada é apagado no servidor).
 - **Número do capítulo = POSIÇÃO na lista completa**, nunca o índice da lista filtrada (offline só tem
   os baixados). Offline a posição vem do índice no snapshot completo (`saveManhwaFiles`/`loadManhwaFiles`).
 - **`getStorageUsage()`/`getManhwaStorage()` são assíncronas e NÃO tocam a thread JS.** A soma
