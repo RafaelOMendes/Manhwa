@@ -449,6 +449,20 @@ no ar): `cd backend && venv/Scripts/python.exe test_timestamp_sync.py`.
   5. Se a conta bater no limite de uso do Claude Code, a automação não fica tentando
      de novo a cada poll - espera até o horário de reset (extraído da própria mensagem
      de erro) e retoma sozinha, com aviso no Telegram nos dois momentos.
+  6. **Pausa preventiva** (`usage_guard.py`): antes de estourar, ao chegar em
+     `USAGE_PAUSE_THRESHOLD` (padrão 80%) da janela de 5h da conta, a automação para
+     de iniciar chamadas ao Claude Code (o loop do watcher e `run_claude_code()`
+     esperam em passos de 60s) até o reset da janela, e retoma sozinha - `⏸️`/`▶️` no
+     log e no Telegram. A utilização vem do evento `rate_limit_event` que o CLI emite
+     com `--output-format stream-json --verbose` (`unifiedWindows.five_hour`, com o
+     horário exato de reset) - por isso `claude_runner.py` usa stream-json, e não
+     `json`. Limitação: a leitura só chega no fim de cada chamada (uma execução longa
+     ainda pode passar de 80% ou bater 100%, e aí o retry reativo do item 5 segue
+     sendo a rede de segurança); sem o evento (CLI antiga/API key) há um fallback
+     opcional por custo acumulado (`USAGE_WINDOW_CAPACITY_USD`). Estado persistido em
+     `usage_state.json`, separado do `state.json` de propósito (o watcher regrava o
+     `state.json` inteiro a cada `set_card()` com a cópia que carregou no início do
+     tick). Testes: `automation/test_usage_guard.py` (unittest, sem rede).
 - **Ambas as chamadas ao Claude Code que exploram o repositório (rascunho do prompt e
   execução) recebem um lembrete explícito (via `--append-system-prompt`) pra usar o
   graphify em vez de grep/Read cru quando `graphify-out/graph.json` existir - mesma
@@ -470,7 +484,9 @@ no ar): `cd backend && venv/Scripts/python.exe test_timestamp_sync.py`.
   Trello, com retry automático), `claude_prompt.py`, `claude_runner.py` (chama o CLI
   `claude`, com retry/espera automática em limite de uso), `git_ops.py`,
   `telegram_notify.py`, `state.py` (estado local em `state.json`, não versionado -
-  por card: branch, session_id, model/effort escolhidos, áreas alteradas),
+  por card: branch, session_id, model/effort escolhidos, áreas alteradas; e o estado
+  da janela de uso em `usage_state.json`), `usage_guard.py` (pausa preventiva por
+  uso, item 6 acima),
   `proc_utils.py` (resolve o caminho completo de `claude`/`git` antes de chamar
   subprocess), `logging_setup.py` (configura logging pro console + arquivo).
 - **Erros de rede e credenciais nos logs:** `logging_setup.RedactingFormatter` redige `key=`/`token=` e `/bot<token>/` como `***` na linha final (mensagem + traceback), então nenhum log leva token. `trello_client.py` converte `ConnectionError`/`Timeout` em `TrelloNetworkError` (WARNING curto, sem traceback); `watcher.py` trata isso como falha transitória (WARNING, sem Telegram, backoff do polling até `NETWORK_BACKOFF_MAX_SECONDS`, padrão 300s, e volta ao normal no 1º sucesso). `telegram_notify.py` loga WARNING curto em falha de conexão. Erros inesperados continuam `ERROR` com traceback.

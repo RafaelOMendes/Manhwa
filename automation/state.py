@@ -7,6 +7,14 @@ Isso é o que permite ao watcher.py saber "esse card já virou branch, não crio
 mesmo se o script for reiniciado.
 
 O arquivo fica em automation/state.json (ignorado pelo git, ver .gitignore).
+
+Também guarda, num arquivo SEPARADO (automation/usage_state.json, também ignorado
+pelo git), o estado da janela de 5h de uso do Claude Code usado pela pausa
+preventiva (ver usage_guard.py). Mesmo mecanismo (JSON com escrita atômica, mesmo
+lock), mas arquivo próprio de propósito: o watcher carrega o state.json no começo
+de cada tick e regrava o dict inteiro a cada set_card() - se o uso morasse ali, uma
+atualização feita no meio de uma chamada ao Claude Code (dentro do tick) seria
+sobrescrita pela cópia antiga que o watcher ainda tem em memória.
 """
 
 from __future__ import annotations
@@ -22,6 +30,7 @@ from logging_setup import get_logger
 logger = get_logger(__name__)
 
 STATE_PATH = Path(__file__).parent / "state.json"
+USAGE_STATE_PATH = Path(__file__).parent / "usage_state.json"
 
 _lock = threading.Lock()
 
@@ -36,27 +45,49 @@ def _default_state() -> dict[str, Any]:
     }
 
 
-def load() -> dict[str, Any]:
+def _read_json(path: Path) -> dict[str, Any] | None:
+    """None se o arquivo não existe ou não deu pra ler (quem chama usa o padrão)."""
     with _lock:
-        if not STATE_PATH.exists():
-            return _default_state()
+        if not path.exists():
+            return None
         try:
-            with open(STATE_PATH, "r", encoding="utf-8") as f:
-                data = json.load(f)
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
         except (json.JSONDecodeError, OSError):
-            logger.error(f"Falha ao ler {STATE_PATH}, usando estado padrão", exc_info=True)
-            return _default_state()
-        data.setdefault("cards", {})
-        data.setdefault("last_build_signature", None)
-        return data
+            logger.error(f"Falha ao ler {path}, usando estado padrão", exc_info=True)
+            return None
+
+
+def _write_json(path: Path, data: dict[str, Any]) -> None:
+    with _lock:
+        tmp_path = path.with_suffix(".json.tmp")
+        with open(tmp_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        os.replace(tmp_path, path)
+
+
+def load() -> dict[str, Any]:
+    data = _read_json(STATE_PATH)
+    if data is None:
+        return _default_state()
+    data.setdefault("cards", {})
+    data.setdefault("last_build_signature", None)
+    return data
 
 
 def save(data: dict[str, Any]) -> None:
-    with _lock:
-        tmp_path = STATE_PATH.with_suffix(".json.tmp")
-        with open(tmp_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-        os.replace(tmp_path, STATE_PATH)
+    _write_json(STATE_PATH, data)
+
+
+def load_usage() -> dict[str, Any]:
+    """Estado da janela de 5h de uso do Claude Code (formato definido em
+    usage_guard.py). Dict vazio se ainda não existe."""
+    data = _read_json(USAGE_STATE_PATH)
+    return data if isinstance(data, dict) else {}
+
+
+def save_usage(data: dict[str, Any]) -> None:
+    _write_json(USAGE_STATE_PATH, data)
 
 
 def get_card(state: dict[str, Any], card_id: str) -> dict[str, Any]:

@@ -35,11 +35,16 @@ code.claude.com/docs/en/cli-reference, ago/2026):
 - `--model <alias ou nome completo>` - aceita aliases (`sonnet`, `opus`, `haiku`,
   `fable`) ou o nome completo do modelo.
 - `--effort <low|medium|high|xhigh|max>` - nível de esforço/raciocínio da sessão.
-- `--output-format json` devolve um objeto com `result` (texto final), `session_id`,
-  `total_cost_usd` etc, o que facilita registrar um resumo no Trello/Telegram e permite
-  retomar a mesma conversa depois com `--resume <session_id>` (usado no fluxo de
-  "correção" quando você move o card de volta pra Em Desenvolvimento com feedback, e
-  também no retry automático de limite de uso logo abaixo).
+- `--output-format stream-json --verbose` imprime um evento JSON por linha (o
+  `--verbose` é obrigatório pro stream-json no modo `-p`). O último evento
+  `"type": "result"` é o mesmo objeto que o `--output-format json` devolvia: `result`
+  (texto final), `session_id`, `total_cost_usd` etc, o que facilita registrar um
+  resumo no Trello/Telegram e permite retomar a mesma conversa depois com
+  `--resume <session_id>` (usado no fluxo de "correção" quando você move o card de
+  volta pra Em Desenvolvimento com feedback, e também no retry automático de limite
+  de uso logo abaixo). Usamos o stream (e não o `json`) só por causa do evento
+  `"type": "rate_limit_event"`, que só existe nele: traz a utilização da janela de 5h
+  da conta e o horário do reset, usados pela pausa preventiva (usage_guard.py).
 
 Limite de uso (session/usage limit): quando a conta esbarra no limite, o Claude Code
 devolve `is_error: true` e um `result` tipo "You've hit your session limit · resets
@@ -51,6 +56,13 @@ reset informado, e retoma automaticamente: se a tentativa que bateu no limite j�
 gerado um `session_id` (ela avançou antes de travar), a próxima tentativa usa
 `--resume` nesse session_id com um prompt curto de "continue" em vez de recomeçar a
 task do zero.
+
+Pausa preventiva (usage_guard.py): antes de estourar, run_claude_code() também
+consulta a utilização da janela de 5h (lida do `rate_limit_event` de cada chamada) e,
+a partir do limiar (USAGE_PAUSE_THRESHOLD, padrão 80%), não começa nenhuma chamada
+nova até o reset. O retry reativo acima continua valendo como rede de segurança - a
+medição só chega no fim de cada chamada, então uma chamada longa ainda pode bater
+nos 100% (ver limitações no docstring do usage_guard.py).
 """
 
 from __future__ import annotations
@@ -65,6 +77,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import usage_guard
 from proc_utils import resolve_command
 from telegram_notify import send_telegram_message
 from logging_setup import get_logger
@@ -139,6 +152,8 @@ class ClaudeRunResult:
     session_id: str | None
     total_cost_usd: float | None
     raw_output: str
+    # `rate_limit_info` do último `rate_limit_event` do stream (None se não veio).
+    rate_limit_info: dict | None = None
 
 
 def _looks_like_usage_limit(text: str) -> bool:
@@ -187,6 +202,11 @@ def run_claude_code(
     append_system_prompt: str | None = None,
 ) -> ClaudeRunResult:
     for attempt in range(1, USAGE_LIMIT_MAX_RETRIES + 2):
+        # Pausa preventiva: se a janela de 5h já passou do limiar, espera o reset
+        # ANTES de começar - vale pra toda chamada (rascunho e execução) e pra cada
+        # tentativa do retry abaixo. Sem pausa ativa, volta na hora.
+        usage_guard.wait_if_paused()
+        started_at = time.time()
         result = _run_once(
             repo_dir,
             prompt,
@@ -198,7 +218,11 @@ def run_claude_code(
             timeout_seconds=timeout_seconds,
             append_system_prompt=append_system_prompt,
         )
-        if result.ok or not _looks_like_usage_limit(result.result_text):
+        hit_usage_limit = not result.ok and _looks_like_usage_limit(result.result_text)
+        usage_guard.record_call(
+            result.rate_limit_info, result.total_cost_usd, started_at=started_at, hit_usage_limit=hit_usage_limit
+        )
+        if not hit_usage_limit:
             return result
         if attempt > USAGE_LIMIT_MAX_RETRIES:
             logger.error(f"Limite de uso atingido {USAGE_LIMIT_MAX_RETRIES}x seguidas - desistindo, devolvendo a falha.")
@@ -240,6 +264,35 @@ def session_not_found(result: ClaudeRunResult) -> bool:
     return not result.ok and "No conversation found with session ID" in (result.raw_output or "")
 
 
+def _as_text(value: str | bytes | None) -> str:
+    """TimeoutExpired.stdout/stderr podem vir como bytes mesmo com text=True."""
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    return value or ""
+
+
+def _parse_stream_json(stdout: str) -> tuple[dict | None, str | None, dict | None]:
+    """Lê a saída do `--output-format stream-json` (um JSON por linha) e devolve
+    (último evento `result`, a linha crua dele, `rate_limit_info` do último
+    `rate_limit_event`). Linhas que não são JSON são ignoradas."""
+    result_event = result_line = rate_limit_info = None
+    for line in (stdout or "").splitlines():
+        line = line.strip()
+        if not line.startswith("{"):
+            continue
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(event, dict):
+            continue
+        if event.get("type") == "result":
+            result_event, result_line = event, line
+        elif event.get("type") == "rate_limit_event" and event.get("rate_limit_info"):
+            rate_limit_info = event["rate_limit_info"]
+    return result_event, result_line, rate_limit_info
+
+
 def _run_once(
     repo_dir: Path,
     prompt: str,
@@ -253,7 +306,7 @@ def _run_once(
 ) -> ClaudeRunResult:
     claude_cmd = resolve_command(os.environ.get("CLAUDE_CLI_PATH") or "claude")
 
-    args = [*claude_cmd, "-p", prompt, "--output-format", "json"]
+    args = [*claude_cmd, "-p", prompt, "--output-format", "stream-json", "--verbose"]
     if permission_mode:
         args += ["--permission-mode", permission_mode]
     if allowed_tools:
@@ -309,13 +362,18 @@ def _run_once(
         )
     except subprocess.TimeoutExpired as exc:
         logger.warning(f"Timeout depois de {timeout}s rodando o Claude Code.")
-        raw = (exc.stdout or "") + (exc.stderr or "")
+        # O stream parcial ainda traz o rate_limit_event (uma chamada de 45min gasta
+        # bastante da janela, tem que contar). raw_output fica só com o stderr, como
+        # era com --output-format json (que não imprimia nada no stdout antes do fim) -
+        # o stream parcial tem conteúdo de arquivos/comandos que não deve ir pro card.
+        _, _, rate_limit_info = _parse_stream_json(_as_text(exc.stdout))
         return ClaudeRunResult(
             ok=False,
             result_text=f"Timeout depois de {timeout}s rodando o Claude Code.",
             session_id=None,
             total_cost_usd=None,
-            raw_output=raw,
+            raw_output=_as_text(exc.stderr),
+            rate_limit_info=rate_limit_info,
         )
     except OSError as exc:
         # Ex: WinError 87/2 no Windows quando o executável não foi resolvido
@@ -343,29 +401,23 @@ def _run_once(
     elapsed_min = (time.monotonic() - start) / 60
     logger.info(f"Claude Code terminou em {elapsed_min:.1f}min (returncode={proc.returncode}).")
 
-    raw_output = (proc.stdout or "") + (proc.stderr or "")
-
-    # --output-format json normalmente imprime só o JSON no stdout, mas por segurança
-    # tentamos achar a última linha que parseia como JSON.
-    parsed = None
-    for line in reversed((proc.stdout or "").splitlines()):
-        line = line.strip()
-        if not line:
-            continue
-        try:
-            parsed = json.loads(line)
-            break
-        except json.JSONDecodeError:
-            continue
+    parsed, result_line, rate_limit_info = _parse_stream_json(proc.stdout or "")
+    stdout_text = (proc.stdout or "").strip()
+    if parsed is not None or stdout_text.startswith("{"):
+        # Do stream, guarda só a linha do `result` (exatamente o que o
+        # --output-format json imprimia) - o resto repete cada mensagem/resultado de
+        # ferramenta da sessão (conteúdo de arquivos etc., que não deve ir pro card).
+        stdout_text = result_line or ""
+    raw_output = (f"{stdout_text}\n" if stdout_text else "") + (proc.stderr or "")
 
     if parsed is not None:
         result_text = str(parsed.get("result", "")).strip()
         session_id = parsed.get("session_id")
         total_cost_usd = parsed.get("total_cost_usd")
     else:
-        # Sem JSON no stdout (ex: "No conversation found with session ID" sai só no
-        # stderr) - usa o stderr pra o motivo da falha não sumir do log/card.
-        result_text = ((proc.stdout or "").strip() or (proc.stderr or "").strip())[-4000:]
+        # Sem evento `result` (ex: o processo morreu antes/no meio do stream) - usa o
+        # stderr pra o motivo da falha não sumir do log/card.
+        result_text = (stdout_text or (proc.stderr or "").strip())[-4000:]
         session_id = None
         total_cost_usd = None
 
@@ -379,4 +431,5 @@ def _run_once(
         session_id=session_id,
         total_cost_usd=total_cost_usd,
         raw_output=raw_output,
+        rate_limit_info=rate_limit_info,
     )

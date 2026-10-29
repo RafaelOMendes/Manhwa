@@ -66,6 +66,7 @@ from claude_prompt import build_prompt  # noqa: E402
 from claude_runner import run_claude_code, session_not_found, GRAPHIFY_REMINDER, MOBILE_EAS_UPDATE_REMINDER  # noqa: E402
 from telegram_notify import send_telegram_message  # noqa: E402
 import git_ops  # noqa: E402
+import usage_guard  # noqa: E402
 
 POLL_INTERVAL_SECONDS = int(os.environ.get("POLL_INTERVAL_SECONDS", "30"))
 BASE_BRANCH = os.environ.get("BASE_BRANCH", "main")
@@ -433,6 +434,7 @@ def main() -> None:
     log(f"Versão da automação: {version}")
     log(f"Branch base: {BASE_BRANCH}")
     log(f"Listas do Trello resolvidas: {list_ids}")
+    log(usage_guard.describe_config())
     send_telegram_message(f"🤖 Automação Trello ↔ Claude Code iniciada (versão {version}). De olho no board!")
 
     # Só notifica a PRIMEIRA falha de uma sequência (ex: Trello fora do ar por
@@ -444,6 +446,11 @@ def main() -> None:
     while True:
         delay = POLL_INTERVAL_SECONDS
         try:
+            # Pausa preventiva por uso (usage_guard.py): com a janela de 5h do Claude
+            # Code acima do limiar, nem faz poll - espera o reset aqui (conferindo a
+            # cada 60s, Ctrl+C funciona) e segue normalmente depois. Também vale se o
+            # watcher foi reiniciado no meio da pausa (estado em usage_state.json).
+            usage_guard.wait_if_paused()
             tick(client, list_ids)
             if network_failures:
                 log(f"Rede restabelecida após {network_failures} falha(s) seguida(s).")

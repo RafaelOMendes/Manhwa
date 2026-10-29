@@ -5,6 +5,7 @@ rclone_upload.log
 # Automação Trello + Claude Code (ver automation/SETUP.md)
 automation/.env
 automation/state.json
+automation/usage_state.json
 automation/venv/
 automation/__pycache__/
 automation/logs/

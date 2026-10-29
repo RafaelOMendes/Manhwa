@@ -155,6 +155,10 @@ Preencha tudo que ficou pendente nos passos 1–3. Confira principalmente:
 - `CLAUDE_EXEC_MODEL=opus` / `CLAUDE_EXEC_EFFORT=` — só servem de **fallback**: entram
   em jogo apenas se a escolha da etapa de rascunho não vier ou não for válida. Deixe
   ambos em branco pra cair no modelo/effort padrão da sua conta/assinatura nesse caso.
+- `USAGE_PAUSE_THRESHOLD=0.8` — fração da janela de 5h da conta em que a automação
+  pausa sozinha até o reset (aceita `0.8` ou `80`). Junto com
+  `USAGE_PAUSE_CHECK_SECONDS`, `USAGE_WINDOW_SECONDS` e `USAGE_WINDOW_CAPACITY_USD`,
+  explicado no passo 6, item 9. Pode deixar fora do `.env`: os padrões já valem.
 
 Não precisa de nenhuma chave de API extra (Trello e Telegram à parte) — as duas
 etapas de IA usam o `claude` CLI já autenticado na sua máquina.
@@ -243,6 +247,44 @@ estado atual do board.
    ELA (`--resume`) em vez de recomeçar a task do zero. Se por algum motivo a mensagem
    não trouxer um horário reconhecível, cai num fallback de 30min
    (`USAGE_LIMIT_FALLBACK_WAIT_SECONDS` no `.env`).
+9. **Pausa preventiva em 80% da janela de 5h** (`automation/usage_guard.py`). Pra não
+   queimar a cota inteira de uma vez, depois de cada chamada ao Claude Code o watcher
+   lê a utilização da janela de 5h da conta e, quando ela chega ao limiar
+   (`USAGE_PAUSE_THRESHOLD`, padrão `0.8`), **para de iniciar chamadas novas** até o
+   reset: manda `⏸️` no Telegram (e WARNING no log) com o horário do reset, para de
+   fazer poll no Trello e confere de novo a cada `USAGE_PAUSE_CHECK_SECONDS` (60s).
+   Quando a janela reseta, avisa `▶️` e segue sozinho. Nada é descartado: se a pausa
+   começou no meio de um card (ex: entre as duas chamadas do rascunho do prompt), ele
+   continua exatamente dali. O retry reativo do item 8 continua valendo como rede de
+   segurança.
+   - **De onde vem o número:** o Claude Code é chamado com
+     `--output-format stream-json --verbose`, que emite um evento `rate_limit_event`
+     com `unifiedWindows.five_hour.utilization` (ex: `0.42` = 42%) e `resetsAt` (horário
+     exato do reset) - é o mesmo número do `/usage`. Cada chamada loga
+     `Uso da janela de 5h do Claude Code: 42% (...; reset às 00:30; custo na janela ...)`.
+   - **Limitação:** a leitura só chega quando a chamada termina, não em tempo real. Uma
+     execução longa pode começar em 79% e terminar bem acima de 80% (ou até bater nos
+     100% - aí entra o item 8). E o `rate_limit_event` não é um contrato documentado
+     pela Anthropic: se o formato mudar ou o evento não vier (CLI antiga, login por API
+     key em vez de assinatura), o log avisa uma vez por execução e a pausa preventiva
+     fica sem medição.
+   - **Fallback por estimativa (desligado por padrão):** preenchendo
+     `USAGE_WINDOW_CAPACITY_USD`, quando não há leitura oficial a utilização é estimada
+     como soma do `total_cost_usd` das chamadas na janela ÷ essa capacidade, e a janela
+     começa na primeira chamada registrada e dura `USAGE_WINDOW_SECONDS` (18000 = 5h).
+     É só uma aproximação: `total_cost_usd` é preço de tabela da API, não o que a
+     assinatura desconta, e a Anthropic não publica a capacidade da janela em dólares -
+     calibre comparando, no log, o custo acumulado com a utilização oficial.
+   - **Estado** em `automation/usage_state.json` (não versionado): início/reset da
+     janela, última utilização, custo acumulado e a pausa ativa. Sobrevive a reinício -
+     se você fechar e abrir o watcher no meio da pausa, ele avisa `⏸️` de novo e
+     continua esperando o mesmo reset.
+   - **Retomar antes do reset:** suba `USAGE_PAUSE_THRESHOLD` (ex: `0.95`) e reinicie o
+     watcher - a pausa é reavaliada com o limiar novo. Ou apague
+     `automation/usage_state.json` (a espera percebe em até 60s), sabendo que a próxima
+     chamada mede de novo e pausa outra vez se ainda estiver acima do limiar.
+   - Testes (sem rede, sem gastar cota): de dentro de `automation/`,
+     `venv\Scripts\python.exe -m unittest test_usage_guard -v`.
 
 ---
 
@@ -278,6 +320,8 @@ estado atual do board.
 | Erro "Essas listas não foram encontradas no board" | Nome da lista no `.env` tem que ser idêntico ao nome no Trello (o log mostra as listas disponíveis) |
 | Card fica travado em "Em Andamento" sem mover pra "Em Desenvolvimento" | Rode `claude -p "oi" --model haiku` manualmente pra ver se o CLI/login/modelo estão OK |
 | Card fica travado em "Em Desenvolvimento" e não sai | Olhe a janela do terminal / o log; provavelmente `git status` não está limpo na `BASE_BRANCH`, ou o Claude Code deu timeout |
+| Watcher parado, log `Pausa preventiva de uso ativa - aguardando o reset às HH:MM` | Normal: a janela de 5h do Claude Code passou do `USAGE_PAUSE_THRESHOLD` (passo 6, item 9). Retoma sozinho no reset. Pra seguir antes, suba o limiar no `.env` e reinicie o watcher |
+| Log `Claude Code não devolveu a utilização da janela de 5h (rate_limit_event)` | O CLI não mandou o evento (versão antiga ou login por API key): a pausa preventiva fica sem medição e só o retry reativo vale. Atualize o `claude` ou use o fallback `USAGE_WINDOW_CAPACITY_USD` (passo 6, item 9) |
 | Não chega aviso no Telegram | Confira se você mandou `/start` pro bot e se `TELEGRAM_CHAT_ID` está certo |
 | Log com `WARNING ... Sem conexão com o Trello (falha de resolução DNS ...)` repetido | Rede/DNS do PC fora do ar (`getaddrinfo failed` / `api.trello.com`). Não é bug: o watcher trata como falha transitória - loga um WARNING curto (sem traceback e sem alerta no Telegram, que também estaria fora), dobra o intervalo de polling a cada falha seguida (30s, 60s, 120s... até `NETWORK_BACKOFF_MAX_SECONDS`, padrão 300) e volta ao normal no primeiro sucesso (`Rede restabelecida após N falha(s)`). Só erros inesperados continuam como `ERROR` com traceback. **Credenciais nos logs:** o `logging_setup.py` redige `key=`/`token=` (Trello) e o `/bot<token>/` (Telegram) como `***` em tudo que vai pro arquivo e pro console, inclusive tracebacks. Logs antigos em `automation/logs/` gerados antes dessa correção ainda podem conter o token em texto puro: apague-os e, se o PC é compartilhado, gere um novo token do Trello |
 | `❌ Erro no watcher: requests.exceptions.ReadTimeout` (ou `ConnectionError`) da API do Trello, depois de rodar muito tempo | Normal em execuções longas - a API do Trello ocasionalmente demora/oscila. O watcher já se recupera sozinho no próximo poll (não trava, só pula um ciclo), e `trello_client.py` já tenta de novo automaticamente (retry com backoff) antes de chegar a dar erro. Se aparecer só uma vez de vez em quando, ignore; se for constante, é a API do Trello (ou sua rede) fora do ar mesmo - confira status.atlassian.com |

@@ -312,9 +312,9 @@
     "semantic_hash": "817fe671013b35ae0bc9301dfe449a87"
   },
   "AGENT_INSTRUCTIONS.md": {
-    "mtime": 1793313708.6483548,
-    "seen": 1793313774.2569625,
-    "ast_hash": "b88fa7cb3c0270a83cfd1415c7d25879",
+    "mtime": 1793314860.3685105,
+    "seen": 1793314878.5768855,
+    "ast_hash": "bde12973edcaa57f53fe90a3cb05fa85",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -492,9 +492,9 @@
     "semantic_hash": ""
   },
   "automation/claude_runner.py": {
-    "mtime": 1793297912.1469102,
-    "seen": 1793300484.4685056,
-    "ast_hash": "2c97ec53f9e04625e46f31e4e64cf637",
+    "mtime": 1793314696.5381725,
+    "seen": 1793314878.5768855,
+    "ast_hash": "6e144d37ecf967767399bd5134645552",
     "semantic_hash": ""
   },
   "automation/git_ops.py": {
@@ -510,9 +510,9 @@
     "semantic_hash": ""
   },
   "automation/state.py": {
-    "mtime": 1790553334.9099448,
-    "seen": 1793296517.7309318,
-    "ast_hash": "9ae72aa5168d80f2a7b83a68b28cc4cd",
+    "mtime": 1793314705.329132,
+    "seen": 1793314878.5768855,
+    "ast_hash": "5194f56a44cc12650936de329115e9c6",
     "semantic_hash": ""
   },
   "automation/telegram_notify.py": {
@@ -528,15 +528,15 @@
     "semantic_hash": ""
   },
   "automation/watcher.py": {
-    "mtime": 1793297912.271587,
-    "seen": 1793300484.4685056,
-    "ast_hash": "f09bf33680b259d7eae62d000b4c1c9a",
+    "mtime": 1793314702.763134,
+    "seen": 1793314878.5768855,
+    "ast_hash": "8fbd428d282c313559028d1a2dfa2aed",
     "semantic_hash": ""
   },
   "automation/SETUP.md": {
-    "mtime": 1793295673.7984614,
-    "seen": 1793296517.7324376,
-    "ast_hash": "08aeabbe7cd1f2073792d4d173914a51",
+    "mtime": 1793314851.3471239,
+    "seen": 1793314878.5768855,
+    "ast_hash": "570cf2008b895dc71bf22dad5ff967ab",
     "semantic_hash": ""
   },
   "automation/requirements.txt": {
@@ -639,6 +639,18 @@
     "mtime": 1793300013.74353,
     "seen": 1793300484.4685056,
     "ast_hash": "5a5b5815b46615a9aa28b496b3de7bd7",
+    "semantic_hash": ""
+  },
+  "automation/test_usage_guard.py": {
+    "mtime": 1793314759.38565,
+    "seen": 1793314878.5768855,
+    "ast_hash": "86033db6ae9169e54320d5870a5083c7",
+    "semantic_hash": ""
+  },
+  "automation/usage_guard.py": {
+    "mtime": 1793314633.4747603,
+    "seen": 1793314878.5768855,
+    "ast_hash": "a9a6f786f534463f276d36491cb09326",
     "semantic_hash": ""
   },
   "frontend/package-lock.json": {
