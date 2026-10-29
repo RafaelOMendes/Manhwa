@@ -91,7 +91,7 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
     um offset além do `contentSize` que a FlatList já mediu faz ela CLAMPAR pra borda do pouco que
     renderizou — ou seja, o leitor "pousava" no fim do trecho pequeno que carregou, dando a impressão
     de ter pulado pro final do capítulo sem renderizar o meio. Batia bem mais em **capítulos
-    baixados**: o pré-cálculo (`RNImage.getSize` em `file://`) resolve quase instantâneo (leitura de
+    baixados**: o pré-cálculo em `file://` resolve quase instantâneo (leitura de
     disco, sem rede), então as páginas já montam na altura REAL (pode ser bem mais alta que o
     fallback 0.7) em vez de crescer aos poucos via `onLoad` — cada página tomando um pedaço maior do
     orçamento de `windowSize` (medido em alturas de viewport, não em nº de itens), o que reduz quantas
@@ -104,9 +104,9 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
   - **Sanitização do offset salvo.** `savedScrollOffset` (merge local/servidor) passa por
     `sanitizeOffset()` — descarta valores não-numéricos, não-finitos ou ≤0, virando `0` (chapter abre
     do topo) em vez de virar o `target` de um restore para um offset corrompido.
-  - **`RNImage.getSize` também é validado com `Number.isFinite`** (além de `w > 0 && h > 0`) antes de
-    alimentar `totalContentHeightRef`/`aspectRatiosRef` — já observado devolvendo `NaN` pra arquivos
-    `file://` ainda sendo escritos/indexados.
+  - **O resultado do pré-cálculo também é validado com `Number.isFinite`** (além de `w > 0 && h > 0`)
+    antes de alimentar `totalContentHeightRef`/`aspectRatiosRef` — já observado vindo `NaN` pra
+    arquivos `file://` ainda sendo escritos/indexados.
 - **`renderBoost`: janela de renderização temporária.** Durante scroll automático, `windowSize` 3→18,
   `maxToRenderPerBatch` 1→5 e `updateCellsBatchingPeriod` 100→20 (v1.2.5 — 9/3/30 da v1.2.4 não bastava
   pra cobrir capítulos inteiros antes do `stepScrollTo` desistir por estagnação). Trade-off: mais
@@ -114,6 +114,38 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
   tela). **É revertido assim que o scroll termina** (e o offset é reafirmado ~150ms depois, já que
   desmontar os itens fora da janela apertada pode fazer a altura medida oscilar) — durante a leitura
   manual a janela apertada continua valendo, que é o que segura a memória com páginas de 800×10000.
+  Quem desliga é só o scroll automático **ainda ativo** (`autoScrollTokenRef.current === token`): um
+  "ir pro fim" substituído por um toque novo no botão não derruba o boost do scroll novo (v1.5.10).
+- **🚨 Memória do leitor: o pré-cálculo NUNCA decodifica imagem (v1.5.10).** Sintoma: abrir
+  capítulos (sobretudo baixados) fazia a RAM subir até o Android matar processos (VPN/Bluetooth
+  caindo). Causa: o pré-cálculo usava `RNImage.getSize`, que no Android (RN 0.81,
+  `ImageLoaderModule.getSize` → `fetchDecodedImage` sem `ResizeOptions`) decodifica a página
+  **inteira** no **Fresco**, um segundo pipeline de imagem separado do Glide do expo-image. Eram 6
+  por vez, e mais na prática: o timeout de 2s liberava o worker enquanto o decode nativo seguia. O
+  bitmap ia pro cache de memória do Fresco, que o RN não liga a trim nenhum (só limpa no
+  `onHostDestroy`) e que o `Image.clearMemoryCache()` do expo-image **não alcança** (só limpa o
+  Glide). Em capítulo baixado a leitura de disco é instantânea, então o capítulo inteiro era
+  decodificado em segundos, no mesmo momento do restore em boost. Regras:
+  - **Não usar `RNImage.getSize` nem `<Image>` do `react-native` no leitor.** O leitor era o único
+    usuário do Fresco no app; qualquer uso religa o segundo pipeline e o cache que nada libera.
+  - Dimensões vêm só do **cabeçalho** (`src/lib/image-size.ts`): JPEG/PNG/GIF/WebP/BMP pelos magic
+    bytes (em disco tudo se chama `page_N.jpg`). Local: `LegacyFS.readAsStringAsync` com
+    `position`/`length` (assíncrono e só-leitura; o `File.open()` da API nova é síncrono e abre com
+    `"rw"`, o que CRIA o arquivo se ele faltar). Remoto: o backend não aceita Range, então
+    `RemoteImageSizeProbe` baixa a página pra `Paths.cache/reader-probe/<sessão>/`, mede e apaga
+    (timeout 15s, concorrência 3, pasta da sessão apagada no fim/unmount).
+  - Páginas: `cachePolicy` **`none` pra `file://`** e `disk` pra remota, nunca cache de memória. Com
+    `disk`, o Glide (`DiskCacheStrategy.AUTOMATIC`, que pra dado local cacheia o resource transformado)
+    re-encodava cada página local decodificada em JPEG q100 no cache dele.
+  - O expo-image **nunca amplia** no decode (`ContentFitDownsampleStrategy` = `min(1, escala)`): cada
+    página decodifica no máximo na resolução original (800×10000 ARGB ≈ 32MB). Não sobra resolução
+    pra cortar sem perder nitidez; o que controla a memória é **quantas páginas estão montadas**
+    (`windowSize`). Por isso a janela normal fica em 3 e o boost só dura o scroll automático.
+  - Logs `[reader]` (logcat, tag `ReactNativeJS`): `abrir` (nº de páginas, baixado/remoto),
+    `pré-cálculo` (medidas/total e ms), `boost ligado/desligado`, `trocar capítulo` e `fechar`. Os três
+    últimos trazem `montadas`, `decodificadas` (montadas com bitmap pronto) e `já decodificadas X/N`.
+    `boost ligado` sem o `desligado` correspondente = boost preso; `montadas` alto no `fechar` =
+    janela que não encolheu.
 - **Cancelamento por token.** `autoScrollTokenRef` guarda o scroll automático em andamento.
   `onScrollBeginDrag` (toque do usuário), `scrollToTop`, troca de capítulo e unmount cancelam — o
   cancelamento funciona mesmo com o boost já desligado (não depende de `renderBoost`, só do token).

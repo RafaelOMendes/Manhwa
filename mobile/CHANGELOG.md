@@ -4,6 +4,25 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.5.10
+
+- **Corrige a RAM subindo até estourar ao abrir capítulos (principalmente baixados).** O pré-cálculo
+  de alturas do leitor usava `RNImage.getSize`, que no Android decodifica a página inteira no Fresco
+  (800×10000 ≈ 32MB por página), 6 por vez e mais quando o timeout de 2s soltava o worker com o
+  decode ainda rodando no nativo. O resultado ficava num cache de memória que nada liberava: nem o
+  `Image.clearMemoryCache()` do expo-image (que só limpa o Glide), nem fechar o leitor. Agora as
+  dimensões são lidas só do **cabeçalho** de cada imagem (`src/lib/image-size.ts`: JPEG, PNG, GIF,
+  WebP e BMP), sem decodificar nada. Capítulo baixado lê alguns KB do disco por página; capítulo
+  remoto baixa cada página pra um temporário, mede e apaga (o mesmo tráfego de antes, sem decode,
+  com timeout de 15s e concorrência 3).
+- **Páginas baixadas sem disk cache do Glide.** Com `cachePolicy="disk"`, cada página local
+  decodificada era re-encodada em JPEG q100 no cache do Glide (CPU, I/O e buffers nativos a cada
+  página montada). Páginas `file://` agora usam `cachePolicy="none"`; as remotas continuam em `disk`.
+- **"Ir pro fim" tocado duas vezes não derruba mais o boost do scroll novo.** O scroll antigo,
+  cancelado, desligava a janela de renderização ampliada do scroll que o substituiu.
+- **Logs `[reader]` pro logcat:** abrir, pré-cálculo, boost ligado/desligado, trocar capítulo e
+  fechar, com páginas montadas e decodificadas.
+
 ## 1.5.9
 
 - **Home ordena pelos manhwas lidos mais recentemente.** Antes a ordenação usava

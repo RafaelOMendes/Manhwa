@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import {
     View, Text, TouchableOpacity, ActivityIndicator,
     FlatList, Dimensions, StyleSheet, Animated, BackHandler, Alert,
-    Image as RNImage, InteractionManager,
+    InteractionManager,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { X, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, SkipForward } from 'lucide-react-native';
@@ -10,6 +10,7 @@ import { StatusBar, setStatusBarHidden } from 'expo-status-bar';
 import * as NavigationBar from 'expo-navigation-bar';
 import { API_BASE } from '../lib/api';
 import { getLocalChapter, markChapterReadLocal, saveLocalScroll, getLocalScroll, markManhwaRead } from '../lib/cache';
+import { readImageSize, RemoteImageSizeProbe } from '../lib/image-size';
 import { enqueueChapterRead, enqueueScroll } from '../lib/sync-queue';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -100,19 +101,31 @@ interface ReaderPageProps {
     initialRatio: number;
     onToggleUI: () => void;
     onLoaded: (id: string, ratio: number) => void;
+    onMountChange: (id: string, mounted: boolean) => void;
 }
-const ReaderPage = React.memo(function ReaderPage({ id, url, initialRatio, onToggleUI, onLoaded }: ReaderPageProps) {
+const ReaderPage = React.memo(function ReaderPage({ id, url, initialRatio, onToggleUI, onLoaded, onMountChange }: ReaderPageProps) {
     const [ratio, setRatio] = useState(initialRatio);
     const height = SCREEN_WIDTH / ratio;
+    // Contagem de páginas montadas pros logs `[reader]`: a memória de bitmap do
+    // leitor é proporcional a quantas estão montadas ao mesmo tempo.
+    useEffect(() => {
+        onMountChange(id, true);
+        return () => onMountChange(id, false);
+    }, [id, onMountChange]);
     return (
         <TouchableOpacity activeOpacity={1} onPress={onToggleUI}>
             <Image
                 source={{ uri: url }}
                 style={{ width: SCREEN_WIDTH, height }}
                 contentFit="contain"
-                // cachePolicy="disk": SEM cache de memória. Reduz bitmap retention.
-                // O disco já garante leitura instantânea em re-mount.
-                cachePolicy="disk"
+                // Nunca cache de MEMÓRIA (bitmap retention). Disco só pra remota:
+                // evita baixar de novo ao remontar. Página baixada (`file://`) já
+                // ESTÁ no disco — com "disk" o Glide (DiskCacheStrategy.AUTOMATIC,
+                // que pra dado local cacheia o resource transformado) re-encodava
+                // cada página decodificada em JPEG q100 no cache dele: CPU, I/O e
+                // buffers nativos a cada página montada, pra gerar uma cópia maior
+                // que o original.
+                cachePolicy={url.startsWith('file://') ? 'none' : 'disk'}
                 recyclingKey={id}
                 transition={0}
                 allowDownscaling
@@ -168,8 +181,8 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     // botão "ir pro fim" pra calcular um offset que pare ANTES do gatilho
     // de marca-como-lido (`contentSize - 120` no onScroll).
     const viewportHeightRef = useRef(0);
-    // Pré-cálculo em background: mede TODAS as páginas via `RNImage.getSize`
-    // (sem bloquear a UI). Quando termina, alimenta o `totalContentHeightRef`
+    // Pré-cálculo em background: mede TODAS as páginas lendo só o cabeçalho
+    // (`image-size.ts`, sem decodificar). Quando termina, alimenta o `totalContentHeightRef`
     // → o botão "ir pro fim" passa a usar o total exato em vez do estimado
     // pela FlatList. Não interfere no mount da FlatList nem no restore
     // (esses seguem o caminho da v1.1.12 — progressivo).
@@ -186,6 +199,32 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     // Caches mutáveis fora do render: alterar não re-renderiza.
     const aspectRatiosRef = useRef<Record<string, number>>({});
     const loadedIdsRef = useRef<Set<string>>(new Set());
+    // Só pros logs `[reader]`: páginas montadas AGORA e, entre elas, as que já
+    // têm o bitmap decodificado (≈ memória de imagem em uso pelo leitor).
+    // `loadedIdsRef` é outra coisa: todas que já decodificaram neste capítulo.
+    const mountedIdsRef = useRef<Set<string>>(new Set());
+    const decodedIdsRef = useRef<Set<string>>(new Set());
+    const prevRenderBoostRef = useRef(false);
+
+    const memStats = useCallback(() =>
+        `montadas ${mountedIdsRef.current.size}, decodificadas ${decodedIdsRef.current.size}, ` +
+        `já decodificadas ${loadedIdsRef.current.size}/${totalPagesRef.current}`,
+    []);
+
+    const handlePageMount = useCallback((id: string, mounted: boolean) => {
+        if (mounted) {
+            mountedIdsRef.current.add(id);
+        } else {
+            mountedIdsRef.current.delete(id);
+            decodedIdsRef.current.delete(id);
+        }
+    }, []);
+
+    // Fechar pelo X ou pelo voltar do Android — mesmo caminho, mesmo log.
+    const handleClose = useCallback(() => {
+        console.log(`[reader] fechar #${manhwaId}/${filename} — ${memStats()}`);
+        onClose();
+    }, [manhwaId, filename, memStats, onClose]);
 
     // Modo imersivo: oculta status bar + barra de navegação ao abrir o reader
     // (tela limpa) e restaura ao fechar. Como o reader agora é renderizado na
@@ -196,7 +235,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         NavigationBar.setBehaviorAsync('overlay-swipe');
         // Botão voltar do Android fecha o leitor (antes era o onRequestClose do Modal).
         const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-            onClose();
+            handleClose();
             return true;
         });
         return () => {
@@ -269,11 +308,13 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                 if (isLocal) {
                     setTotalPages(local.totalPages!);
                     setLocalPageUri(() => local.getPageUri!);
+                    console.log(`[reader] abrir #${manhwaId}/${filename} — ${local.totalPages} páginas (baixado)`);
                 } else {
                     // Não-baixado: precisa do servidor pras páginas
                     const res = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}`);
                     const data = await res.json();
                     setTotalPages(data.total_pages);
+                    console.log(`[reader] abrir #${manhwaId}/${filename} — ${data.total_pages} páginas (remoto)`);
                 }
 
                 // Scroll: merge local + server. Vence quem está MAIS adiantado.
@@ -353,34 +394,34 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         [totalPages, localPageUri, manhwaId, filename]
     );
 
-    // Pré-cálculo em BACKGROUND: mede TODAS as páginas via `RNImage.getSize`
-    // (concorrência 6) sem bloquear a UI. Quando termina, popula
-    // `totalContentHeightRef` (usado pelo botão "ir pro fim") e
-    // `aspectRatiosRef` (cada ReaderPage já monta na altura final). Falhas
+    // Pré-cálculo em BACKGROUND: mede TODAS as páginas lendo só o CABEÇALHO
+    // de cada imagem (`image-size.ts`) — nenhum pixel é decodificado. Quando
+    // termina, popula `totalContentHeightRef` (usado pelo botão "ir pro fim")
+    // e `aspectRatiosRef` (cada ReaderPage já monta na altura final). Falhas
     // são silenciosas: o leitor continua funcionando com estimativas.
+    // 🚨 NÃO voltar pro `RNImage.getSize`: no Android ele decodifica a página
+    // INTEIRA no Fresco e segura o bitmap num cache que nada libera — era a
+    // causa da RAM subindo a cada capítulo aberto (ver `image-size.ts`).
     useEffect(() => {
         if (loading || totalPages === 0 || pages.length === 0) return;
 
         let cancelled = false;
+        const isLocal = localPageUri !== null;
+        // Remoto: o backend não serve só o cabeçalho, então cada medição baixa a
+        // página pra um temporário (ver `RemoteImageSizeProbe`).
+        const probe = isLocal ? null : new RemoteImageSizeProbe();
+        const measure = (url: string) => (probe ? probe.measure(url) : readImageSize(url));
 
         (async () => {
+            const t0 = Date.now();
             const FALLBACK_RATIO = 0.7;
             const heights: number[] = new Array(pages.length).fill(SCREEN_WIDTH / FALLBACK_RATIO);
+            let measured = 0;
 
-            const getSize = (uri: string) => new Promise<{ w: number; h: number }>((resolve, reject) => {
-                let done = false;
-                const t = setTimeout(() => {
-                    if (done) return;
-                    done = true;
-                    reject(new Error('getSize timeout'));
-                }, 2000);
-                RNImage.getSize(uri,
-                    (w, h) => { if (!done) { done = true; clearTimeout(t); resolve({ w, h }); } },
-                    (err) => { if (!done) { done = true; clearTimeout(t); reject(err); } }
-                );
-            });
-
-            const CONCURRENCY = 6;
+            // Local = alguns KB lidos do disco, barato. Remoto = página inteira
+            // baixada por medição: menos concorrência pra não disputar banda com
+            // as páginas que o usuário está vendo.
+            const CONCURRENCY = isLocal ? 6 : 3;
             let next = 0;
 
             const worker = async () => {
@@ -388,14 +429,15 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                     const i = next++;
                     if (i >= pages.length) return;
                     try {
-                        const { w, h } = await getSize(pages[i].url);
+                        const size = await measure(pages[i].url);
                         if (cancelled) return;
-                        // `RNImage.getSize` em `file://` já foi observado devolvendo
-                        // 0/NaN pra arquivos ainda sendo escritos/indexados — mantém
-                        // o fallback em vez de contaminar `totalContentHeightRef`.
-                        if (Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0) {
-                            heights[i] = (SCREEN_WIDTH * h) / w;
-                            aspectRatiosRef.current[i.toString()] = w / h;
+                        // Arquivo `file://` ainda sendo escrito/indexado já foi
+                        // observado devolvendo 0/NaN — mantém o fallback em vez de
+                        // contaminar `totalContentHeightRef`.
+                        if (size && Number.isFinite(size.w) && Number.isFinite(size.h) && size.w > 0 && size.h > 0) {
+                            heights[i] = (SCREEN_WIDTH * size.h) / size.w;
+                            aspectRatiosRef.current[i.toString()] = size.w / size.h;
+                            measured++;
                         }
                     } catch {
                         // mantém fallback
@@ -403,14 +445,25 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                 }
             };
 
-            await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
+            try {
+                await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
+            } finally {
+                probe?.dispose();
+            }
             if (cancelled) return;
 
             totalContentHeightRef.current = heights.reduce((s, v) => s + v, 0);
+            console.log(
+                `[reader] pré-cálculo #${manhwaId}/${filename}: ${measured}/${pages.length} páginas medidas ` +
+                `em ${Date.now() - t0}ms (${isLocal ? 'cabeçalho local' : 'remoto'})`
+            );
         })();
 
-        return () => { cancelled = true; };
-    }, [loading, totalPages, pages]);
+        return () => {
+            cancelled = true;
+            probe?.dispose();
+        };
+    }, [loading, totalPages, pages, localPageUri, manhwaId, filename]);
 
     /**
      * Scroll progressivo tolerante à virtualização — base do restore E do
@@ -538,7 +591,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         // scroll na borda do contentSize atual — ou seja, aterrissa no fim do
         // POUCO que renderizou, dando a impressão de "foi pro final" enquanto
         // pula tudo que ficaria no meio (o bug fica mais visível em capítulos
-        // baixados: o pré-cálculo via `RNImage.getSize` em `file://` resolve
+        // baixados: o pré-cálculo em `file://` (cabeçalho lido do disco) resolve
         // quase instantâneo, então páginas montam já na altura REAL — muitas
         // vezes bem mais alta que o fallback — e cada `windowSize` cobre menos
         // páginas em contagem, aumentando a chance de estagnar antes de
@@ -612,6 +665,15 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
             setRenderBoost(false);
         };
     }, [loading, totalPages, savedScrollOffset, stepScrollTo]);
+
+    // Log de cada transição do boost. O "desligado" sai ANTES da FlatList
+    // encolher a janela, então mostra o pico de páginas montadas do scroll
+    // automático; um boost que nunca desliga aparece como "ligado" sem par.
+    useEffect(() => {
+        if (prevRenderBoostRef.current === renderBoost) return;
+        prevRenderBoostRef.current = renderBoost;
+        console.log(`[reader] boost ${renderBoost ? 'ligado' : 'desligado'} — ${memStats()}`);
+    }, [renderBoost, memStats]);
 
     // Auto-hide header after 3s
     useEffect(() => {
@@ -696,6 +758,8 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     // re-render por imagem, que freezava chapters com páginas gigantes.
     const handlePageLoaded = useCallback((id: string, ratio: number) => {
         aspectRatiosRef.current[id] = ratio;
+        // `onLoad` pode chegar depois do unmount da página — não conta essa.
+        if (mountedIdsRef.current.has(id)) decodedIdsRef.current.add(id);
         if (loadedIdsRef.current.has(id)) return;
         loadedIdsRef.current.add(id);
         if (totalPages > 0 && loadedIdsRef.current.size >= totalPages) {
@@ -711,7 +775,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         // enquanto as imagens carregam, o conteúdo fica curto e o "fim" dispara
         // antes de você ler de verdade. Duas formas de saber que chegou lá:
         //  a) todas as páginas decodificaram (`allPagesLoaded`) — leitura normal;
-        //  b) o pré-cálculo (`RNImage.getSize`) já sabe a altura total e a
+        //  b) o pré-cálculo (cabeçalho das imagens) já sabe a altura total e a
         //     FlatList alcançou ela. Necessário depois do botão "ir pro fim",
         //     que pula páginas e portanto nunca decodifica todas — sem isso o
         //     capítulo nunca era marcado como lido por esse caminho.
@@ -804,7 +868,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
      * toda a lista montada antes de parar — e a janela de renderização em
      * boost (revertida no fim, pra não segurar memória durante a leitura).
      *
-     * Alvo: `totalContentHeightRef` (pré-calculado via `RNImage.getSize`,
+     * Alvo: `totalContentHeightRef` (pré-calculado pelo cabeçalho das imagens,
      * exato). Se o pré-cálculo ainda não terminou/falhou, o alvo fica `null` e
      * empurramos até o conteúdo parar de crescer — aí `contentHeightRef` (da
      * própria FlatList) é o fim real e serve de fallback.
@@ -844,7 +908,11 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                     // reafirmar o offset DEPOIS disso garante que o pouso final
                     // já considera essa possível oscilação, em vez de "pular
                     // pra cima" quando a janela encolhe de novo.
-                    setRenderBoost(false);
+                    // Só desliga se este ainda é o scroll automático ativo: um
+                    // toque novo no botão cancela este token e põe outro no ref,
+                    // e aí o boost é do scroll novo — desligar aqui o deixava
+                    // rodando com a janela apertada.
+                    if (autoScrollTokenRef.current === token) setRenderBoost(false);
                     if (landed !== null && !token.cancelled) {
                         await new Promise(r => setTimeout(r, 150));
                         if (token.cancelled) {
@@ -878,12 +946,13 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     }, [cancelAutoScroll, stepScrollTo, handleEndReached]);
 
     const goToChapter = (file: ChapterFile) => {
+        console.log(`[reader] trocar capítulo #${manhwaId}: ${filename} → ${file.name} — ${memStats()}`);
         onNavigate?.(file.name, file.chapter_number);
     };
 
-    // renderItem ESTÁVEL: depende só de toggleUI/handlePageLoaded (memoizados).
-    // Assim, quando o reader re-renderiza (toast, reachedEnd, header), o FlatList
-    // não reprocessa os itens.
+    // renderItem ESTÁVEL: depende só de toggleUI/handlePageLoaded/handlePageMount
+    // (memoizados). Assim, quando o reader re-renderiza (toast, reachedEnd,
+    // header), o FlatList não reprocessa os itens.
     const renderPage = useCallback(({ item }: { item: { id: string; url: string } }) => (
         <ReaderPage
             id={item.id}
@@ -891,8 +960,9 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
             initialRatio={aspectRatiosRef.current[item.id] ?? 0.7}
             onToggleUI={toggleUI}
             onLoaded={handlePageLoaded}
+            onMountChange={handlePageMount}
         />
-    ), [toggleUI, handlePageLoaded]);
+    ), [toggleUI, handlePageLoaded, handlePageMount]);
 
 
     const renderFooter = () => {
@@ -982,7 +1052,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                             <Text style={styles.headerBtnText}>Próximo</Text>
                             <ChevronRight size={20} color="white" />
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+                        <TouchableOpacity onPress={handleClose} style={styles.closeBtn}>
                             <X size={22} color="white" />
                         </TouchableOpacity>
                     </View>
