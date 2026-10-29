@@ -230,6 +230,18 @@ O projeto Manhwa Tracker é composto por três partes principais:
     que mandar o objeto completo; e `current_chapter` vai pelo **maior** entre o snapshot da home e o
     valor fresco do `/files` (que já reflete a fila offline drenada), senão sincronizar o total
     regrediria progresso de leitura.
+- **🔌 Falha de conexão com o banco (Neon) = aviso + 503, não 500 com log de erro.** O banco é o Neon
+  (serverless) e o engine usa `NullPool`, então cada request abre conexão nova; suspensão do Neon,
+  DNS (`getaddrinfo`), reset de socket e auth timeout geravam ~50 arquivos em `backend/logs/`.
+  - `database.py`: `connect_args={"timeout": 15}` (antes o asyncpg esperava 60s) e um hook `do_connect`
+    (`_connect_with_retry`) que tenta conectar até `CONNECT_ATTEMPTS` (3) vezes em erro transitório,
+    com backoff, esperando via `await_only(asyncio.sleep)` (não bloqueia o event loop). Credencial
+    inválida não é retentada.
+  - `database.is_transient_db_error(exc)` percorre a cadeia de causas e reconhece essas falhas.
+  - O handler global de `main.py` responde **503** `{"success": false, "message": ...}` e registra
+    `logging.warning` para elas — **sem `log_error`**. Qualquer outra exceção segue em `log_error` + 500.
+    Não use `is_transient_db_error` para esconder bug: só erro de conexão/rede entra.
+  - Teste offline: `backend/test_db_resilience.py`.
 - **Variáveis de ambiente (`backend/.env`):**
   - `DATABASE_URL` — string `postgresql+asyncpg://...` (default: `postgres:postgres@localhost:5432/manhwa_tracker`).
   - `DOWNLOAD_DIR` — pasta onde os `.cbz` baixados ficam (default: `D:\Manhwas`). Altere aqui para mover a biblioteca.

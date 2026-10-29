@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import time
 from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.responses import Response, FileResponse, JSONResponse
@@ -18,11 +19,14 @@ from database import (
     create_tables,
     async_session_maker,
     is_connection_closed_error,
+    is_transient_db_error,
     safe_rollback,
 )
 from models import Manhwa as ManhwaModel, ChapterProgress
 from error_logger import log_error
 from chapter_progress_dedup import remover_duplicatas_progress
+
+logger = logging.getLogger(__name__)
 
 DOWNLOAD_DIR = os.environ.get("DOWNLOAD_DIR", r"D:\Manhwas")
 
@@ -118,6 +122,19 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
     corretamente no banco. Não intercepta HTTPException (tratada à parte pelo
     FastAPI), só o que sobrar.
     """
+    if is_transient_db_error(exc):
+        # Banco inacessível (Neon suspenso, rede caiu, conexão derrubada no meio da
+        # query): erro externo, não bug do código. A conexão já foi retentada em
+        # database.py. Vira aviso + 503 (cliente pode tentar de novo), sem poluir
+        # backend/logs com um arquivo por ocorrência.
+        logger.warning("Banco indisponível em %s: %s: %s", request.url.path, type(exc).__name__, exc)
+        return JSONResponse(
+            status_code=503,
+            content={
+                "success": False,
+                "message": "Banco de dados temporariamente indisponível. Tente novamente em instantes.",
+            },
+        )
     print(f"❌ ERRO NÃO TRATADO em {request.url.path}: {exc}")
     log_error(exc, context=f"ERRO NÃO TRATADO em {request.url.path}")
     return JSONResponse(

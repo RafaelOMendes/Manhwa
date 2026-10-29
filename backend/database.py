@@ -1,12 +1,20 @@
 # -*- coding: utf-8 -*-
+import asyncio
+import logging
+import os
+
+import asyncpg
+from dotenv import load_dotenv
+from sqlalchemy import event
+from sqlalchemy.exc import InterfaceError, OperationalError
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.pool import NullPool
-from sqlalchemy.exc import InterfaceError, OperationalError
-import os
-from dotenv import load_dotenv
+from sqlalchemy.util import await_only
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 # URL de conexão do PostgreSQL
 # Formato: postgresql+asyncpg://usuario:senha@host:porta/database
@@ -21,7 +29,46 @@ engine = create_async_engine(
     echo=True,  # Log SQL queries (desative em produção)
     future=True,
     poolclass=NullPool,  # Útil para desenvolvimento
+    # Sem isso o asyncpg espera até 60s por conexão; com o Neon suspenso/rede
+    # instável o request ficava pendurado até estourar TimeoutError. Com o
+    # timeout curto a tentativa falha rápido e o retry abaixo assume.
+    connect_args={"timeout": 15},
 )
+
+# Erros de conexão/rede que costumam passar sozinhos (Neon acordando de suspensão,
+# DNS ou rede oscilando, handshake/auth que estoura). Credencial errada
+# (InvalidPasswordError etc.) NÃO entra: repetir não ajuda.
+_TRANSIENT_DB_ERRORS = (
+    OSError,  # inclui ConnectionResetError, socket.gaierror e TimeoutError
+    asyncio.TimeoutError,
+    asyncpg.exceptions.PostgresConnectionError,  # ConnectionDoesNotExistError, CannotConnectNowError...
+    asyncpg.exceptions.ProtocolViolationError,  # "Authentication timed out"
+    asyncpg.exceptions.InternalClientError,  # "another operation is in progress" (operação cancelada no meio)
+)
+
+CONNECT_ATTEMPTS = 3
+CONNECT_RETRY_DELAY_SECONDS = 1.0
+
+
+@event.listens_for(engine.sync_engine, "do_connect")
+def _connect_with_retry(dialect, conn_rec, cargs, cparams):
+    """Abre a conexão com até CONNECT_ATTEMPTS tentativas em erro transitório.
+
+    Como o pool é NullPool, cada request abre uma conexão nova; uma falha de
+    rede/Neon na hora de conectar virava 500 direto. Roda dentro do greenlet do
+    SQLAlchemy, então a espera usa await_only (não bloqueia o event loop).
+    """
+    for tentativa in range(1, CONNECT_ATTEMPTS + 1):
+        try:
+            return dialect.connect(*cargs, **cparams)
+        except _TRANSIENT_DB_ERRORS as exc:
+            if tentativa == CONNECT_ATTEMPTS:
+                raise
+            logger.warning(
+                "Falha ao conectar no banco (tentativa %d/%d): %s: %s — tentando de novo",
+                tentativa, CONNECT_ATTEMPTS, type(exc).__name__, exc,
+            )
+            await_only(asyncio.sleep(CONNECT_RETRY_DELAY_SECONDS * tentativa))
 
 # Criar session maker
 async_session_maker = async_sessionmaker(
@@ -45,6 +92,22 @@ def is_connection_closed_error(exc: BaseException) -> bool:
         return True
     texto = str(exc).lower()
     return "connection is closed" in texto or "connection was closed" in texto
+
+
+def is_transient_db_error(exc: BaseException) -> bool:
+    """True se `exc` (ou algo na sua cadeia de causas) é falha de conexão com o banco.
+
+    São erros externos e inevitáveis (rede, Neon suspenso, conexão derrubada no meio
+    da query): o endpoint responde 503 controlado em vez de 500 com stack trace.
+    """
+    visto = set()
+    atual = exc
+    while atual is not None and id(atual) not in visto:
+        visto.add(id(atual))
+        if isinstance(atual, _TRANSIENT_DB_ERRORS):
+            return True
+        atual = getattr(atual, "orig", None) or atual.__cause__ or atual.__context__
+    return is_connection_closed_error(exc)
 
 
 async def safe_rollback(session):
