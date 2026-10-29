@@ -63,7 +63,7 @@ load_dotenv(AUTOMATION_DIR / ".env")
 import state as state_mod  # noqa: E402
 from trello_client import NETWORK_ERRORS, TrelloClient, TrelloNetworkError, resolve_list_ids  # noqa: E402
 from claude_prompt import build_prompt  # noqa: E402
-from claude_runner import run_claude_code, GRAPHIFY_REMINDER, MOBILE_EAS_UPDATE_REMINDER  # noqa: E402
+from claude_runner import run_claude_code, session_not_found, GRAPHIFY_REMINDER, MOBILE_EAS_UPDATE_REMINDER  # noqa: E402
 from telegram_notify import send_telegram_message  # noqa: E402
 import git_ops  # noqa: E402
 
@@ -257,14 +257,24 @@ def handle_dev(client: TrelloClient, card: dict, state: dict, list_ids: dict) ->
     # vêm da escolha feita pela etapa de rascunho do prompt (claude_prompt.py),
     # proporcional à complexidade da task; CLAUDE_EXEC_MODEL/CLAUDE_EXEC_EFFORT no
     # .env só entram como fallback se essa escolha não veio ou não foi válida.
-    result = run_claude_code(
-        REPO_DIR,
-        prompt,
-        resume_session_id=card_state.get("session_id") if is_fix_round else None,
+    resume_session_id = card_state.get("session_id") if is_fix_round else None
+    exec_kwargs = dict(
         model=model_choice or os.environ.get("CLAUDE_EXEC_MODEL") or None,
         effort=effort_choice or os.environ.get("CLAUDE_EXEC_EFFORT") or None,
         append_system_prompt=f"{GRAPHIFY_REMINDER}\n\n{MOBILE_EAS_UPDATE_REMINDER}",
     )
+    result = run_claude_code(REPO_DIR, prompt, resume_session_id=resume_session_id, **exec_kwargs)
+
+    if resume_session_id and session_not_found(result):
+        # A sessão antiga não existe mais neste perfil (ex: criada em outro usuário do
+        # Windows) - sem isso o card falharia em todo poll. Roda do zero; no feedback
+        # avulso a sessão nova não tem contexto, então junta o prompt original do card.
+        logger.warning(
+            f"Sessão {resume_session_id} do card '{card['name']}' não existe mais - rodando sem --resume."
+        )
+        if card_state.get("stage") != "prompted" and card_state.get("prompt"):
+            prompt = f"{card_state['prompt']}\n\n---\n\n{prompt}"
+        result = run_claude_code(REPO_DIR, prompt, resume_session_id=None, **exec_kwargs)
 
     # rede de segurança: garante que nada ficou sem commit
     git_ops.commit_all_if_dirty(REPO_DIR, f"WIP automático: {card['name']}")

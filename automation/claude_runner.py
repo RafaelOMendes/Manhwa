@@ -234,6 +234,12 @@ def run_claude_code(
     return result  # pragma: no cover - inatingível (o for sempre retorna ou o guard acima devolve)
 
 
+def session_not_found(result: ClaudeRunResult) -> bool:
+    """True se o --resume falhou porque a sessão não existe mais neste perfil (ex:
+    sessões criadas em outro usuário do Windows / ~/.claude apagado)."""
+    return not result.ok and "No conversation found with session ID" in (result.raw_output or "")
+
+
 def _run_once(
     repo_dir: Path,
     prompt: str,
@@ -357,7 +363,9 @@ def _run_once(
         session_id = parsed.get("session_id")
         total_cost_usd = parsed.get("total_cost_usd")
     else:
-        result_text = (proc.stdout or "").strip()[-4000:]
+        # Sem JSON no stdout (ex: "No conversation found with session ID" sai só no
+        # stderr) - usa o stderr pra o motivo da falha não sumir do log/card.
+        result_text = ((proc.stdout or "").strip() or (proc.stderr or "").strip())[-4000:]
         session_id = None
         total_cost_usd = None
 
