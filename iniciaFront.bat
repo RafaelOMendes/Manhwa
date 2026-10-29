@@ -3,7 +3,7 @@ title Frontend Manhwa - NPM
 cls
 
 :: Navega até o diretório do frontend
-cd /d "C:\Users\Rafa\Desktop\Programacao\Manhwa\frontend"
+cd /d "%~dp0frontend"
 
 :: Verifica se a pasta node_modules existe. Se não existir, avisa o usuário.
 if not exist node_modules (

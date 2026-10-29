@@ -3,7 +3,7 @@ title Automacao Trello + Claude Code - Manhwa Tracker
 cls
 
 :: Navega ate a pasta da automacao
-cd /d "C:\Users\Rafa\Desktop\Programacao\Manhwa\automation"
+cd /d "%~dp0automation"
 
 :: Verifica se a pasta venv existe. Se nao existir, cria e instala as dependencias.
 if not exist venv (

@@ -3,7 +3,7 @@ title Backend Manhwa - Uvicorn
 cls
 
 :: Navega até o diretório do projeto
-cd /d "C:\Users\Rafa\Desktop\Programacao\Manhwa\backend"
+cd /d "%~dp0backend"
 
 :: Verifica se a pasta venv existe. Se não existir, ele cria.
 if not exist venv (
