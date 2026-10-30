@@ -116,6 +116,11 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
   manual a janela apertada continua valendo, que é o que segura a memória com páginas de 800×10000.
   Quem desliga é só o scroll automático **ainda ativo** (`autoScrollTokenRef.current === token`): um
   "ir pro fim" substituído por um toque novo no botão não derruba o boost do scroll novo (v1.5.10).
+  **Todo caminho de saída passa por `stopAutoScroll()` ou `finishAutoScroll(token)`** (v1.5.12), que
+  desligam `restoring`/`autoScrolling`/`renderBoost` juntos. `stopAutoScroll` serve pra toque do usuário,
+  topo, fechar, trocar de capítulo e mount. `finishAutoScroll` é o `finally` do restore e do "ir pro
+  fim", e só mexe na UI se nenhum outro scroll assumiu (antes o `finally` do scroll substituído escondia
+  o overlay do novo). Não espalhe `setRenderBoost(false)` solto: use um desses dois.
 - **🚨 Memória do leitor: o pré-cálculo NUNCA decodifica imagem (v1.5.10).** Sintoma: abrir
   capítulos (sobretudo baixados) fazia a RAM subir até o Android matar processos (VPN/Bluetooth
   caindo). Causa: o pré-cálculo usava `RNImage.getSize`, que no Android (RN 0.81,
@@ -141,16 +146,51 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
     página decodifica no máximo na resolução original (800×10000 ARGB ≈ 32MB). Não sobra resolução
     pra cortar sem perder nitidez; o que controla a memória é **quantas páginas estão montadas**
     (`windowSize`). Por isso a janela normal fica em 3 e o boost só dura o scroll automático.
-  - Logs `[reader]` (logcat, tag `ReactNativeJS`): `abrir` (nº de páginas, baixado/remoto),
-    `pré-cálculo` (medidas/total e ms), `boost ligado/desligado`, `trocar capítulo` e `fechar`. Os três
-    últimos trazem `montadas`, `decodificadas` (montadas com bitmap pronto) e `já decodificadas X/N`.
-    `boost ligado` sem o `desligado` correspondente = boost preso; `montadas` alto no `fechar` =
-    janela que não encolheu.
+  - Logs `[reader]` (logcat, tag `ReactNativeJS`): `abrir` (nº de páginas, baixado/remoto, heap JS),
+    `pré-cálculo` (medidas/total e ms), `boost ligado/desligado`, saída (`fechar`, `trocar capítulo
+    #id/atual → próximo` ou `desmontar`, pra saída externa) e `memória de imagem liberada (motivo)`.
+    `boost` e a saída trazem `montadas`, `decodificadas (~X MB de bitmap)` (montadas com bitmap pronto,
+    largura × altura × 4 do drawable decodificado), `já decodificadas X/N` e `js X MB` (heap do Hermes,
+    quando a VM expõe). `boost ligado` sem o `desligado` correspondente = boost preso; `montadas` alto na
+    saída = janela que não encolheu; `js` subindo entre aberturas = vazamento do lado JS, não de bitmap.
+- **🚨 Liberação de memória ao sair do capítulo (v1.5.12).** Sintoma: a RAM subia a cada capítulo e
+  não voltava ao trocar de capítulo nem ao fechar o leitor. Como funciona a liberação: o Glide do
+  expo-image só solta o bitmap de uma página quando a view nativa dela é destruída (`OnViewDestroys` →
+  `setImageDrawable(null)` + `requestManager.clear` nos dois targets). O que cabe no **bitmap pool** do
+  Glide (bitmap mutável ≤ ~1 tela) vai pra lá em vez de ser reciclado. Ao desmontar, o Fabric só
+  **enfileira** a remoção das views (`addMountItem`, aplicada no próximo frame do Choreographer),
+  enquanto `Image.clearMemoryCache()` vira um Runnable na fila MAIN que costuma rodar **antes**. Os dois
+  `clearMemoryCache()` antigos (unmount e mount do capítulo seguinte) limpavam o pool antes de as páginas
+  saírem, e o que elas soltavam depois ficava lá. Regras:
+  - **Toda liberação passa por `releaseImageMemory(motivo)`**: limpa na hora e de novo
+    `RELEASE_SETTLE_MS` (1s) depois, quando as views já foram destruídas. O timer é de módulo de
+    propósito (sobrevive ao unmount sem referenciar nada do leitor). Chamado no **unmount** (fechar,
+    trocar de capítulo, `closeReader`/`openReader` externo) e no **fim do boost** (`renderBoost`
+    true→false: a janela volta de 18 pra 3 e as páginas de fora desmontam). Não chame
+    `clearMemoryCache()` solto no mount: roda antes de o Fabric destruir as views antigas e não solta nada.
+  - **Trocar de capítulo desmonta antes de montar.** O `ReaderHost` troca a key: o leitor antigo sai
+    inteiro no mesmo commit (deleção antes da inserção, cleanups antes dos efeitos novos) e as páginas
+    do próximo só montam depois do carregamento assíncrono dele, então os DELETE das views antigas já
+    estão na frente na fila de mount items. Não reaproveite a instância entre capítulos.
+  - **O unmount zera o estado do capítulo** (`aspectRatiosRef`, `loadedIdsRef`, contadores, alturas):
+    se algum closure ainda pendente (fetch de scroll, flush do último offset) segurar os refs, segura
+    containers vazios. Timers de UI (toast) passam por `later()` e morrem no unmount.
+  - **Nada de cache em disco é apagado**: só memória. `Paths.document/manhwas/...` fica intacto.
+  - O que **continua montado durante a leitura** (e é solto no unmount): a janela (`WINDOW_NORMAL` = 3
+    viewports) **mais as `initialNumToRender` (2) primeiras páginas**, que a `VirtualizedList` nunca
+    desmonta (otimização de "scroll-to-top", ver `_initialRenderRegion`). Num capítulo de páginas
+    800×10000 isso dá até ~64MB fixos. Baixar `initialNumToRender` reduz, mas a página seguinte passa a
+    aparecer um lote depois na abertura.
 - **Cancelamento por token.** `autoScrollTokenRef` guarda o scroll automático em andamento.
-  `onScrollBeginDrag` (toque do usuário), `scrollToTop`, troca de capítulo e unmount cancelam — o
+  `onScrollBeginDrag` (toque do usuário), `scrollToTop`, troca de capítulo, fechar e unmount cancelam — o
   cancelamento funciona mesmo com o boost já desligado (não depende de `renderBoost`, só do token).
   Enquanto o token existe, `handleEndReached` fica **suspenso** — senão os pulos intermediários (que
   encostam na borda do conteúdo montado, não no fim do capítulo) marcariam o capítulo como lido no meio.
+  Desde a v1.5.12 o token carrega `onCancel`: os sleeps do `stepScrollTo` (`tokenSleep`) e o handle do
+  `InteractionManager` são registrados nele, e `cancelScrollToken` acorda/cancela tudo **na hora**. Nada
+  do scroll automático sobrevive ao unmount: antes, o loop seguia até 360ms com `setTimeout` vivo e o
+  `runAfterInteractions` do "ir pro fim" rodava depois do fechamento. O `RemoteImageSizeProbe.dispose()`
+  faz o mesmo com as medições remotas pendentes (antes um worker ficava até 15s preso no timeout).
 - **`scrollToBottomSafe` chama `handleEndReached()` manualmente ao pousar** (v1.2.5). Antes disso, só
   o `onScroll`/`onEndReached` nativos da FlatList disparavam a checagem de "fim" — mas depois de um
   pouso 100% programático não sobra nenhum evento de scroll do usuário pra acioná-los, então o

@@ -4,6 +4,28 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.5.12
+
+- **Leitor devolve a memória de imagem ao trocar de capítulo, ao fechar e ao fim da abertura.** O
+  Glide só solta o bitmap de uma página quando a view nativa dela é destruída, e o Fabric aplica essa
+  remoção no frame seguinte. O `Image.clearMemoryCache()` que rodava no unmount (e de novo no mount do
+  capítulo seguinte) passava na frente, então limpava o cache antes de as páginas saírem, e o que elas
+  devolviam ao bitmap pool ficava retido. Agora toda liberação passa por `releaseImageMemory`, que
+  limpa na hora e de novo 1s depois, com as views já destruídas. Ela roda no unmount (fechar, trocar de
+  capítulo, saída externa) e no fim do boost do restore/"ir pro fim", quando a janela volta de 18 pra 3
+  telas. O cache em disco dos capítulos baixados não é tocado.
+- **Nada do scroll automático sobrevive ao unmount.** Os sleeps do `stepScrollTo` e o
+  `runAfterInteractions` do "ir pro fim" agora morrem na hora com o token (antes o loop seguia até
+  360ms e o callback ainda rodava depois de fechar). Os timers do toast são limpos no unmount, e o
+  `RemoteImageSizeProbe` encerra as medições pendentes ao ser descartado (antes um worker ficava até
+  15s preso no timeout). O unmount também zera tamanhos, ids e alturas das páginas.
+- **Boost e overlay sempre voltam ao normal.** Todo fim de scroll automático passa por
+  `stopAutoScroll`/`finishAutoScroll`. Corrige o overlay do "ir pro fim" sumindo quando um toque
+  anterior no botão terminava por cima do novo.
+- **Logs `[reader]` com memória:** a saída (`fechar`, `trocar capítulo #id/atual → próximo`,
+  `desmontar`) e o boost mostram páginas montadas, decodificadas e o tamanho estimado dos bitmaps
+  (~MB), além do heap JS. A liberação loga `memória de imagem liberada (motivo)`.
+
 ## 1.5.11
 
 - **Capítulos anteriores aparecem como lidos ao avançar, inclusive offline.** Terminar o capítulo N

@@ -181,32 +181,49 @@ let probeSessionSeq = 0;
  * Uma pasta por sessão (`dispose()` apaga a pasta toda): um download que estoura
  * o timeout continua no nativo, e assim a sobra dele não fica esquecida no cache
  * nem colide com os arquivos da sessão seguinte (troca de capítulo).
+ *
+ * `dispose()` também encerra NA HORA as medições pendentes (resolvem `null` e
+ * limpam o timeout). Sem isso, fechar o leitor no meio do pré-cálculo deixava
+ * cada worker até 15s preso no `await`, com o timer vivo segurando o closure do
+ * capítulo já fechado (páginas, alturas).
  */
 export class RemoteImageSizeProbe {
     private readonly dir = new Directory(Paths.cache, 'reader-probe', `${Date.now()}_${probeSessionSeq++}`);
     private seq = 0;
+    private disposed = false;
+    private readonly pending = new Set<() => void>();
 
     async measure(url: string): Promise<ImageSize | null> {
+        if (this.disposed) return null;
         const tmp = new File(this.dir, `page_${this.seq++}`);
         let timer: ReturnType<typeof setTimeout> | undefined;
+        let abort: (() => void) | undefined;
         try {
             if (!this.dir.exists) this.dir.create({ intermediates: true, idempotent: true });
             await Promise.race([
                 File.downloadFileAsync(url, tmp, { idempotent: true }),
                 new Promise<never>((_, reject) => {
                     timer = setTimeout(() => reject(new Error('timeout medindo página')), REMOTE_PROBE_TIMEOUT_MS);
+                    abort = () => reject(new Error('medição cancelada'));
+                    this.pending.add(abort);
                 }),
             ]);
+            if (this.disposed) return null;
             return await readImageSize(tmp.uri);
         } catch {
             return null;
         } finally {
             if (timer) clearTimeout(timer);
+            if (abort) this.pending.delete(abort);
             try { if (tmp.exists) tmp.delete(); } catch {}
         }
     }
 
     dispose(): void {
+        if (this.disposed) return;
+        this.disposed = true;
+        this.pending.forEach(abort => abort());
+        this.pending.clear();
         LegacyFS.deleteAsync(this.dir.uri, { idempotent: true }).catch(() => {});
     }
 }

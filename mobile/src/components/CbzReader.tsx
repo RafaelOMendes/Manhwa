@@ -83,8 +83,78 @@ const RENDER_COMPLETE_RATIO = 0.95;
 const STAGNANT_LIMIT_KNOWN_TARGET = 15;
 const STAGNANT_LIMIT_FALLBACK = 8;
 
-/** Token de cancelamento de um scroll automático em andamento. */
-type ScrollToken = { cancelled: boolean };
+/**
+ * Token de cancelamento de um scroll automático em andamento (restore ou "ir
+ * pro fim"). `onCancel` junta o que tem que morrer junto com ele (sleeps
+ * pendentes e o handle do `InteractionManager`), e `cancelScrollToken` dispara
+ * tudo NA HORA: o loop do `stepScrollTo` acorda, vê o cancelamento e sai, em
+ * vez de deixar `setTimeout`s vivos depois do unmount segurando o closure do
+ * capítulo fechado.
+ */
+type ScrollToken = { cancelled: boolean; onCancel: Set<() => void> };
+
+function newScrollToken(): ScrollToken {
+    return { cancelled: false, onCancel: new Set() };
+}
+
+function cancelScrollToken(token: ScrollToken): void {
+    if (token.cancelled) return;
+    token.cancelled = true;
+    token.onCancel.forEach(fn => fn());
+    token.onCancel.clear();
+}
+
+/** Espera `ms`, mas resolve na hora (e limpa o timer) se o token for cancelado. */
+function tokenSleep(token: ScrollToken, ms: number): Promise<void> {
+    if (token.cancelled) return Promise.resolve();
+    return new Promise(resolve => {
+        const wake = () => {
+            clearTimeout(timer);
+            token.onCancel.delete(wake);
+            resolve();
+        };
+        const timer = setTimeout(wake, ms);
+        token.onCancel.add(wake);
+    });
+}
+
+const toMB = (bytes: number) => (bytes / (1024 * 1024)).toFixed(0);
+
+/** Heap JS do Hermes pros logs `[reader]` (`''` se a VM não expõe). */
+function jsHeapSuffix(): string {
+    const hermes = (globalThis as {
+        HermesInternal?: { getInstrumentedStats?: () => Record<string, number | string> };
+    }).HermesInternal;
+    const allocated = hermes?.getInstrumentedStats?.().js_allocatedBytes;
+    return typeof allocated === 'number' ? `, js ${toMB(allocated)} MB` : '';
+}
+
+// Liberação da memória de imagem do leitor (fechar, trocar de capítulo, fim do
+// boost). O Glide do expo-image só solta o bitmap de uma página quando a view
+// nativa dela é destruída (`OnViewDestroys` → `requestManager.clear`), e o que
+// cabe no bitmap pool vai pra lá em vez de ser reciclado. Ao desmontar, o
+// Fabric só ENFILEIRA a remoção das views (aplicada no próximo frame do
+// Choreographer), enquanto `Image.clearMemoryCache()` vira um Runnable na fila
+// MAIN que costuma rodar ANTES: limpava o pool antes de as páginas saírem, e o
+// que elas soltavam em seguida ficava retido. Por isso limpa de novo depois que
+// as views já foram destruídas. O timer é de módulo de propósito: sobrevive ao
+// unmount, mas não referencia nada do leitor.
+const RELEASE_SETTLE_MS = 1000;
+let pendingRelease: ReturnType<typeof setTimeout> | null = null;
+
+function releaseImageMemory(reason: string, detail = ''): void {
+    Image.clearMemoryCache().catch(() => {});
+    if (pendingRelease) clearTimeout(pendingRelease);
+    pendingRelease = setTimeout(() => {
+        pendingRelease = null;
+        Image.clearMemoryCache()
+            .then(ok => console.log(
+                `[reader] memória de imagem liberada (${reason})${detail ? ` — ${detail}` : ''}` +
+                (ok ? '' : ' [sem activity: cache não limpo]')
+            ))
+            .catch(() => {});
+    }, RELEASE_SETTLE_MS);
+}
 
 /**
  * Página única do leitor — componente isolado e memoizado pra que o `onLoad` de
@@ -100,7 +170,8 @@ interface ReaderPageProps {
     url: string;
     initialRatio: number;
     onToggleUI: () => void;
-    onLoaded: (id: string, ratio: number) => void;
+    /** Tamanho do bitmap DECODIFICADO (intrinsic do drawable do Glide). */
+    onLoaded: (id: string, width: number, height: number) => void;
     onMountChange: (id: string, mounted: boolean) => void;
 }
 const ReaderPage = React.memo(function ReaderPage({ id, url, initialRatio, onToggleUI, onLoaded, onMountChange }: ReaderPageProps) {
@@ -135,9 +206,8 @@ const ReaderPage = React.memo(function ReaderPage({ id, url, initialRatio, onTog
                 onLoad={(e) => {
                     const { width, height } = e.source;
                     if (width && height) {
-                        const r = width / height;
-                        setRatio(r);
-                        onLoaded(id, r);
+                        setRatio(width / height);
+                        onLoaded(id, width, height);
                     }
                 }}
             />
@@ -199,37 +269,107 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     // Caches mutáveis fora do render: alterar não re-renderiza.
     const aspectRatiosRef = useRef<Record<string, number>>({});
     const loadedIdsRef = useRef<Set<string>>(new Set());
-    // Só pros logs `[reader]`: páginas montadas AGORA e, entre elas, as que já
-    // têm o bitmap decodificado (≈ memória de imagem em uso pelo leitor).
-    // `loadedIdsRef` é outra coisa: todas que já decodificaram neste capítulo.
+    // Só pros logs `[reader]`: páginas montadas AGORA e, entre elas, os bytes
+    // do bitmap das que já decodificaram (≈ memória de imagem em uso pelo
+    // leitor, liberada quando a página desmonta). `loadedIdsRef` é outra coisa:
+    // todas que já decodificaram neste capítulo.
     const mountedIdsRef = useRef<Set<string>>(new Set());
-    const decodedIdsRef = useRef<Set<string>>(new Set());
+    const decodedBytesRef = useRef<Map<string, number>>(new Map());
     const prevRenderBoostRef = useRef(false);
+    // Retrato da memória tirado NA AÇÃO de sair (fechar/trocar). O log em si
+    // sai no unmount, que cobre também saídas externas (`closeReader`).
+    const exitRef = useRef<{ reason: string; to: string; stats: string; detail: string } | null>(null);
+    // Timers de UI (toast): limpos no unmount; `later()` vira no-op depois dele
+    // (o callback de um `Animated` pode chegar com o leitor já desmontado).
+    const uiTimersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+    const unmountedRef = useRef(false);
 
-    const memStats = useCallback(() =>
-        `montadas ${mountedIdsRef.current.size}, decodificadas ${decodedIdsRef.current.size}, ` +
-        `já decodificadas ${loadedIdsRef.current.size}/${totalPagesRef.current}`,
-    []);
+    const memStats = useCallback(() => {
+        let bytes = 0;
+        decodedBytesRef.current.forEach(b => { bytes += b; });
+        return `montadas ${mountedIdsRef.current.size}, decodificadas ${decodedBytesRef.current.size} ` +
+            `(~${toMB(bytes)} MB de bitmap), já decodificadas ${loadedIdsRef.current.size}/${totalPagesRef.current}` +
+            jsHeapSuffix();
+    }, []);
+
+    const snapshotExit = useCallback((reason: string, to = '') => {
+        let bytes = 0;
+        decodedBytesRef.current.forEach(b => { bytes += b; });
+        exitRef.current = {
+            reason,
+            to: to ? ` → ${to}` : '',
+            stats: memStats(),
+            detail: `~${toMB(bytes)} MB de bitmap em ${decodedBytesRef.current.size} páginas`,
+        };
+    }, [memStats]);
+
+    const later = useCallback((fn: () => void, ms: number) => {
+        if (unmountedRef.current) return;
+        const t = setTimeout(() => {
+            uiTimersRef.current.delete(t);
+            fn();
+        }, ms);
+        uiTimersRef.current.add(t);
+    }, []);
 
     const handlePageMount = useCallback((id: string, mounted: boolean) => {
         if (mounted) {
             mountedIdsRef.current.add(id);
         } else {
             mountedIdsRef.current.delete(id);
-            decodedIdsRef.current.delete(id);
+            decodedBytesRef.current.delete(id);
         }
+    }, []);
+
+    // Scroll automático: TODO caminho de saída passa por um destes três, e é o
+    // que garante que o `renderBoost` (janela 18) volta pra `WINDOW_NORMAL`.
+    // Declarados aqui em cima porque entram na dep array de hooks abaixo
+    // (avaliada no render — declarar depois = TDZ).
+    /** Cancela o scroll automático em andamento (se houver), sem mexer na UI. */
+    const cancelAutoScroll = useCallback(() => {
+        const token = autoScrollTokenRef.current;
+        autoScrollTokenRef.current = null;
+        if (token) cancelScrollToken(token);
+    }, []);
+
+    /** Para tudo: toque do usuário, topo, fechar, trocar de capítulo. */
+    const stopAutoScroll = useCallback(() => {
+        cancelAutoScroll();
+        setRestoring(false);
+        setAutoScrolling(false);
+        setRenderBoost(false);
+    }, [cancelAutoScroll]);
+
+    /**
+     * Fim natural de um scroll automático (o `finally` dele). Só mexe na UI se
+     * ninguém assumiu depois: um "ir pro fim" tocado de novo põe outro token no
+     * ref, e o overlay/boost passam a ser dele. Antes o `finally` do scroll
+     * substituído escondia o overlay do novo.
+     */
+    const finishAutoScroll = useCallback((token: ScrollToken) => {
+        if (autoScrollTokenRef.current === token) autoScrollTokenRef.current = null;
+        if (autoScrollTokenRef.current) return;
+        setRestoring(false);
+        setAutoScrolling(false);
+        setRenderBoost(false);
     }, []);
 
     // Fechar pelo X ou pelo voltar do Android — mesmo caminho, mesmo log.
     const handleClose = useCallback(() => {
-        console.log(`[reader] fechar #${manhwaId}/${filename} — ${memStats()}`);
+        snapshotExit('fechar');
+        stopAutoScroll();
         onClose();
-    }, [manhwaId, filename, memStats, onClose]);
+    }, [snapshotExit, stopAutoScroll, onClose]);
 
     // Modo imersivo: oculta status bar + barra de navegação ao abrir o reader
     // (tela limpa) e restaura ao fechar. Como o reader agora é renderizado na
     // raiz (sem Modal), isso vale pra janela única da activity.
     useEffect(() => {
+        // Reset pro caso de o StrictMode (dev) simular unmount + mount.
+        unmountedRef.current = false;
+        exitRef.current = null;
+        // O Set só é mutado, nunca trocado: a cópia é o mesmo objeto do ref.
+        const uiTimers = uiTimersRef.current;
         setStatusBarHidden(true, 'fade');
         NavigationBar.setVisibilityAsync('hidden');
         NavigationBar.setBehaviorAsync('overlay-swipe');
@@ -238,13 +378,30 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
             handleClose();
             return true;
         });
+        // Unmount = fechar, trocar de capítulo (o `ReaderHost` remonta por key)
+        // ou saída externa. Único ponto de saída do leitor.
         return () => {
             setStatusBarHidden(false, 'fade');
             NavigationBar.setVisibilityAsync('visible');
             sub.remove();
-            // Reader fechado → libera bitmaps grandes pra Home/Downloads não
-            // herdarem a pressão de memória do último capítulo lido.
-            Image.clearMemoryCache().catch(() => {});
+            unmountedRef.current = true;
+            uiTimers.forEach(clearTimeout);
+            uiTimers.clear();
+            if (!exitRef.current) snapshotExit('desmontar');
+            const exit = exitRef.current!;
+            console.log(`[reader] ${exit.reason} #${manhwaId}/${filename}${exit.to} — ${exit.stats}`);
+            // Zera o estado do capítulo: se algum closure ainda pendente (fetch
+            // de scroll, flush do último offset) segurar estes refs, segura
+            // containers vazios em vez de tamanhos/ids de todas as páginas.
+            aspectRatiosRef.current = {};
+            loadedIdsRef.current = new Set();
+            mountedIdsRef.current = new Set();
+            decodedBytesRef.current = new Map();
+            totalContentHeightRef.current = 0;
+            contentHeightRef.current = 0;
+            // As views das páginas morrem no próximo frame (Fabric); a liberação
+            // limpa agora e de novo depois disso (ver `releaseImageMemory`).
+            releaseImageMemory(exit.reason, exit.detail);
         };
     }, []);
 
@@ -272,13 +429,9 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     // Load chapter info + saved scroll position
     useEffect(() => {
         setLoading(true);
-        setRestoring(false);
         // Cancela qualquer scroll automático do capítulo anterior e devolve a
         // FlatList aos parâmetros normais de renderização.
-        if (autoScrollTokenRef.current) autoScrollTokenRef.current.cancelled = true;
-        autoScrollTokenRef.current = null;
-        setAutoScrolling(false);
-        setRenderBoost(false);
+        stopAutoScroll();
         setReachedEnd(false);
         setMarkedAsRead(false);
         setAllPagesLoaded(false);
@@ -289,11 +442,10 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         aspectRatiosRef.current = {};
         loadedIdsRef.current = new Set();
         totalContentHeightRef.current = 0;
-        // Libera os bitmaps decodificados do capítulo anterior: chapters de
-        // manhwa têm páginas gigantes e a memory cache do expo-image segura
-        // referências mesmo após o ReaderHost remontar. Sem isso, fps cai
-        // progressivamente conforme você troca de cap.
-        Image.clearMemoryCache().catch(() => {});
+        // A memória de imagem do capítulo anterior é liberada pelo unmount
+        // dele (`releaseImageMemory`). Um `clearMemoryCache()` aqui rodava no
+        // mesmo instante, antes de o Fabric destruir as views antigas, e não
+        // soltava nada.
 
         // "Último lido" = abrir o capítulo (mesmo sem terminar) → manhwa vai pro
         // topo da home na hora, inclusive offline.
@@ -308,13 +460,13 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                 if (isLocal) {
                     setTotalPages(local.totalPages!);
                     setLocalPageUri(() => local.getPageUri!);
-                    console.log(`[reader] abrir #${manhwaId}/${filename} — ${local.totalPages} páginas (baixado)`);
+                    console.log(`[reader] abrir #${manhwaId}/${filename} — ${local.totalPages} páginas (baixado)${jsHeapSuffix()}`);
                 } else {
                     // Não-baixado: precisa do servidor pras páginas
                     const res = await fetch(`${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}`);
                     const data = await res.json();
                     setTotalPages(data.total_pages);
-                    console.log(`[reader] abrir #${manhwaId}/${filename} — ${data.total_pages} páginas (remoto)`);
+                    console.log(`[reader] abrir #${manhwaId}/${filename} — ${data.total_pages} páginas (remoto)${jsHeapSuffix()}`);
                 }
 
                 // Scroll: merge local + server. Vence quem está MAIS adiantado.
@@ -377,7 +529,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
             }
         };
         fetchInfo();
-    }, [manhwaId, filename]);
+    }, [manhwaId, filename, stopAutoScroll]);
 
     // Memoiza a lista de páginas: evita recriar um array de N itens a cada
     // render (ex.: a cada imagem que carrega) e mantém a referência estável
@@ -501,7 +653,8 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
             requireNearFullRender?: boolean;
         } = {},
     ): Promise<number | null> => {
-        const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+        // Cancelar o token acorda o sleep na hora (sem timer pendente).
+        const sleep = (ms: number) => tokenSleep(token, ms);
         const aborted = () => token.cancelled || (opts.abortOnUserScroll === true && userHasInteracted.current);
 
         let stagnant = 0;
@@ -619,14 +772,6 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         return aborted() ? null : safeTarget;
     }, []);
 
-    /** Cancela o scroll automático em andamento (se houver). */
-    const cancelAutoScroll = useCallback(() => {
-        if (autoScrollTokenRef.current) {
-            autoScrollTokenRef.current.cancelled = true;
-            autoScrollTokenRef.current = null;
-        }
-    }, []);
-
     // Restore scroll progressivo até `savedScrollOffset`. Roda com o overlay
     // por cima (esconde as páginas passando) e com `renderBoost` ligado, pra as
     // levas da FlatList virem rápido; ambos são desligados ao terminar.
@@ -634,7 +779,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         if (loading || totalPages === 0) return;
         if (savedScrollOffset <= 0) return;
 
-        const token: ScrollToken = { cancelled: false };
+        const token = newScrollToken();
         autoScrollTokenRef.current = token;
         setRestoring(true);
         setRenderBoost(true);
@@ -644,27 +789,28 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         // começarmos a empurrar o scroll — senão o primeiro tick é desperdiçado.
         const handle = InteractionManager.runAfterInteractions(() => {
             (async () => {
-                await new Promise(r => setTimeout(r, 80));
+                await tokenSleep(token, 80);
                 try {
                     await stepScrollTo(token, () => savedScrollOffset, { abortOnUserScroll: true });
                 } finally {
-                    if (autoScrollTokenRef.current === token) autoScrollTokenRef.current = null;
-                    setRestoring(false);
-                    // Só derruba o boost se ninguém mais estiver auto-scrollando
-                    // (ex.: usuário tocou no FAB "descer" durante o restore).
-                    if (!autoScrollTokenRef.current) setRenderBoost(false);
+                    // Só derruba overlay/boost se ninguém mais estiver
+                    // auto-scrollando (ex.: usuário tocou no FAB "descer"
+                    // durante o restore).
+                    finishAutoScroll(token);
                 }
             })();
         });
+        // Cancelado antes de rodar (toque, "ir pro fim", unmount): o callback
+        // nem chega a rodar. Quem cancelou já cuida da UI.
+        token.onCancel.add(() => handle.cancel());
 
         return () => {
-            token.cancelled = true;
-            handle.cancel();
+            cancelScrollToken(token);
             if (autoScrollTokenRef.current === token) autoScrollTokenRef.current = null;
             setRestoring(false);
             setRenderBoost(false);
         };
-    }, [loading, totalPages, savedScrollOffset, stepScrollTo]);
+    }, [loading, totalPages, savedScrollOffset, stepScrollTo, finishAutoScroll]);
 
     // Log de cada transição do boost. O "desligado" sai ANTES da FlatList
     // encolher a janela, então mostra o pico de páginas montadas do scroll
@@ -673,6 +819,10 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         if (prevRenderBoostRef.current === renderBoost) return;
         prevRenderBoostRef.current = renderBoost;
         console.log(`[reader] boost ${renderBoost ? 'ligado' : 'desligado'} — ${memStats()}`);
+        // Fim do scroll automático (o "fim da abertura", no caso do restore): a
+        // janela volta de 18 pra 3 viewports e as páginas de fora desmontam —
+        // limpa o que elas devolverem pro pool do Glide.
+        if (!renderBoost) releaseImageMemory('fim do boost');
     }, [renderBoost, memStats]);
 
     // Auto-hide header after 3s
@@ -712,7 +862,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
             Animated.timing(toastOpacity, { toValue: 1, duration: 300, useNativeDriver: true }),
             Animated.timing(toastTranslateY, { toValue: 0, duration: 300, useNativeDriver: true }),
         ]).start(() => {
-            setTimeout(() => {
+            later(() => {
                 Animated.parallel([
                     Animated.timing(toastOpacity, { toValue: 0, duration: 400, useNativeDriver: true }),
                     Animated.timing(toastTranslateY, { toValue: -16, duration: 400, useNativeDriver: true }),
@@ -735,7 +885,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         onChapterRead?.(chapNum, filename);
         setShowToast(true);
         showToastAnimation();
-        setTimeout(() => setShowToast(false), 3500);
+        later(() => setShowToast(false), 3500);
 
         // 3. Sincroniza com servidor; enfileira se offline/falhar
         try {
@@ -751,15 +901,16 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                 console.warn('[sync] enqueueChapterRead:', err)
             );
         }
-    }, [manhwaId, chapNum, filename, onChapterRead]);
+    }, [manhwaId, chapNum, filename, onChapterRead, later]);
 
     // Cada Page chama isto ao decodificar. Mantemos contagem num ref (não força
     // re-render) e só damos UM setState quando bate o total — antes era uma
     // re-render por imagem, que freezava chapters com páginas gigantes.
-    const handlePageLoaded = useCallback((id: string, ratio: number) => {
-        aspectRatiosRef.current[id] = ratio;
+    const handlePageLoaded = useCallback((id: string, width: number, height: number) => {
+        aspectRatiosRef.current[id] = width / height;
         // `onLoad` pode chegar depois do unmount da página — não conta essa.
-        if (mountedIdsRef.current.has(id)) decodedIdsRef.current.add(id);
+        // ARGB_8888: 4 bytes/pixel (bitmap de hardware ocupa o mesmo na GPU).
+        if (mountedIdsRef.current.has(id)) decodedBytesRef.current.set(id, width * height * 4);
         if (loadedIdsRef.current.has(id)) return;
         loadedIdsRef.current.add(id);
         if (totalPages > 0 && loadedIdsRef.current.size >= totalPages) {
@@ -826,9 +977,9 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     // de 500ms podia ser engolido pela desmontagem, perdendo o final do scroll.
     useEffect(() => {
         return () => {
-            // Nada de scroll automático sobrevivendo à desmontagem.
-            if (autoScrollTokenRef.current) autoScrollTokenRef.current.cancelled = true;
-            autoScrollTokenRef.current = null;
+            // Nada de scroll automático sobrevivendo à desmontagem: cancelar o
+            // token acorda os sleeps e cancela o handle do InteractionManager.
+            cancelAutoScroll();
             if (scrollSaveTimeout.current) {
                 clearTimeout(scrollSaveTimeout.current);
                 scrollSaveTimeout.current = null;
@@ -839,7 +990,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                 flushScrollPosition(offset);
             }
         };
-    }, [manhwaId, filename, flushScrollPosition]);
+    }, [manhwaId, filename, flushScrollPosition, cancelAutoScroll]);
 
     const toggleUI = useCallback(() => {
         setShowUI(prev => {
@@ -850,12 +1001,10 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
     }, []);
 
     const scrollToTop = useCallback(() => {
-        cancelAutoScroll();
-        setAutoScrolling(false);
-        setRenderBoost(false);
+        stopAutoScroll();
         userHasInteracted.current = true;
         flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
-    }, [cancelAutoScroll]);
+    }, [stopAutoScroll]);
 
     /**
      * Pula pra perto do fim SEM marcar como lido (para em `END_SAFE_GAP`).
@@ -875,7 +1024,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
      */
     const scrollToBottomSafe = useCallback(() => {
         cancelAutoScroll();
-        const token: ScrollToken = { cancelled: false };
+        const token = newScrollToken();
         autoScrollTokenRef.current = token;
 
         userHasInteracted.current = true;
@@ -890,7 +1039,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         const targetFromContent = () =>
             Math.max(contentHeightRef.current - viewportHeightRef.current - END_SAFE_GAP, 0);
 
-        InteractionManager.runAfterInteractions(() => {
+        const handle = InteractionManager.runAfterInteractions(() => {
             (async () => {
                 let landed: number | null = null;
                 try {
@@ -914,7 +1063,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                     // rodando com a janela apertada.
                     if (autoScrollTokenRef.current === token) setRenderBoost(false);
                     if (landed !== null && !token.cancelled) {
-                        await new Promise(r => setTimeout(r, 150));
+                        await tokenSleep(token, 150);
                         if (token.cancelled) {
                             landed = null;
                         } else {
@@ -925,9 +1074,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                     // O token só sai do ref no fim de tudo: enquanto ele está lá,
                     // `cancelAutoScroll` (arrasto do usuário) consegue abortar o
                     // ajuste final, e o `handleEndReached` fica suspenso.
-                    if (autoScrollTokenRef.current === token) autoScrollTokenRef.current = null;
-                    setAutoScrolling(false);
-                    if (!autoScrollTokenRef.current) setRenderBoost(false);
+                    finishAutoScroll(token);
                 }
 
                 // Dispara a checagem de "fim" manualmente: depois do pouso
@@ -943,10 +1090,17 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                 }
             })();
         });
-    }, [cancelAutoScroll, stepScrollTo, handleEndReached]);
+        // Cancelado antes de rodar (toque, outro "ir pro fim", unmount): o
+        // callback nem chega a rodar. Quem cancelou já cuida da UI.
+        token.onCancel.add(() => handle.cancel());
+    }, [cancelAutoScroll, stepScrollTo, handleEndReached, finishAutoScroll]);
 
+    // Troca de capítulo = o `ReaderHost` remonta o leitor (key nova): este
+    // desmonta inteiro no mesmo commit, antes de qualquer página do próximo
+    // existir (elas só montam depois do carregamento assíncrono dele).
     const goToChapter = (file: ChapterFile) => {
-        console.log(`[reader] trocar capítulo #${manhwaId}: ${filename} → ${file.name} — ${memStats()}`);
+        snapshotExit('trocar capítulo', file.name);
+        stopAutoScroll();
         onNavigate?.(file.name, file.chapter_number);
     };
 
@@ -1092,9 +1246,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                         onScrollBeginDrag={() => {
                             userHasInteracted.current = true;
                             // Toque do usuário sempre ganha do scroll automático.
-                            cancelAutoScroll();
-                            setAutoScrolling(false);
-                            setRenderBoost(false);
+                            stopAutoScroll();
                         }}
                         onScroll={(e) => {
                             const { contentOffset, layoutMeasurement, contentSize } = e.nativeEvent;

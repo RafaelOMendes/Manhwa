@@ -198,9 +198,9 @@
     "semantic_hash": "b84f188a0aa80082acdf7831769e4604"
   },
   "mobile/src/components/CbzReader.tsx": {
-    "mtime": 1793300222.4478865,
-    "seen": 1793300484.4685056,
-    "ast_hash": "0762be0d3c8aa3aaeb081a3e47c00f9b",
+    "mtime": 1793366233.8935473,
+    "seen": 1793366464.886312,
+    "ast_hash": "1a20e30943cffb228a76f921ff4fe1bd",
     "semantic_hash": ""
   },
   "mobile/src/components/ManhwaCard.tsx": {
@@ -210,10 +210,10 @@
     "semantic_hash": ""
   },
   "mobile/src/components/ReaderHost.tsx": {
-    "mtime": 1787270115.6347506,
-    "seen": 1793296517.7324376,
-    "ast_hash": "45f67887271b83c50c3a4f712e85f299",
-    "semantic_hash": "45f67887271b83c50c3a4f712e85f299"
+    "mtime": 1793366090.2584293,
+    "seen": 1793366464.886312,
+    "ast_hash": "4d50294655fda2aa2041b90cbda85103",
+    "semantic_hash": ""
   },
   "mobile/src/constants/theme.ts": {
     "mtime": 1779278804.7811902,
@@ -276,9 +276,9 @@
     "semantic_hash": ""
   },
   "mobile/src/lib/version.ts": {
-    "mtime": 1793313735.561107,
-    "seen": 1793313774.2569625,
-    "ast_hash": "daaf2ec1645b00f3437d437ef77b1d26",
+    "mtime": 1793366266.6412642,
+    "seen": 1793366464.886312,
+    "ast_hash": "fca1bf71e52a9002c68430f4593f9393",
     "semantic_hash": ""
   },
   "mobile/src/nativewind-env.d.ts": {
@@ -342,15 +342,15 @@
     "semantic_hash": "5a9309c07733e6e50e60ec877982781e"
   },
   "mobile/AGENTS.md": {
-    "mtime": 1793313724.1254973,
-    "seen": 1793313774.2569625,
-    "ast_hash": "3a03217ba7b396d6096454ea02bc2dac",
+    "mtime": 1793366265.6305144,
+    "seen": 1793366464.886312,
+    "ast_hash": "866a18f68064f72ad0bafe3216f83af8",
     "semantic_hash": ""
   },
   "mobile/CHANGELOG.md": {
-    "mtime": 1793313739.9838219,
-    "seen": 1793313774.2569625,
-    "ast_hash": "6a100241f59301e1a5b8b7ec3cf71b0a",
+    "mtime": 1793366276.0270493,
+    "seen": 1793366464.886312,
+    "ast_hash": "9d56d149d78d7c7b441dcb1c3b08c234",
     "semantic_hash": ""
   },
   "mobile/CLAUDE.md": {
@@ -636,9 +636,9 @@
     "semantic_hash": ""
   },
   "mobile/src/lib/image-size.ts": {
-    "mtime": 1793300013.74353,
-    "seen": 1793300484.4685056,
-    "ast_hash": "5a5b5815b46615a9aa28b496b3de7bd7",
+    "mtime": 1793366085.9227536,
+    "seen": 1793366464.886312,
+    "ast_hash": "e49b7210247abdc8d6ae4eee74c19b76",
     "semantic_hash": ""
   },
   "automation/test_usage_guard.py": {
