@@ -312,9 +312,9 @@
     "semantic_hash": "817fe671013b35ae0bc9301dfe449a87"
   },
   "AGENT_INSTRUCTIONS.md": {
-    "mtime": 1793314860.3685105,
-    "seen": 1793314878.5768855,
-    "ast_hash": "bde12973edcaa57f53fe90a3cb05fa85",
+    "mtime": 1793363197.4972394,
+    "seen": 1793363216.0116196,
+    "ast_hash": "450b3956ecf03b879115658307f3d8dd",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -522,21 +522,21 @@
     "semantic_hash": ""
   },
   "automation/trello_client.py": {
-    "mtime": 1793295645.0102615,
-    "seen": 1793296517.7309318,
-    "ast_hash": "258e3a4a6cfddf3545d9f5d285a3f00e",
+    "mtime": 1793363049.1972816,
+    "seen": 1793363216.0116196,
+    "ast_hash": "2f2d7c584099bf34e94369d332f7dc24",
     "semantic_hash": ""
   },
   "automation/watcher.py": {
-    "mtime": 1793314702.763134,
-    "seen": 1793314878.5768855,
-    "ast_hash": "8fbd428d282c313559028d1a2dfa2aed",
+    "mtime": 1793363061.2730436,
+    "seen": 1793363216.0116196,
+    "ast_hash": "74a00f0c4542f4c7cc8d2b77a4fc09d7",
     "semantic_hash": ""
   },
   "automation/SETUP.md": {
-    "mtime": 1793314851.3471239,
-    "seen": 1793314878.5768855,
-    "ast_hash": "570cf2008b895dc71bf22dad5ff967ab",
+    "mtime": 1793363203.8716638,
+    "seen": 1793363216.0116196,
+    "ast_hash": "bdfc9e9e376d3b10d7239f770ff24ddc",
     "semantic_hash": ""
   },
   "automation/requirements.txt": {

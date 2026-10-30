@@ -75,6 +75,16 @@ BASE_BRANCH = os.environ.get("BASE_BRANCH", "main")
 NETWORK_BACKOFF_MAX_SECONDS = int(os.environ.get("NETWORK_BACKOFF_MAX_SECONDS", "300"))
 
 
+def _network_backoff(failures: int) -> int:
+    """Espera depois de `failures` falhas de rede seguidas: dobra o intervalo de polling
+    a cada falha, até NETWORK_BACKOFF_MAX_SECONDS."""
+    return min(POLL_INTERVAL_SECONDS * 2 ** failures, max(NETWORK_BACKOFF_MAX_SECONDS, POLL_INTERVAL_SECONDS))
+
+
+def _describe_network_error(exc: BaseException) -> str:
+    return str(exc) if isinstance(exc, TrelloNetworkError) else network_reason(exc)
+
+
 def log(msg: str) -> None:
     """Wrapper mantido por compatibilidade com todas as chamadas existentes - vira
     logger.info() (arquivo + console) em vez de só print()."""
@@ -419,15 +429,29 @@ def main() -> None:
         sys.exit(1)
 
     client = TrelloClient()
-    list_ids = resolve_list_ids(
-        client,
-        {
-            "DOING": os.environ["TRELLO_LIST_DOING"],
-            "DEV": os.environ["TRELLO_LIST_DEV"],
-            "TEST": os.environ["TRELLO_LIST_TEST"],
-            "DONE": os.environ["TRELLO_LIST_DONE"],
-        },
-    )
+    list_names = {
+        "DOING": os.environ["TRELLO_LIST_DOING"],
+        "DEV": os.environ["TRELLO_LIST_DEV"],
+        "TEST": os.environ["TRELLO_LIST_TEST"],
+        "DONE": os.environ["TRELLO_LIST_DONE"],
+    }
+    # Sem rede na inicialização (ex: PC acabou de ligar), espera com o mesmo backoff do
+    # loop principal em vez de morrer - o iniciaAutomation.bat não reinicia o watcher.
+    startup_failures = 0
+    while True:
+        try:
+            list_ids = resolve_list_ids(client, list_names)
+            break
+        except (TrelloNetworkError, *NETWORK_ERRORS) as exc:
+            startup_failures += 1
+            delay = _network_backoff(startup_failures)
+            logger.warning(
+                f"Sem conexão com o Trello na inicialização ({_describe_network_error(exc)}) - "
+                f"falha {startup_failures} seguida, nova tentativa em {delay}s."
+            )
+            time.sleep(delay)
+    if startup_failures:
+        log(f"Rede restabelecida após {startup_failures} falha(s) seguida(s).")
 
     version = git_ops.automation_version(REPO_DIR)
     log(f"Repositório: {REPO_DIR}")
@@ -460,9 +484,9 @@ def main() -> None:
             # Queda de DNS/conexão/timeout é transitória: WARNING curto (sem traceback,
             # sem Telegram - sem rede ele também falharia) e backoff até o teto.
             network_failures += 1
-            delay = min(POLL_INTERVAL_SECONDS * 2 ** network_failures, max(NETWORK_BACKOFF_MAX_SECONDS, POLL_INTERVAL_SECONDS))
+            delay = _network_backoff(network_failures)
             logger.warning(
-                f"Sem conexão com o Trello ({exc if isinstance(exc, TrelloNetworkError) else network_reason(exc)}) - falha {network_failures} seguida, "
+                f"Sem conexão com o Trello ({_describe_network_error(exc)}) - falha {network_failures} seguida, "
                 f"nova tentativa em {delay}s."
             )
         except Exception:

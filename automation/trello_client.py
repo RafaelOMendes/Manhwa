@@ -2,6 +2,7 @@
 Cliente fino para a API REST do Trello (https://developer.atlassian.com/cloud/trello/rest/).
 
 Usa apenas TRELLO_KEY + TRELLO_TOKEN (auth simples via query string), sem SDK extra.
+Em POST/PUT os demais parâmetros vão no corpo JSON (ver _request()).
 """
 
 from __future__ import annotations
@@ -17,6 +18,8 @@ from logging_setup import get_logger, network_reason
 
 API_BASE = "https://api.trello.com/1"
 REQUEST_TIMEOUT_SECONDS = 20
+# Limite de tamanho de um comentário no Trello - acima disso a API devolve 400.
+COMMENT_MAX_CHARS = 16384
 
 logger = get_logger(__name__)
 
@@ -62,7 +65,12 @@ class TrelloClient:
         logger.debug(f"{method} {path} params={ {k: v for k, v in params.items()} }")
         try:
             send = getattr(self._session, method.lower())
-            resp = send(f"{API_BASE}{path}", params={**self._auth(), **params}, timeout=REQUEST_TIMEOUT_SECONDS)
+            if method == "GET":
+                resp = send(f"{API_BASE}{path}", params={**self._auth(), **params}, timeout=REQUEST_TIMEOUT_SECONDS)
+            else:
+                # Corpo JSON, não query string: um comentário com o prompt inteiro
+                # estourava o limite de URL do Trello (414 Request-URI Too Large).
+                resp = send(f"{API_BASE}{path}", params=self._auth(), json=params, timeout=REQUEST_TIMEOUT_SECONDS)
             resp.raise_for_status()
         except NETWORK_ERRORS as exc:
             # Falha transitória de rede (DNS, conexão recusada, timeout): não é bug nem
@@ -104,6 +112,9 @@ class TrelloClient:
         self._put(f"/cards/{card_id}", idList=list_id)
 
     def comment_card(self, card_id: str, text: str) -> None:
+        if len(text) > COMMENT_MAX_CHARS:
+            suffix = f"\n\n… (cortado: limite de {COMMENT_MAX_CHARS} caracteres do Trello)"
+            text = text[: COMMENT_MAX_CHARS - len(suffix)] + suffix
         self._post(f"/cards/{card_id}/actions/comments", text=text)
 
     def get_comments(self, card_id: str) -> list[dict[str, Any]]:
