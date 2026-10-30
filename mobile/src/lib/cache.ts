@@ -1,8 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Directory, File, Paths } from 'expo-file-system';
 import * as LegacyFS from 'expo-file-system/legacy';
+import { Image } from 'expo-image';
 import JSZip from 'jszip';
 import { API_BASE } from './api';
+import { sweepStaleProbeSessions } from './image-size';
 
 /**
  * Apaga uma pasta de capítulo de forma ASSÍNCRONA (fire-and-forget), pra NÃO
@@ -80,26 +82,62 @@ const CHAPTER_TIMEOUT_MS = 5 * 60 * 1000;
  * linha de defesa pra quem baixou antes do filtro existir no servidor.
  */
 const MIN_CBZ_SIZE_BYTES = 100 * 1024;
+/**
+ * Espaço livre que o download nunca consome. Antes não havia checagem nenhuma:
+ * "Baixar tudo" ia até o aparelho ficar sem espaço. Com menos que isso (já
+ * descontado o pico do capítulo), o sync daquele manhwa para e conta o resto
+ * como erro.
+ */
+const MIN_FREE_SPACE_BYTES = 500 * 1024 * 1024;
+/**
+ * Teto do disk cache de imagens do expo-image (Glide, `cacheDir/image_manager_disk_cache`),
+ * onde ficam as páginas REMOTAS (`cachePolicy="disk"` no leitor) e as capas.
+ * O Glide 4.16 já limita esse cache sozinho a 250MB, num LRU
+ * (`DiskCache.Factory.DEFAULT_DISK_CACHE_SIZE`; o expo-image não sobrescreve).
+ * Este teto é a rede de segurança do app: se a pasta passar disso (arquivos que
+ * o Glide perdeu de vista, config diferente numa versão futura), limpa tudo
+ * com `Image.clearDiskCache()`.
+ */
+const IMAGE_DISK_CACHE_MAX_BYTES = 300 * 1024 * 1024;
+const GLIDE_DISK_CACHE_DIR = 'image_manager_disk_cache';
+
+/**
+ * Syncs em andamento. Entre o `downloadChapter` criar a pasta e o capítulo
+ * entrar no índice, ela parece órfã: a limpeza de órfãos não roda enquanto
+ * isto for > 0.
+ */
+let activeSyncs = 0;
+
+const toMB = (bytes: number) => (bytes / (1024 * 1024)).toFixed(1);
+
+/**
+ * Lê o índice e PROPAGA falha de leitura/parse. Quem apaga coisas do disco com
+ * base no índice tem que usar esta: o `loadIndex` devolve `{}` quando falha, e
+ * pra uma limpeza `{}` significa "nada está baixado" — apagaria tudo.
+ */
+async function loadIndexStrict(): Promise<CacheIndex> {
+    const raw = await AsyncStorage.getItem(STORAGE_KEY);
+    if (!raw) return {};
+    const parsed: CacheIndex = JSON.parse(raw);
+    // Migração: garante que toda entrada tem `read`. Inicializa com keys de `cached`
+    // pra recuperar histórico parcial do esquema antigo (cumulativo).
+    for (const id of Object.keys(parsed)) {
+        const m = parsed[id];
+        if (!m.read) {
+            m.read = {};
+            for (const filename of Object.keys(m.cached ?? {})) {
+                m.read[filename] = m.cached[filename].readAt;
+            }
+        }
+        if (!m.pending) m.pending = {};
+        if (!m.cached) m.cached = {};
+    }
+    return parsed;
+}
 
 async function loadIndex(): Promise<CacheIndex> {
     try {
-        const raw = await AsyncStorage.getItem(STORAGE_KEY);
-        if (!raw) return {};
-        const parsed: CacheIndex = JSON.parse(raw);
-        // Migração: garante que toda entrada tem `read`. Inicializa com keys de `cached`
-        // pra recuperar histórico parcial do esquema antigo (cumulativo).
-        for (const id of Object.keys(parsed)) {
-            const m = parsed[id];
-            if (!m.read) {
-                m.read = {};
-                for (const filename of Object.keys(m.cached ?? {})) {
-                    m.read[filename] = m.cached[filename].readAt;
-                }
-            }
-            if (!m.pending) m.pending = {};
-            if (!m.cached) m.cached = {};
-        }
-        return parsed;
+        return await loadIndexStrict();
     } catch {
         return {};
     }
@@ -246,7 +284,9 @@ function trimCached(m: ManhwaCache, manhwaId: number): string[] {
 /** Aplica o trim pro último capítulo lido em todos os manhwas (chamado no app start). */
 export async function trimAllCached(): Promise<{ trimmed: number }> {
     return withIndexLock(async () => {
-        const index = await loadIndex();
+        // Strict: com o `loadIndex` uma falha de leitura virava `{}` e o
+        // `saveIndex` abaixo GRAVAVA o índice vazio por cima do real.
+        const index = await loadIndexStrict();
         let trimmed = 0;
         for (const idStr of Object.keys(index)) {
             const evicted = trimCached(index[idStr], Number(idStr));
@@ -386,7 +426,60 @@ export function getLocalCoverUri(manhwaId: number): string | null {
 export async function syncManhwaLocal(
     manhwaId: number,
     currentChapter: number,
-    files: { name: string; chapter_number: number; size_mb?: number; read?: boolean }[],
+    files: SyncFile[],
+    coverUrl?: string | null,
+    onProgress?: (p: SyncProgress) => void,
+    shouldCancel?: () => boolean
+): Promise<SyncResult> {
+    activeSyncs++;
+    try {
+        return await syncManhwaLocalInner(manhwaId, currentChapter, files, coverUrl, onProgress, shouldCancel);
+    } finally {
+        activeSyncs--;
+    }
+}
+
+type SyncFile = { name: string; chapter_number: number; size_mb?: number; read?: boolean };
+
+/** Espaço livre na partição do app, ou `null` se não der pra saber (aí não bloqueia). */
+function freeDiskBytes(): number | null {
+    try {
+        const free = Paths.availableDiskSpace;
+        return Number.isFinite(free) && free > 0 ? free : null;
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Grava UM capítulo recém-baixado em `pending`, logo depois do download.
+ * Antes isso só acontecia no fim do sync do manhwa inteiro (fase 2): se o
+ * processo morresse no meio (OOM, app fechado à força), todos os capítulos já
+ * baixados ficavam no disco fora do índice — órfãos que ocupavam espaço sem
+ * aparecer em lugar nenhum, e que eram baixados de novo no sync seguinte.
+ */
+async function commitDownloadedChapter(
+    manhwaId: number,
+    filename: string,
+    totalPages: number,
+    chapterNumber: number | undefined
+): Promise<void> {
+    await withIndexLock(async () => {
+        const index = await loadIndex();
+        if (!index[manhwaId]) index[manhwaId] = { pending: {}, cached: {}, read: {} };
+        index[manhwaId].pending[filename] = {
+            downloadedAt: new Date().toISOString(),
+            totalPages,
+            chapterNumber,
+        };
+        await saveIndex(index);
+    });
+}
+
+async function syncManhwaLocalInner(
+    manhwaId: number,
+    currentChapter: number,
+    files: SyncFile[],
     coverUrl?: string | null,
     onProgress?: (p: SyncProgress) => void,
     shouldCancel?: () => boolean
@@ -442,14 +535,16 @@ export async function syncManhwaLocal(
 
     // Download dos chapters não-lidos em paralelo (semáforo)
     const queue = [...toDownload];
-    const downloaded: { filename: string; totalPages: number }[] = [];
 
     // Progresso por capítulo + por MB (size_mb vem do endpoint /files)
     const sizeByName = new Map(files.map(f => [f.name, f.size_mb ?? 0]));
+    // Map de filename → chapter_number pra preservar a posição nas entries
+    const chapterNumberByName = new Map(files.map(f => [f.name, f.chapter_number]));
     const totalChapters = toDownload.length;
     const totalMB = toDownload.reduce((s, fn) => s + (sizeByName.get(fn) ?? 0), 0);
     let doneChapters = 0;
     let doneMB = 0;
+    let lowSpace = false;
     onProgress?.({ doneChapters, totalChapters, doneMB, totalMB });
 
     const worker = async () => {
@@ -458,9 +553,26 @@ export async function syncManhwaLocal(
             if (shouldCancel?.()) { queue.length = 0; return; }
             const fn = queue.shift();
             if (!fn) return;
+            // Pico em disco enquanto extrai: o .cbz e as páginas juntos (~2×).
+            const free = freeDiskBytes();
+            const peak = 2 * (sizeByName.get(fn) ?? 0) * 1024 * 1024;
+            if (lowSpace || (free !== null && free - peak < MIN_FREE_SPACE_BYTES)) {
+                const skipped = 1 + queue.length;
+                queue.length = 0;
+                result.errors += skipped;
+                if (!lowSpace) {
+                    lowSpace = true;
+                    console.warn(
+                        `[cache] ⚠️ espaço livre insuficiente (${toMB(free ?? 0)} MB livres, reserva ` +
+                        `${toMB(MIN_FREE_SPACE_BYTES)} MB) — parando downloads de #${manhwaId}, ${skipped} caps pulados`
+                    );
+                }
+                return;
+            }
             try {
                 const totalPages = await downloadChapter(manhwaId, fn);
-                downloaded.push({ filename: fn, totalPages });
+                await commitDownloadedChapter(manhwaId, fn, totalPages, chapterNumberByName.get(fn));
+                result.downloaded++;
                 doneChapters++;
                 doneMB += sizeByName.get(fn) ?? 0;
                 onProgress?.({ doneChapters, totalChapters, doneMB, totalMB });
@@ -476,22 +588,13 @@ export async function syncManhwaLocal(
     // Fase 2 (com lock): recarrega o índice já ATUALIZADO (outros manhwas podem
     // ter salvo entretanto) e aplica só as mudanças deste manhwa por cima dele —
     // evita que o commit deste sync apague downloads paralelos de outro manhwa.
+    // Os capítulos baixados já entraram em `pending` um a um
+    // (`commitDownloadedChapter`); aqui não são re-adicionados, senão um capítulo
+    // lido nesse meio-tempo (pending→cached) voltaria pra `pending`.
     await withIndexLock(async () => {
         const index = await loadIndex();
         if (!index[manhwaId]) index[manhwaId] = { pending: {}, cached: {}, read: {} };
         const m = index[manhwaId];
-
-        // Map de filename → chapter_number pra preservar a posição nas entries
-        const chapterNumberByName = new Map(files.map(f => [f.name, f.chapter_number]));
-
-        for (const { filename, totalPages } of downloaded) {
-            m.pending[filename] = {
-                downloadedAt: new Date().toISOString(),
-                totalPages,
-                chapterNumber: chapterNumberByName.get(filename),
-            };
-            result.downloaded++;
-        }
 
         // Preserva chapterNumber também nas entries existentes (em pending/cached) se estiver faltando
         for (const f of files) {
@@ -811,8 +914,10 @@ async function clearLocalScrollFor(manhwaId: number): Promise<void> {
 /** Remove tudo localmente (pending + cached + diretório + scroll) pra um manhwa. */
 export async function removeManhwaLocal(manhwaId: number): Promise<void> {
     try {
+        // Assíncrono (fora da thread JS): `Directory.delete()` é síncrono e
+        // apagar dezenas de capítulos de uma vez congelava a UI.
         const dir = new Directory(Paths.document, 'manhwas', String(manhwaId));
-        if (dir.exists) dir.delete();
+        await LegacyFS.deleteAsync(dir.uri, { idempotent: true });
     } catch (e) {
         console.warn(`[cache] erro ao apagar diretório do manhwa ${manhwaId}:`, e);
     }
@@ -825,6 +930,31 @@ export async function removeManhwaLocal(manhwaId: number): Promise<void> {
         }
     });
     await clearLocalScrollFor(manhwaId);
+}
+
+async function dropFromJsonMap(key: string, manhwaId: number): Promise<void> {
+    try {
+        const raw = await AsyncStorage.getItem(key);
+        if (!raw) return;
+        const obj: Record<string, unknown> = JSON.parse(raw);
+        if (!(String(manhwaId) in obj)) return;
+        delete obj[String(manhwaId)];
+        await AsyncStorage.setItem(key, JSON.stringify(obj));
+    } catch (e) {
+        console.warn(`[cache] limpando ${key} de #${manhwaId}:`, e);
+    }
+}
+
+/**
+ * Manhwa saiu da biblioteca: além do `removeManhwaLocal` (disco, índice,
+ * scroll), esquece o snapshot da lista de capítulos e o "último lido" dele.
+ * NÃO usar pra "desligar download"/"remover download": nesses o manhwa continua
+ * na biblioteca e o snapshot ainda serve pra numerar capítulos offline.
+ */
+export async function forgetManhwaLocal(manhwaId: number): Promise<void> {
+    await removeManhwaLocal(manhwaId);
+    await dropFromJsonMap(FILES_KEY, manhwaId);
+    await dropFromJsonMap(LASTREAD_KEY, manhwaId);
 }
 
 // ============================================================
@@ -964,13 +1094,23 @@ export async function cleanupCorrupted(): Promise<{ removedChapters: number; rem
     if (!root.exists) return { removedChapters: 0, removedManhwas: 0 };
 
     return withIndexLock(async () => {
-        const index = await loadIndex();
+        // Índice ilegível NÃO é "nada baixado": com o `loadIndex` (que devolve
+        // `{}` na falha) esta limpeza apagava todas as pastas de manhwa.
+        let index: CacheIndex;
+        try { index = await loadIndexStrict(); } catch (e) {
+            console.warn('[cache] cleanup: índice ilegível, limpeza pulada:', e);
+            return { removedChapters: 0, removedManhwas: 0 };
+        }
         let removedChapters = 0;
         let removedManhwas = 0;
         let indexChanged = false;
 
         let manhwaDirs: (File | Directory)[];
         try { manhwaDirs = root.list(); } catch { return { removedChapters: 0, removedManhwas: 0 }; }
+        if (Object.keys(index).length === 0 && manhwaDirs.length > 0) {
+            console.warn('[cache] cleanup: índice vazio com pastas em disco, limpeza pulada por segurança');
+            return { removedChapters: 0, removedManhwas: 0 };
+        }
 
         for (const entry of manhwaDirs) {
             if (!(entry instanceof Directory)) {
@@ -1032,7 +1172,9 @@ export async function cleanupCorrupted(): Promise<{ removedChapters: number; rem
 /** Remove cached com readAt > 7 dias. */
 export async function cleanupExpired(): Promise<{ removed: number }> {
     return withIndexLock(async () => {
-        const index = await loadIndex();
+        // Strict pelo mesmo motivo do `trimAllCached`: falha de leitura não pode
+        // virar um índice vazio salvo por cima do real.
+        const index = await loadIndexStrict();
         const now = Date.now();
         let removed = 0;
 
@@ -1042,14 +1184,10 @@ export async function cleanupExpired(): Promise<{ removed: number }> {
             for (const filename of Object.keys(m.cached)) {
                 const readAt = new Date(m.cached[filename].readAt).getTime();
                 if (now - readAt > SEVEN_DAYS_MS) {
-                    try {
-                        const dir = chapterDir(manhwaId, filename);
-                        if (dir.exists) dir.delete();
-                    } catch (e) {
-                        console.warn(`[cache] erro ao apagar expirado ${filename}:`, e);
-                    }
+                    // Assíncrono, como o trim: o `dir.delete()` síncrono rodava no
+                    // startup e travava a thread JS a cada capítulo expirado.
+                    deleteChapterDirAsync(manhwaId, filename);
                     delete m.cached[filename];
-                    invalidateStorageCache(manhwaId);
                     removed++;
                 }
             }
@@ -1058,4 +1196,197 @@ export async function cleanupExpired(): Promise<{ removed: number }> {
         await saveIndex(index);
         return { removed };
     });
+}
+
+// ============================================================
+// Limpeza de armazenamento (inicialização, fechar o leitor, biblioteca)
+// ============================================================
+
+/** Mede (recursivo, no nativo) e apaga. Assíncrono e idempotente. */
+async function deleteMeasured(uri: string): Promise<number> {
+    const bytes = await dirSizeBytes(uri);
+    await LegacyFS.deleteAsync(uri, { idempotent: true });
+    return bytes;
+}
+
+/**
+ * Remove de `Paths.document/manhwas` o que o índice NÃO referencia:
+ * - pasta (ou arquivo solto) na raiz sem entrada de manhwa no índice;
+ * - dentro de manhwa indexado: pasta de capítulo fora de pending/cached e `.cbz`
+ *   solto — é o que sobra quando o processo morre baixando (`_chapter.cbz`
+ *   parcial + páginas extraídas pela metade).
+ * NUNCA toca em: pasta de capítulo listada em pending/cached (nem olha dentro),
+ * `cover.jpg` e qualquer outro arquivo de manhwa indexado.
+ *
+ * Pula tudo com sync em andamento (capítulo baixando ainda não está no índice)
+ * ou com índice ilegível/vazio (aí ele não serve pra decidir o que é órfão).
+ * Roda dentro do lock do índice e espera cada deleção terminar: um sync que
+ * começar agora fica na fila do lock, então nunca baixa numa pasta que está
+ * sendo apagada. Diferente do `cleanupCorrupted` (tela de Downloads), não
+ * remove capítulo indexado — nem o que estiver sem páginas.
+ */
+export async function cleanupOrphanedStorage(): Promise<{ removed: number; freedBytes: number }> {
+    const none = { removed: 0, freedBytes: 0 };
+    return withIndexLock(async () => {
+        if (activeSyncs > 0) {
+            console.log('[cache] limpeza de órfãos pulada: download em andamento');
+            return none;
+        }
+        let index: CacheIndex;
+        try {
+            index = await loadIndexStrict();
+        } catch (e) {
+            console.warn('[cache] limpeza de órfãos pulada: índice ilegível:', e);
+            return none;
+        }
+        const root = new Directory(Paths.document, 'manhwas');
+        let manhwaNames: string[];
+        try {
+            manhwaNames = await LegacyFS.readDirectoryAsync(root.uri);
+        } catch {
+            return none; // nada baixado ainda (pasta não existe)
+        }
+        if (Object.keys(index).length === 0 && manhwaNames.length > 0) {
+            console.warn('[cache] limpeza de órfãos pulada: índice vazio com pastas em disco');
+            return none;
+        }
+
+        let removed = 0;
+        let freedBytes = 0;
+        const remove = async (uri: string) => {
+            try {
+                freedBytes += await deleteMeasured(uri);
+                removed++;
+            } catch (e) {
+                console.warn('[cache] limpeza de órfãos:', e);
+            }
+        };
+
+        for (const name of manhwaNames) {
+            const m = index[name];
+            if (!m) {
+                await remove(new File(root, name).uri);
+                continue;
+            }
+            const manhwaDir = new Directory(root, name);
+            let children: string[];
+            try {
+                children = await LegacyFS.readDirectoryAsync(manhwaDir.uri);
+            } catch {
+                continue; // é arquivo, não pasta: deixa como está
+            }
+            const known = new Set([...Object.keys(m.pending), ...Object.keys(m.cached)]);
+            for (const child of children) {
+                if (known.has(child) || child === 'cover.jpg') continue;
+                const uri = new File(manhwaDir, child).uri;
+                let info: LegacyFS.FileInfo;
+                try {
+                    info = await LegacyFS.getInfoAsync(uri);
+                } catch {
+                    continue;
+                }
+                if (!info.exists) continue;
+                // Pasta de capítulo fora do índice, ou .cbz solto. Outros arquivos
+                // soltos ficam (não sabemos o que são).
+                if (info.isDirectory || child.toLowerCase().endsWith('.cbz')) await remove(uri);
+            }
+        }
+
+        if (removed > 0) invalidateStorageCache();
+        return { removed, freedBytes };
+    });
+}
+
+let imageCacheCheck: Promise<void> | null = null;
+
+/**
+ * Mede o disk cache de imagens do expo-image (Glide) e limpa tudo se passou de
+ * `IMAGE_DISK_CACHE_MAX_BYTES`. Nada no app limpava esse disco antes (o
+ * `clearMemoryCache` do leitor só mexe na RAM). Só cache de imagem: os
+ * capítulos baixados (`Paths.document/manhwas`) não passam por aqui.
+ * Chamado no startup e ao fechar o leitor; chamadas concorrentes compartilham
+ * a mesma checagem.
+ */
+export function enforceImageDiskCacheLimit(reason: string, logSize = false): Promise<void> {
+    if (imageCacheCheck) return imageCacheCheck;
+    const run = async () => {
+        const cacheRoot = LegacyFS.cacheDirectory;
+        if (!cacheRoot) return;
+        const bytes = await dirSizeBytes(`${cacheRoot}${GLIDE_DISK_CACHE_DIR}`);
+        if (bytes > IMAGE_DISK_CACHE_MAX_BYTES) {
+            const ok = await Image.clearDiskCache();
+            console.log(
+                `[cache] disco de imagens ${toMB(bytes)} MB > teto ${toMB(IMAGE_DISK_CACHE_MAX_BYTES)} MB (${reason}) — ` +
+                (ok ? `limpo, ${toMB(bytes)} MB liberados` : 'sem activity, não limpou')
+            );
+        } else if (logSize) {
+            const total = await dirSizeBytes(cacheRoot);
+            console.log(
+                `[cache] disco de imagens ${toMB(bytes)} MB (teto ${toMB(IMAGE_DISK_CACHE_MAX_BYTES)} MB), ` +
+                `cacheDir total ${toMB(total)} MB`
+            );
+        }
+    };
+    imageCacheCheck = run()
+        .catch(e => console.warn('[cache] checagem do disco de imagens:', e))
+        .finally(() => { imageCacheCheck = null; });
+    return imageCacheCheck;
+}
+
+/**
+ * Limpeza de inicialização: órfãos em `manhwas/`, sessões de medição do leitor
+ * que sobraram de um processo morto (`cacheDir/reader-probe`) e o teto do disco
+ * de imagens. Assíncrona, idempotente e não propaga erro.
+ */
+export async function runStartupStorageCleanup(): Promise<void> {
+    const t0 = Date.now();
+    try {
+        const orphans = await cleanupOrphanedStorage();
+        const probes = await sweepStaleProbeSessions();
+        console.log(
+            `[cache] limpeza de inicialização: ${orphans.removed} órfãos em manhwas/, ` +
+            `${probes.removed} sessões de medição, ${toMB(orphans.freedBytes + probes.freedBytes)} MB liberados ` +
+            `em ${Date.now() - t0}ms`
+        );
+    } catch (e) {
+        console.warn('[cache] limpeza de inicialização falhou:', e);
+    }
+    await enforceImageDiskCacheLimit('inicialização', true);
+}
+
+const reportedRemovedWithDownloads = new Set<string>();
+
+/**
+ * Manhwas que saíram da biblioteca do servidor (excluídos pela web, por
+ * exemplo) ficavam no aparelho pra sempre: capa, entrada do índice, scroll,
+ * snapshot da lista. Recebe os ids da lista FRESCA do `GET /api/manhwas` (que
+ * devolve todos, sem filtro). Sem capítulo baixado: esquece tudo. Com capítulo
+ * em pending/cached: MANTÉM (o índice diz que existe) e loga uma vez por
+ * sessão, com o tamanho.
+ */
+export async function pruneRemovedManhwas(libraryIds: number[]): Promise<void> {
+    if (libraryIds.length === 0) return; // lista vazia não prova que nada existe
+    const library = new Set(libraryIds.map(String));
+    let index: CacheIndex;
+    try {
+        index = await loadIndexStrict();
+    } catch {
+        return;
+    }
+    for (const idStr of Object.keys(index)) {
+        if (library.has(idStr)) continue;
+        const m = index[idStr];
+        const downloaded = Object.keys(m.pending).length + Object.keys(m.cached).length;
+        if (downloaded === 0) {
+            await forgetManhwaLocal(Number(idStr));
+            console.log(`[cache] manhwa #${idStr} saiu da biblioteca: capa e dados locais apagados`);
+        } else if (!reportedRemovedWithDownloads.has(idStr)) {
+            reportedRemovedWithDownloads.add(idStr);
+            const bytes = await getManhwaStorage(Number(idStr));
+            console.log(
+                `[cache] manhwa #${idStr} saiu da biblioteca com ${downloaded} caps baixados ` +
+                `(${toMB(bytes)} MB): mantidos, estão no índice`
+            );
+        }
+    }
 }

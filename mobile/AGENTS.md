@@ -220,13 +220,23 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
   `read`, que é permanente — não afeta o histórico de leitura, só o que fica baixado). `cleanupExpired`
   ainda apaga o último capítulo cacheado se `readAt` passar de 7 dias.
 - **`withIndexLock()` serializa todo load→mutate→save do índice.** Como "Baixar tudo" roda vários
-  manhwas em paralelo (`MANHWA_CONCURRENCY`), cada `syncManhwaLocal` faz DOIS ciclos curtos de
-  load/save (reconciliação no início, commit no fim) em vez de segurar o índice inteiro carregado
-  durante todo o download — sem isso, quem salvasse por último sobrescrevia o índice inteiro e
-  apagava os `pending`/`cached` que outros manhwas tinham acabado de gravar (perda silenciosa,
-  files no disco mas fora do índice). Os downloads de capítulo em si continuam 100% paralelos; só o
-  load/save do índice é atômico. Qualquer nova função que faça load→mutate→save do índice deve
-  passar pelo `withIndexLock`.
+  manhwas em paralelo (`MANHWA_CONCURRENCY`), cada `syncManhwaLocal` faz ciclos curtos de load/save
+  (reconciliação no início, um `commitDownloadedChapter` por capítulo baixado, trim no fim) em vez de
+  segurar o índice inteiro carregado durante todo o download — sem isso, quem salvasse por último
+  sobrescrevia o índice inteiro e apagava os `pending`/`cached` que outros manhwas tinham acabado de
+  gravar (perda silenciosa, files no disco mas fora do índice). Os downloads de capítulo em si
+  continuam 100% paralelos; só o load/save do índice é atômico. Qualquer nova função que faça
+  load→mutate→save do índice deve passar pelo `withIndexLock`.
+- **Capítulo entra em `pending` assim que termina de baixar** (`commitDownloadedChapter`, v1.5.13).
+  Antes só entrava no fim do sync do manhwa inteiro: se o processo morresse no meio (OOM, app fechado à
+  força), todos os já baixados ficavam no disco fora do índice, ocupando espaço sem aparecer em lugar
+  nenhum e sendo baixados de novo depois. A fase 2 não re-adiciona: um capítulo lido nesse meio-tempo
+  (pending→cached) voltaria pra `pending`.
+- **Quem apaga ou grava o índice a partir de uma leitura dele usa `loadIndexStrict()`** (propaga a
+  falha). O `loadIndex()` devolve `{}` quando a leitura falha: pra uma limpeza isso significa "nada
+  baixado" (apagaria tudo), e um `saveIndex` em seguida gravaria o índice vazio por cima do real.
+  `trimAllCached`, `cleanupExpired`, `cleanupCorrupted`, `cleanupOrphanedStorage` e
+  `pruneRemovedManhwas` usam a versão estrita. As limpezas também pulam com índice vazio e pastas em disco.
 - Páginas extraídas em disco: `Paths.document/manhwas/{id}/{filename}/page_N.jpg` (+ `cover.jpg`).
 - **"Lido" vem do servidor** (`current_chapter` = posição na lista ordenada completa, 1-based, mesma
   convenção da web). O `GET /files` manda `read` em cada arquivo (posição ≤ `current_chapter` OU
@@ -253,7 +263,61 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
 - O resultado fica memorizado por manhwa (`storageCache`, guarda a *Promise* → chamadas
   concorrentes compartilham uma varredura). Quem mexe no disco tem que chamar
   `invalidateStorageCache(manhwaId?)` — já é feito em `downloadChapter`, `downloadCover`,
-  `deleteChapterDirAsync`, `removeManhwaLocal`, `cleanupCorrupted` e `cleanupExpired`.
+  `deleteChapterDirAsync`, `removeManhwaLocal`, `cleanupCorrupted`, `cleanupExpired` e
+  `cleanupOrphanedStorage`.
+
+### 🚨 Armazenamento: o que é limitado, o que é limpo, o que NUNCA é apagado (v1.5.13)
+O que o app grava no aparelho, e o teto de cada um:
+- **Capítulos baixados** (`Paths.document/manhwas/{id}/{filename}/`): `pending` (não lidos) é
+  **ilimitado por design**: é o que o usuário mandou baixar. `cached` (lidos) = `MAX_CACHED` (1) por
+  manhwa, por até 7 dias. **Download nunca come os últimos `MIN_FREE_SPACE_BYTES` (500MB) livres**: o
+  worker do `syncManhwaLocal` checa `Paths.availableDiskSpace` antes de cada capítulo, contando o pico
+  de ~2× o tamanho (`.cbz` + páginas extraídas). Abaixo disso, para o sync daquele manhwa e conta o
+  resto como erro (log `[cache] ⚠️ espaço livre insuficiente`).
+- **Disk cache de imagens do expo-image** (`cacheDir/image_manager_disk_cache`, páginas remotas com
+  `cachePolicy="disk"` + capas): o Glide 4.16 já limita a **250MB** num LRU próprio
+  (`DiskCache.Factory.DEFAULT_DISK_CACHE_SIZE`; o expo-image não sobrescreve). O app mede a pasta no
+  startup e ao fechar o leitor (`enforceImageDiskCacheLimit`) e chama `Image.clearDiskCache()` se ela
+  passar de `IMAGE_DISK_CACHE_MAX_BYTES` (300MB): rede de segurança pra arquivo que o Glide perdeu de
+  vista. `Image.clearMemoryCache()` (leitor) **não** mexe no disco.
+- **Sessões de medição do leitor** (`cacheDir/reader-probe/<sessão>`, ver `RemoteImageSizeProbe`):
+  apagadas no `dispose()` e, se o processo morreu antes, na inicialização (`sweepStaleProbeSessions`,
+  que pula as sessões vivas deste processo).
+- Fora do controle do app, mas limitados: `cacheDir/http-cache` (OkHttp do RN, 10MB). O disk cache do
+  Fresco, de versões antigas que usavam `RNImage.getSize`, é ≤40MB e não recebe mais nada.
+- AsyncStorage: índice, snapshots (`manhwa-files-v1`, `manhwa-list-v1`), scroll por capítulo
+  (`manhwa-scroll-v1`, ~80 bytes por capítulo aberto, nunca podado) e fila offline (dedupe por chave).
+
+**Limpeza de inicialização** (`runStartupStorageCleanup`, chamada no `_layout` depois da abertura da
+home, na fila do lock atrás de `cleanupExpired`/`trimAllCached`). `cleanupOrphanedStorage` apaga de
+`Paths.document/manhwas` só o que o índice NÃO conhece:
+- pasta (ou arquivo solto) na raiz sem entrada de manhwa no índice;
+- dentro de manhwa indexado: pasta de capítulo fora de `pending`/`cached` (download morto: `_chapter.cbz`
+  parcial + páginas soltas) e `.cbz` solto.
+
+**Nunca apaga**: pasta de capítulo listada em `pending`/`cached` (nem olha dentro), `cover.jpg` e
+arquivos desconhecidos de manhwa indexado. **Pula tudo** com sync em andamento (`activeSyncs > 0`: a
+pasta de um capítulo baixando ainda não está no índice) e com índice ilegível ou vazio com pastas em
+disco. Roda dentro do `withIndexLock` e espera cada deleção: um sync que começar agora espera na fila do
+lock, então nunca baixa numa pasta sendo apagada. Tudo assíncrono (`readDirectoryAsync`/`getInfoAsync`/
+`deleteAsync` da API legacy), idempotente, erros só em `console.warn`. Diferente do `cleanupCorrupted`
+(tela de Downloads), não remove capítulo indexado, nem o que está sem páginas.
+
+**Saída da biblioteca:**
+- Excluir o manhwa pelo app (`ManhwaCard.deleteManhwa`) chama `forgetManhwaLocal` depois do `DELETE`
+  ok: disco, índice, scroll, snapshot da lista e último lido. Antes nada local era apagado, e os
+  capítulos ficavam invisíveis (a tela de Downloads lista a partir do servidor).
+- Excluído por fora (web): a home chama `pruneRemovedManhwas(ids)` com a lista fresca do
+  `GET /api/manhwas` (todos, sem filtro). Sem capítulo baixado, esquece tudo (capa inclusive). **Com
+  `pending`/`cached`, mantém** (regra do índice) e loga uma vez por sessão o tamanho. Esses ficam sem UI
+  pra apagar: pendência conhecida.
+
+Logs pra conferir no logcat (tag `ReactNativeJS`):
+- `[cache] limpeza de inicialização: N órfãos em manhwas/, M sessões de medição, X MB liberados em Yms`
+- `[cache] disco de imagens X MB (teto 300.0 MB), cacheDir total Y MB` (no startup), e
+  `[cache] disco de imagens X MB > teto ... — limpo, X MB liberados` quando limpa.
+- `[cache] limpeza de órfãos pulada: ...`, `[cache] ⚠️ espaço livre insuficiente ...` e
+  `[cache] manhwa #id saiu da biblioteca ...`
 
 ## Download (`src/lib/download-manager.ts` + `background-download.ts`)
 - `download-manager`: store observável (`useDownloadProgress`) de progresso por manhwa (caps + MB).
@@ -310,6 +374,8 @@ Pra depurar: os logs são prefixados `[fgs]` — `handler iniciado` → `encerra
 - **Limpeza** (`cleanupCorrupted`): remove do disco o que está órfão/corrompido (pastas de manhwa/cap
   fora do índice, capítulos sem `page_0.jpg`, `_chapter.cbz` residual). Roda na tela de Downloads
   quando NÃO há download ativo — resolve o caso "X GB usado mas 0 baixado" de downloads interrompidos.
+  Desde a v1.5.13 os órfãos também saem na inicialização (`cleanupOrphanedStorage`, ver "Armazenamento"
+  acima), sem depender de abrir a tela de Downloads.
 - **CBZ quebrado/incompleto é barrado em duas camadas.** O backend (`_scan_cbz_files` em
   `backend/main.py`) já filtra do `/api/manhwas/{id}/files` qualquer `.cbz` abaixo de
   `MIN_CBZ_SIZE_BYTES` (100KB) — download interrompido no meio, disco cheio etc. nunca aparecem na

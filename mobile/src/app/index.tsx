@@ -13,6 +13,7 @@ import {
     getLocalChaptersSet,
     getLastReadMap,
     getManhwasWithLocalData,
+    pruneRemovedManhwas,
 } from '../lib/cache';
 import { drainQueue } from '../lib/sync-queue';
 import { checkConnectivity } from '../lib/connectivity';
@@ -158,6 +159,9 @@ export default function Home() {
             setManhwas(data);
             setOffline(false);
             saveManhwaList(data).catch(() => {});
+            // Lista fresca e completa: esquece no aparelho quem saiu da biblioteca
+            // (excluído pela web, por exemplo) e não tem capítulo baixado.
+            pruneRemovedManhwas(data.map(m => m.id)).catch(e => console.warn('[cache] pruneRemovedManhwas:', e));
         } catch (error) {
             console.warn('[fetch] manhwas falhou, tentando cache local:', error);
             await loadCachedManhwas().catch(() => setManhwas([]));

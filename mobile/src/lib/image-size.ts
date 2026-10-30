@@ -170,6 +170,40 @@ export async function readImageSize(uri: string): Promise<ImageSize | null> {
 // rede"): sem teto, um socket travado prenderia o worker do pré-cálculo pra sempre.
 const REMOTE_PROBE_TIMEOUT_MS = 15_000;
 let probeSessionSeq = 0;
+const PROBE_ROOT = 'reader-probe';
+/** Sessões vivas NESTE processo: a varredura de sobras nunca toca nelas. */
+const activeProbeSessions = new Set<string>();
+
+/**
+ * Apaga as sessões de medição que sobraram em `cacheDir/reader-probe`. O
+ * `dispose()` só roda com o processo vivo: se o app morre no meio do
+ * pré-cálculo remoto (OOM, fechado à força), a pasta da sessão fica lá pra
+ * sempre, com as páginas que estavam baixando. Chamado na inicialização.
+ */
+export async function sweepStaleProbeSessions(): Promise<{ removed: number; freedBytes: number }> {
+    const root = new Directory(Paths.cache, PROBE_ROOT);
+    let names: string[];
+    try {
+        names = await LegacyFS.readDirectoryAsync(root.uri);
+    } catch {
+        return { removed: 0, freedBytes: 0 }; // pasta não existe
+    }
+    let removed = 0;
+    let freedBytes = 0;
+    for (const name of names) {
+        if (activeProbeSessions.has(name)) continue;
+        try {
+            const uri = new File(root, name).uri;
+            const info = await LegacyFS.getInfoAsync(uri);
+            await LegacyFS.deleteAsync(uri, { idempotent: true });
+            if (info.exists) freedBytes += info.size;
+            removed++;
+        } catch (e) {
+            console.warn('[cache] sessão de medição antiga:', e);
+        }
+    }
+    return { removed, freedBytes };
+}
 
 /**
  * Medição de páginas NÃO baixadas. O backend serve a página inteira (sem
@@ -188,10 +222,15 @@ let probeSessionSeq = 0;
  * capítulo já fechado (páginas, alturas).
  */
 export class RemoteImageSizeProbe {
-    private readonly dir = new Directory(Paths.cache, 'reader-probe', `${Date.now()}_${probeSessionSeq++}`);
+    private readonly session = `${Date.now()}_${probeSessionSeq++}`;
+    private readonly dir = new Directory(Paths.cache, PROBE_ROOT, this.session);
     private seq = 0;
     private disposed = false;
     private readonly pending = new Set<() => void>();
+
+    constructor() {
+        activeProbeSessions.add(this.session);
+    }
 
     async measure(url: string): Promise<ImageSize | null> {
         if (this.disposed) return null;
@@ -224,6 +263,7 @@ export class RemoteImageSizeProbe {
         this.disposed = true;
         this.pending.forEach(abort => abort());
         this.pending.clear();
+        activeProbeSessions.delete(this.session);
         LegacyFS.deleteAsync(this.dir.uri, { idempotent: true }).catch(() => {});
     }
 }

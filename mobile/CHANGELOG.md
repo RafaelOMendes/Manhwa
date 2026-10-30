@@ -4,6 +4,25 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.5.13
+
+- **Excluir um manhwa apaga também o que estava baixado dele.** Antes o `DELETE` só apagava no
+  servidor: capítulos, capa e entrada do índice ficavam no aparelho para sempre, e invisíveis, porque a
+  tela de Downloads lista a partir do servidor. Manhwas excluídos por fora (web) e sem capítulo baixado
+  também têm capa e dados locais esquecidos quando a home carrega a lista. Os que ainda têm capítulos
+  baixados são mantidos.
+- **Sobras de download são limpas na inicialização.** Quando o app morria baixando, ficavam pastas de
+  capítulo fora do índice (`.cbz` parcial + páginas). Antes só saíam ao abrir a tela de Downloads. Agora
+  saem no startup, sem nunca tocar em capítulo que o índice lista como baixado. Também saem as sobras da
+  medição de páginas remotas do leitor em `cacheDir`.
+- **Capítulo baixado entra no índice na hora**, não só no fim do manhwa: se o app morrer no meio de
+  "Baixar tudo", o que já baixou fica salvo em vez de virar sobra no disco.
+- **Download para antes de encher o aparelho:** reserva de 500MB livres.
+- **Teto no cache de imagens** (páginas remotas e capas): o Glide já limita a 250MB; o app mede no
+  startup e ao fechar o leitor e limpa tudo se passar de 300MB.
+- Apagar downloads e limpar expirados agora roda fora da thread JS (antes podia travar a UI). Falha ao
+  ler o índice não grava mais um índice vazio por cima do real nem faz uma limpeza apagar tudo.
+
 ## 1.5.12
 
 - **Leitor devolve a memória de imagem ao trocar de capítulo, ao fechar e ao fim da abertura.** O

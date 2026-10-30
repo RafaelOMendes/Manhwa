@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
-import { AppState, AppStateStatus } from 'react-native';
+import { AppState, AppStateStatus, InteractionManager } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { cleanupExpired, trimAllCached } from '../lib/cache';
+import { cleanupExpired, runStartupStorageCleanup, trimAllCached } from '../lib/cache';
 import { drainQueue } from '../lib/sync-queue';
 import ReaderHost from '../components/ReaderHost';
 // Side-effect: registra o handler do foreground service de download (uma vez).
@@ -17,6 +17,12 @@ export default function RootLayout() {
     cleanupExpired().catch(err => console.warn('[cache] cleanup falhou:', err));
     trimAllCached().catch(err => console.warn('[cache] trim falhou:', err));
     drainQueue().catch(err => console.warn('[sync] drain inicial falhou:', err));
+    // Órfãos em manhwas/, sobras do leitor em cacheDir e teto do disco de
+    // imagens. Depois da abertura da home; entra na fila do lock do índice
+    // atrás do expired/trim acima.
+    const cleanupTask = InteractionManager.runAfterInteractions(() => {
+      runStartupStorageCleanup();
+    });
 
     // Tocar na notificação de download abre a tela de Downloads.
     const unsubPress = setupDownloadNotificationPress(() => router.push('/downloads'));
@@ -30,7 +36,7 @@ export default function RootLayout() {
       }
     });
 
-    return () => { sub.remove(); unsubPress(); };
+    return () => { sub.remove(); unsubPress(); cleanupTask.cancel(); };
   }, [router]);
 
   return (

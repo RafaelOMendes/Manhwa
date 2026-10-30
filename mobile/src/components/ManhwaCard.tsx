@@ -8,6 +8,7 @@ import { openReader } from '../lib/reader-store';
 import {
     getLocalChaptersSet,
     removeManhwaLocal,
+    forgetManhwaLocal,
     getLocalCoverUri,
     saveManhwaFiles,
     loadManhwaFiles,
@@ -211,7 +212,16 @@ function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                     onPress: async () => {
                         setIsDeleting(true);
                         try {
-                            await fetch(`${API_BASE}/api/manhwas/${manhwa.id}`, { method: 'DELETE' });
+                            const res = await fetch(`${API_BASE}/api/manhwas/${manhwa.id}`, { method: 'DELETE' });
+                            // Excluiu no servidor → apaga o que estava baixado dele.
+                            // Antes ficava tudo no aparelho pra sempre (capítulos,
+                            // capa, índice), e invisível: a tela de Downloads lista
+                            // a partir do servidor, onde o manhwa não existe mais.
+                            if (res.ok) {
+                                await forgetManhwaLocal(manhwa.id).catch(e =>
+                                    console.warn('[cache] forgetManhwaLocal:', e)
+                                );
+                            }
                             onUpdate();
                         } catch (error) {
                             console.error('Erro ao deletar:', error);

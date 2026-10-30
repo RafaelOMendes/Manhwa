@@ -9,7 +9,9 @@ import { X, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Skip
 import { StatusBar, setStatusBarHidden } from 'expo-status-bar';
 import * as NavigationBar from 'expo-navigation-bar';
 import { API_BASE } from '../lib/api';
-import { getLocalChapter, markChapterReadLocal, saveLocalScroll, getLocalScroll, markManhwaRead } from '../lib/cache';
+import {
+    getLocalChapter, markChapterReadLocal, saveLocalScroll, getLocalScroll, markManhwaRead, enforceImageDiskCacheLimit,
+} from '../lib/cache';
 import { readImageSize, RemoteImageSizeProbe } from '../lib/image-size';
 import { enqueueChapterRead, enqueueScroll } from '../lib/sync-queue';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -402,6 +404,9 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
             // As views das páginas morrem no próximo frame (Fabric); a liberação
             // limpa agora e de novo depois disso (ver `releaseImageMemory`).
             releaseImageMemory(exit.reason, exit.detail);
+            // Disco: páginas remotas ficam no disk cache do Glide. Mede e limpa
+            // se passou do teto (só loga quando limpa).
+            enforceImageDiskCacheLimit(`leitor: ${exit.reason}`);
         };
     }, []);
 
