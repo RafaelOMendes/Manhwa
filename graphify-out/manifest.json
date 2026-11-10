@@ -180,15 +180,15 @@
     "semantic_hash": ""
   },
   "mobile/src/app/downloads.tsx": {
-    "mtime": 1793313623.347154,
-    "seen": 1793313774.2569625,
-    "ast_hash": "6b0b8ac1ceab697158731081134212a9",
+    "mtime": 1794268601.616695,
+    "seen": 1794268792.810966,
+    "ast_hash": "1785786f1c837100dc3c4516905e0da7",
     "semantic_hash": ""
   },
   "mobile/src/app/index.tsx": {
-    "mtime": 1793381197.321616,
-    "seen": 1793381372.9296324,
-    "ast_hash": "668cf1d18aefd0c3528e162f9d7d6fec",
+    "mtime": 1794268601.4373271,
+    "seen": 1794268792.810966,
+    "ast_hash": "cb42ea342297f16427ece4a73f3b46b1",
     "semantic_hash": ""
   },
   "mobile/src/components/AddManhwaModal.tsx": {
@@ -198,15 +198,15 @@
     "semantic_hash": "b84f188a0aa80082acdf7831769e4604"
   },
   "mobile/src/components/CbzReader.tsx": {
-    "mtime": 1793381182.7402885,
-    "seen": 1793381372.9296324,
-    "ast_hash": "c7b6b69fe4c747924637b4667ab8fad6",
+    "mtime": 1794268589.8638864,
+    "seen": 1794268792.810966,
+    "ast_hash": "bd1635506afd95026371869b3d31213a",
     "semantic_hash": ""
   },
   "mobile/src/components/ManhwaCard.tsx": {
-    "mtime": 1793381191.0102067,
-    "seen": 1793381372.9296324,
-    "ast_hash": "ffe03d8397df26b3dfcf88caa6634c29",
+    "mtime": 1794268601.5016031,
+    "seen": 1794268792.810966,
+    "ast_hash": "91be2b24ac64f80ba6e314e453ba1a26",
     "semantic_hash": ""
   },
   "mobile/src/components/ReaderHost.tsx": {
@@ -276,9 +276,9 @@
     "semantic_hash": ""
   },
   "mobile/src/lib/version.ts": {
-    "mtime": 1793381351.7146876,
-    "seen": 1793381372.9296324,
-    "ast_hash": "7836c6e358814429911a4b8d07f327d4",
+    "mtime": 1794268709.0278282,
+    "seen": 1794268792.810966,
+    "ast_hash": "833d073f71d4fa3cd227e18dc4c83b8f",
     "semantic_hash": ""
   },
   "mobile/src/nativewind-env.d.ts": {
@@ -342,15 +342,15 @@
     "semantic_hash": "5a9309c07733e6e50e60ec877982781e"
   },
   "mobile/AGENTS.md": {
-    "mtime": 1793381350.777351,
-    "seen": 1793381372.9296324,
-    "ast_hash": "f57c07bcfe04a3687d513f04403fe57c",
+    "mtime": 1794268708.8084426,
+    "seen": 1794268792.810966,
+    "ast_hash": "dc2665c557384c4685faa9ac21903b3f",
     "semantic_hash": ""
   },
   "mobile/CHANGELOG.md": {
-    "mtime": 1793381359.4548323,
-    "seen": 1793381372.9296324,
-    "ast_hash": "c95663bb73a7a54d97588763f3f5e1dc",
+    "mtime": 1794268708.9250023,
+    "seen": 1794268792.810966,
+    "ast_hash": "8b26e993eda9cad8af216695fde9c257",
     "semantic_hash": ""
   },
   "mobile/CLAUDE.md": {
@@ -651,6 +651,18 @@
     "mtime": 1793314633.4747603,
     "seen": 1793314878.5768855,
     "ast_hash": "a9a6f786f534463f276d36491cb09326",
+    "semantic_hash": ""
+  },
+  "mobile/src/components/MemoryLabel.tsx": {
+    "mtime": 1794268589.6658852,
+    "seen": 1794268792.810966,
+    "ast_hash": "1262312e21e694513aa64279bfb2de9a",
+    "semantic_hash": ""
+  },
+  "mobile/src/lib/memory.ts": {
+    "mtime": 1794268519.9815087,
+    "seen": 1794268792.810966,
+    "ast_hash": "4afce62b7a16a5f314e2fbbd51306a38",
     "semantic_hash": ""
   },
   "frontend/package-lock.json": {

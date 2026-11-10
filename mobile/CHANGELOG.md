@@ -4,6 +4,19 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.5.14
+
+- **Corrigido o vazamento de memória que enchia a RAM até o aparelho "resetar".** Cada página em que
+  o dedo encostava para rolar nunca era destruída, e ficava com a imagem inteira (30–80MB) presa até o
+  app fechar. É um bug do React Native 0.81 no Android: a view tocada no início de um arrasto fica
+  marcada como "em toque" para sempre e o sistema adia a destruição dela indefinidamente; o expo-image só
+  solta a imagem quando a view é destruída. Um capítulo inteiro dá ~500MB (até 1,1GB), então alguns
+  capítulos bastavam. Agora as páginas não são mais alvo de toque: o toque cai num contêiner que dura o
+  capítulo e não segura imagem. O mesmo vale para as capas na home e na tela de Downloads.
+- Tocar na tela para mostrar/esconder os controles continua igual (o toque passou para a área da lista).
+- **Indicador de RAM** na home (abaixo do título) e no cabeçalho do leitor: `RAM app X · livre Y`. Serve
+  para conferir a correção: `livre` não pode ir caindo a cada capítulo e tem que voltar ao fechar o leitor.
+
 ## 1.5.13
 
 - **Excluir um manhwa apaga também o que estava baixado dele.** Antes o `DELETE` só apagava no

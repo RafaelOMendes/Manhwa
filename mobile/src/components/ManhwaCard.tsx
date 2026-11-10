@@ -327,8 +327,12 @@ function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                 onPress={handleCardClick}
                 className="bg-[#1f1c1c] rounded-lg overflow-hidden shadow-lg border border-gray-800 mb-4"
             >
-                {/* Cover image */}
-                <View className="w-full bg-[#262525] items-center justify-center relative" style={{ aspectRatio: 2 / 3 }}>
+                {/* Cover image. `pointerEvents="none"`: a imagem não pode ser o alvo
+                    do toque — no RN 0.81 a view tocada no início de um arrasto
+                    nunca é destruída, e o expo-image só solta o bitmap ao ser
+                    destruído (ver `ReaderCell` no CbzReader). O toque cai no
+                    TouchableOpacity do card, que não segura bitmap. */}
+                <View pointerEvents="none" className="w-full bg-[#262525] items-center justify-center relative" style={{ aspectRatio: 2 / 3 }}>
                     {imageUrl ? (
                         <Image
                             source={{ uri: imageUrl }}

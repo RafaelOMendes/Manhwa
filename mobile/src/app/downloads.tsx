@@ -392,7 +392,9 @@ export default function Downloads() {
         return (
             <View className="mx-4 mb-3 bg-[#1f1c1c] rounded-xl border border-gray-800 overflow-hidden">
                 <View className="flex-row p-3 gap-3">
-                    <View className="w-12 h-16 rounded-md overflow-hidden bg-[#262525] items-center justify-center">
+                    {/* `pointerEvents="none"`: capa nunca é alvo de toque (vazamento de
+                        bitmap do RN 0.81, ver `ReaderCell` no CbzReader). */}
+                    <View pointerEvents="none" className="w-12 h-16 rounded-md overflow-hidden bg-[#262525] items-center justify-center">
                         {coverUri ? (
                             <Image source={{ uri: coverUri }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
                         ) : (

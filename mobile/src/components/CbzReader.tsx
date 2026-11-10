@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
-    View, Text, TouchableOpacity, ActivityIndicator,
-    FlatList, Dimensions, StyleSheet, Animated, BackHandler, Alert,
+    View, Text, TouchableOpacity, ActivityIndicator, Pressable,
+    FlatList, Dimensions, StyleSheet, Animated, BackHandler,
     InteractionManager,
 } from 'react-native';
+import type { CellRendererProps } from 'react-native';
 import { Image } from 'expo-image';
 import { X, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, SkipForward } from 'lucide-react-native';
 import { StatusBar, setStatusBarHidden } from 'expo-status-bar';
@@ -13,6 +14,8 @@ import {
     getLocalChapter, markChapterReadLocal, saveLocalScroll, getLocalScroll, markManhwaRead, enforceImageDiskCacheLimit,
 } from '../lib/cache';
 import { readImageSize, RemoteImageSizeProbe } from '../lib/image-size';
+import { readMemory, formatMemory } from '../lib/memory';
+import MemoryLabel from './MemoryLabel';
 import { enqueueChapterRead, enqueueScroll } from '../lib/sync-queue';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -150,12 +153,46 @@ function releaseImageMemory(reason: string, detail = ''): void {
     pendingRelease = setTimeout(() => {
         pendingRelease = null;
         Image.clearMemoryCache()
-            .then(ok => console.log(
-                `[reader] memória de imagem liberada (${reason})${detail ? ` — ${detail}` : ''}` +
-                (ok ? '' : ' [sem activity: cache não limpo]')
-            ))
+            .then(async ok => {
+                // RAM do processo e do sistema DEPOIS da liberação: é o número
+                // que prova (ou desmente) que as páginas foram soltas.
+                const mem = formatMemory(await readMemory().catch(() => null));
+                console.log(
+                    `[reader] memória de imagem liberada (${reason})${detail ? ` — ${detail}` : ''}` +
+                    (mem ? ` — ${mem}` : '') +
+                    (ok ? '' : ' [sem activity: cache não limpo]')
+                );
+            })
             .catch(() => {});
     }, RELEASE_SETTLE_MS);
+}
+
+/**
+ * 🚨 Célula da FlatList com `pointerEvents="none"` — NÃO REMOVER. É a correção
+ * do vazamento que enchia a RAM do aparelho (v1.5.14).
+ *
+ * Bug do React Native 0.81 (Android/Fabric, corrigido só em versões novas):
+ * no ACTION_DOWN o RN marca a view tocada como "toque ativo"
+ * (`JSTouchDispatcher` → `markActiveTouchForTag`). Quando o dedo arrasta e a
+ * ScrollView assume o gesto (`onChildStartedNativeGesture`), ele zera o
+ * `targetTag` SEM desmarcar. A marca fica pra sempre, e uma view marcada nunca
+ * é destruída: o `SurfaceMountingManager.deleteView` a joga em
+ * `mViewsToDeleteAfterTouchFinishes` esperando um fim de toque que não vem.
+ *
+ * No leitor a view tocada era a própria imagem da página (a view React mais
+ * funda sob o dedo). Sem `onDropViewInstance`, o expo-image nunca rodava o
+ * `OnViewDestroys`, que é o ÚNICO lugar onde ele solta o bitmap. Resultado:
+ * toda página em que o dedo encostou pra rolar ficava com o bitmap inteiro
+ * (30–80MB) preso até o app morrer — um capítulo todo dá ~500MB, até 1,1GB.
+ * `Image.clearMemoryCache()` não alcança isso: o bitmap está em uso por uma
+ * view viva, não no cache.
+ *
+ * Com a célula fora do alcance de toque, o alvo passa a ser o contêiner de
+ * conteúdo da lista: uma view só, sem bitmap, que vive o capítulo inteiro.
+ * O toque de mostrar/esconder controles foi pro `Pressable` em volta da lista.
+ */
+function ReaderCell<ItemT>({ cellKey, index, item, children, ...viewProps }: CellRendererProps<ItemT>) {
+    return <View {...viewProps} pointerEvents="none">{children}</View>;
 }
 
 /**
@@ -171,12 +208,11 @@ interface ReaderPageProps {
     id: string;
     url: string;
     initialRatio: number;
-    onToggleUI: () => void;
     /** Tamanho do bitmap DECODIFICADO (intrinsic do drawable do Glide). */
     onLoaded: (id: string, width: number, height: number) => void;
     onMountChange: (id: string, mounted: boolean) => void;
 }
-const ReaderPage = React.memo(function ReaderPage({ id, url, initialRatio, onToggleUI, onLoaded, onMountChange }: ReaderPageProps) {
+const ReaderPage = React.memo(function ReaderPage({ id, url, initialRatio, onLoaded, onMountChange }: ReaderPageProps) {
     const [ratio, setRatio] = useState(initialRatio);
     const height = SCREEN_WIDTH / ratio;
     // Contagem de páginas montadas pros logs `[reader]`: a memória de bitmap do
@@ -186,7 +222,11 @@ const ReaderPage = React.memo(function ReaderPage({ id, url, initialRatio, onTog
         return () => onMountChange(id, false);
     }, [id, onMountChange]);
     return (
-        <TouchableOpacity activeOpacity={1} onPress={onToggleUI}>
+        // 🚨 A imagem NUNCA pode ser alvo de toque (ver `ReaderCell`): o
+        // `pointerEvents` tem que estar numa `View` do RN em volta dela, porque
+        // a view nativa do expo-image ignora essa prop na busca do alvo. Nada
+        // de `TouchableOpacity`/`onPress` aqui dentro.
+        <View pointerEvents="none">
             <Image
                 source={{ uri: url }}
                 style={{ width: SCREEN_WIDTH, height }}
@@ -213,7 +253,7 @@ const ReaderPage = React.memo(function ReaderPage({ id, url, initialRatio, onTog
                     }
                 }}
             />
-        </TouchableOpacity>
+        </View>
     );
 });
 
@@ -1109,7 +1149,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         onNavigate?.(file.name, file.chapter_number);
     };
 
-    // renderItem ESTÁVEL: depende só de toggleUI/handlePageLoaded/handlePageMount
+    // renderItem ESTÁVEL: depende só de handlePageLoaded/handlePageMount
     // (memoizados). Assim, quando o reader re-renderiza (toast, reachedEnd,
     // header), o FlatList não reprocessa os itens.
     const renderPage = useCallback(({ item }: { item: { id: string; url: string } }) => (
@@ -1117,11 +1157,10 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
             id={item.id}
             url={item.url}
             initialRatio={aspectRatiosRef.current[item.id] ?? 0.7}
-            onToggleUI={toggleUI}
             onLoaded={handlePageLoaded}
             onMountChange={handlePageMount}
         />
-    ), [toggleUI, handlePageLoaded, handlePageMount]);
+    ), [handlePageLoaded, handlePageMount]);
 
 
     const renderFooter = () => {
@@ -1193,13 +1232,16 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                         <Text style={styles.headerBtnText}>Anterior</Text>
                     </TouchableOpacity>
 
-                    {/* Chapter title */}
-                    <Text style={styles.headerTitle} numberOfLines={1}>
-                        {filename.replace('.cbz', '')}
-                        {files && files.length > 0 && (
-                            <Text style={styles.headerTitleSub}> ({currentIndex + 1}/{files.length})</Text>
-                        )}
-                    </Text>
+                    {/* Chapter title + RAM (só lê enquanto o cabeçalho está visível) */}
+                    <View style={styles.headerCenter}>
+                        <Text style={styles.headerTitle} numberOfLines={1}>
+                            {filename.replace('.cbz', '')}
+                            {files && files.length > 0 && (
+                                <Text style={styles.headerTitleSub}> ({currentIndex + 1}/{files.length})</Text>
+                            )}
+                        </Text>
+                        <MemoryLabel active={showUI} style={styles.headerMemory} />
+                    </View>
 
                     {/* Next + Close */}
                     <View style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 0 }}>
@@ -1240,10 +1282,18 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                     </View>
                 ) : (
                     <>
+                    {/* Toque simples = mostrar/esconder controles. Fica AQUI, em
+                        volta da lista, e não em cada página: página não pode ser
+                        alvo de toque (ver `ReaderCell`). Arrastar continua
+                        rolando: a ScrollView assume o gesto e o press é
+                        cancelado. Os botões do rodapé ganham o toque por
+                        estarem mais fundo. */}
+                    <Pressable style={{ flex: 1 }} onPress={toggleUI}>
                     <FlatList
                         ref={flatListRef}
                         data={pages}
                         keyExtractor={(item) => item.id}
+                        CellRendererComponent={ReaderCell}
                         showsVerticalScrollIndicator={false}
                         onEndReached={handleEndReached}
                         onEndReachedThreshold={0.3}
@@ -1288,6 +1338,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                         updateCellsBatchingPeriod={renderBoost ? BATCH_PERIOD_BOOST : BATCH_PERIOD_NORMAL}
                         renderItem={renderPage}
                     />
+                    </Pressable>
                     {/* Overlay durante scroll automático (restore ou "ir pro
                         fim"): esconde o "flicker" das páginas passando rápido
                         até o offset alvo. `pointerEvents="none"` de propósito —
@@ -1376,13 +1427,21 @@ const styles = StyleSheet.create({
         color: 'rgba(255,255,255,0.8)',
         fontSize: 13,
     },
+    headerCenter: {
+        flex: 1,
+        alignItems: 'center',
+        marginHorizontal: 6,
+    },
     headerTitle: {
         color: 'rgba(255,255,255,0.9)',
         fontSize: 13,
         fontWeight: '500',
-        flex: 1,
         textAlign: 'center',
-        marginHorizontal: 6,
+    },
+    headerMemory: {
+        color: 'rgba(255,255,255,0.45)',
+        fontSize: 10,
+        marginTop: 1,
     },
     headerTitleSub: {
         color: 'rgba(255,255,255,0.4)',

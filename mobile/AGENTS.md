@@ -181,6 +181,45 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
     desmonta (otimização de "scroll-to-top", ver `_initialRenderRegion`). Num capítulo de páginas
     800×10000 isso dá até ~64MB fixos. Baixar `initialNumToRender` reduz, mas a página seguinte passa a
     aparecer um lote depois na abertura.
+- **🚨 Imagem NUNCA é alvo de toque (v1.5.14) — a causa real da RAM enchendo até o aparelho resetar.**
+  As tentativas anteriores (v1.5.10, v1.5.12, v1.5.13) mexeram em coisas reais mas secundárias; o
+  crescimento sem fim vinha daqui. É um **bug do React Native 0.81 no Android/Fabric** (o `main` do RN já
+  corrige; a 0.81.5 instalada não):
+  1. No `ACTION_DOWN`, `JSTouchDispatcher` marca a view tocada (`markActiveTouchForTag`).
+  2. Quando o dedo arrasta e a ScrollView assume o gesto, `onChildStartedNativeGesture` zera o
+     `targetTag` **sem** chamar `sweepActiveTouchForTag`, e o `ACTION_UP` seguinte é ignorado
+     (`childIsHandlingNativeGesture`). A marca fica pra sempre.
+  3. `SurfaceMountingManager.deleteView` não destrói view marcada: joga em
+     `mViewsToDeleteAfterTouchFinishes` esperando um fim de toque que nunca chega. O
+     `onDropViewInstance` nunca roda.
+  4. O expo-image só solta o bitmap no `OnViewDestroys` (= `onDropViewInstance`). Sem ele, o bitmap fica
+     preso numa view viva e órfã. `Image.clearMemoryCache()` não alcança: não é cache, é recurso em uso.
+
+  No leitor, a view React mais funda sob o dedo era a própria imagem da página, então **toda página em
+  que o dedo encostou pra rolar vazava o bitmap inteiro**. Medido nos `.cbz` reais (amostra de 54
+  capítulos em `D:\Manhwas`): página de 800×15000 = 46MB, a maior 1080×20461 = 84MB; um capítulo
+  inteiro decodificado tem mediana de **~490MB** e chega a **1,1GB**. Alguns capítulos lidos e o Android
+  começa a matar tudo (VPN, Bluetooth, launcher). Regras:
+  - **`CellRendererComponent={ReaderCell}`** na FlatList: a célula tem `pointerEvents="none"`. O alvo
+    do toque vira o contêiner de conteúdo da lista (uma view só, sem bitmap, que dura o capítulo).
+  - **`ReaderPage` envolve a `Image` numa `View pointerEvents="none"`** (segunda trava). Tem que ser uma
+    `View` do RN: a view nativa do expo-image (`ExpoView`) não implementa `ReactPointerEventsView`, então
+    `pointerEvents` direto na `Image` é ignorado na busca do alvo (`TouchTargetHelper`).
+  - **Nada de `TouchableOpacity`/`Pressable`/`onPress` dentro da página.** O toque de mostrar/esconder
+    controles fica no `Pressable` que envolve a FlatList; arrastar continua rolando (a ScrollView assume
+    e o press é cancelado) e os botões do rodapé ganham o toque por estarem mais fundo.
+  - Vale pra **qualquer `Image` do expo-image dentro de lista rolável** no app: capa no `ManhwaCard` e
+    na tela de Downloads também ficam em contêiner `pointerEvents="none"`. Ao criar uma lista nova com
+    imagem, faça igual.
+  - O que ainda vaza depois disso é a view-alvo em si (uma `ViewGroup` vazia por gesto, alguns bytes).
+    Só some de vez com RN corrigido: no próximo `eas build`, subir o Expo SDK/RN ou aplicar um patch em
+    `JSTouchDispatcher.onChildStartedNativeGesture` (chamar `sweepActiveTouchForTag` antes de zerar).
+  - **Como conferir sem logcat:** `MemoryLabel` (`src/components/MemoryLabel.tsx` + `src/lib/memory.ts`)
+    mostra `RAM app X · livre Y` na home e no cabeçalho do leitor, lido de `/proc/self/status` (`VmRSS`)
+    e `/proc/meminfo` (`MemAvailable`). O `app` **não** conta memória gráfica (bitmap de hardware do
+    Glide fica fora do RSS); o número que acusa o vazamento é o **`livre`**, que não pode ir caindo
+    capítulo após capítulo e tem que voltar ao fechar o leitor. O log `memória de imagem liberada`
+    também traz esses dois números.
 - **Cancelamento por token.** `autoScrollTokenRef` guarda o scroll automático em andamento.
   `onScrollBeginDrag` (toque do usuário), `scrollToTop`, troca de capítulo, fechar e unmount cancelam — o
   cancelamento funciona mesmo com o boost já desligado (não depende de `renderBoost`, só do token).
