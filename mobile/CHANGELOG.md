@@ -4,6 +4,11 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.5.15.1
+
+- Ajuste da auditoria do download: quando um capítulo é abandonado (falha ou tempo esgotado), o app
+  para de pedir as páginas restantes dele ao servidor.
+
 ## 1.5.15
 
 - **Botão de descer vai até o fim de verdade, e o capítulo abre onde você parou.** O leitor agora sabe a

@@ -339,6 +339,12 @@ async function downloadChapter(manhwaId: number, filename: string): Promise<numb
     const dir = chapterDir(manhwaId, filename);
     const base = `${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}`;
 
+    // Vira `true` quando o capítulo é abandonado (falha ou teto de tempo). O
+    // `withTimeout` do capítulo só desiste de ESPERAR: os workers do `runPages`
+    // continuam vivos, e sem isto cada um ainda pediria mais uma página ao
+    // servidor pra uma pasta que já está sendo apagada.
+    let abandoned = false;
+
     try {
         // 1. Quantas páginas. `fetch` do RN não tem timeout: teto explícito.
         const ctrl = new AbortController();
@@ -366,6 +372,7 @@ async function downloadChapter(manhwaId: number, filename: string): Promise<numb
         // service. Uma página que falha derruba o capítulo (cai no catch abaixo).
         await withTimeout(
             runPages(totalPages, PAGES_PER_CHAPTER, async (i) => {
+                if (abandoned) throw new Error('capítulo abandonado');
                 const target = pageFile(manhwaId, filename, i);
                 await withTimeout(
                     File.downloadFileAsync(`${base}/page/${i}`, target, { idempotent: true }),
@@ -381,6 +388,7 @@ async function downloadChapter(manhwaId: number, filename: string): Promise<numb
         console.log(`[download] ✅ #${manhwaId}/${filename} salvo no app — ${totalPages} páginas em ${Date.now() - t0}ms`);
         return totalPages;
     } catch (e) {
+        abandoned = true;
         console.warn(`[download] ❌ #${manhwaId}/${filename} falhou após ${Date.now() - t0}ms:`, e);
         // Limpa estado parcial (assíncrono: apagar dezenas de páginas com a API
         // nova, síncrona, travaria a UI). Ainda fora do índice, então se a

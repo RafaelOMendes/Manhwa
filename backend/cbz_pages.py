@@ -24,6 +24,7 @@ EXTENSOES_IMAGEM = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp"}
 # Quanto ler do começo de cada página pra achar as dimensões. JPEG pode ter
 # EXIF/ICC grandes antes do SOF; se não achar nesse pedaço, lê a página inteira.
 _CABECALHO_BYTES = 256 * 1024
+_PAGINA_MAX_BYTES = 64 * 1024 * 1024
 _CACHE_MAX = 256
 
 _cache: "OrderedDict[tuple, List[Optional[Tuple[int, int]]]]" = OrderedDict()
@@ -109,7 +110,10 @@ def _jpeg(d: bytes) -> Optional[Tuple[int, int]]:
 def _medir(zf: zipfile.ZipFile, nome: str) -> Optional[Tuple[int, int]]:
     with zf.open(nome) as f:
         tamanho = dimensoes_imagem(f.read(_CABECALHO_BYTES))
-    if tamanho is None and zf.getinfo(nome).file_size > _CABECALHO_BYTES:
+    # Teto na leitura completa: um arquivo gigante com extensão de imagem (zip
+    # malformado ou "zip bomb") não pode ser descompactado inteiro na memória só
+    # pra procurar um cabeçalho.
+    if tamanho is None and _CABECALHO_BYTES < zf.getinfo(nome).file_size <= _PAGINA_MAX_BYTES:
         tamanho = dimensoes_imagem(zf.read(nome))
     return tamanho
 
