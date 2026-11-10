@@ -4,6 +4,13 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.5.14.1
+
+- **Corrigido o scroll do leitor travando** (regressão da 1.5.14). O toque de mostrar/esconder controles
+  tinha ido para um componente em volta da lista que, no Android, capturava o arrasto antes da lista em
+  movimentos mais lentos. Agora o toque só é observado, sem capturar nada. A correção de memória da
+  1.5.14 continua valendo.
+
 ## 1.5.14
 
 - **Corrigido o vazamento de memória que enchia a RAM até o aparelho "resetar".** Cada página em que

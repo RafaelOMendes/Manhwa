@@ -206,8 +206,17 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
     `View` do RN: a view nativa do expo-image (`ExpoView`) não implementa `ReactPointerEventsView`, então
     `pointerEvents` direto na `Image` é ignorado na busca do alvo (`TouchTargetHelper`).
   - **Nada de `TouchableOpacity`/`Pressable`/`onPress` dentro da página.** O toque de mostrar/esconder
-    controles fica no `Pressable` que envolve a FlatList; arrastar continua rolando (a ScrollView assume
-    e o press é cancelado) e os botões do rodapé ganham o toque por estarem mais fundo.
+    controles é detectado por `onTouchStart`/`onTouchMove`/`onTouchEnd` numa `View` em volta da FlatList
+    (`tapRef`, `TAP_SLOP`, `TAP_MAX_MS`): toque curto e parado alterna; quando a ScrollView assume o
+    gesto chega `touchCancel` e nada acontece.
+  - **🚨 NUNCA um responder como ANCESTRAL da lista** (`Pressable`, `Touchable*`,
+    `onStartShouldSetResponder`, `PanResponder`). A v1.5.14 pôs um `Pressable` em volta da FlatList e o
+    scroll passou a travar: no Android a view que vira JS responder INTERCEPTA os `MOVE` seguintes
+    (`JSResponderHandler.onInterceptTouchEvent` devolve `view.id == currentJSResponder`), antes de eles
+    chegarem na ScrollView de dentro. O grant do responder vem do JS, então era uma corrida: arrasto
+    rápido a ScrollView ganhava, arrasto lento o `Pressable` ganhava e a lista não descia. Touchable
+    DENTRO da lista (botões do rodapé) não tem esse problema: a ScrollView intercepta antes dele.
+    Corrigido na v1.5.14.1.
   - Vale pra **qualquer `Image` do expo-image dentro de lista rolável** no app: capa no `ManhwaCard` e
     na tela de Downloads também ficam em contêiner `pointerEvents="none"`. Ao criar uma lista nova com
     imagem, faça igual.

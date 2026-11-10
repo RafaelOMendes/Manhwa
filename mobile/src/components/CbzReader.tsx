@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
-    View, Text, TouchableOpacity, ActivityIndicator, Pressable,
+    View, Text, TouchableOpacity, ActivityIndicator,
     FlatList, Dimensions, StyleSheet, Animated, BackHandler,
     InteractionManager,
 } from 'react-native';
@@ -48,6 +48,10 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 // `handleEndReached` em `contentSize - 120`, então 220 deixa ~100 de folga pro
 // overshoot do scroll animado — o botão aproxima do fim SEM marcar como lido.
 const END_SAFE_GAP = 220;
+
+// Toque simples que alterna os controles: curto e sem sair do lugar.
+const TAP_SLOP = 10;
+const TAP_MAX_MS = 350;
 
 // Parâmetros de renderização da FlatList.
 // - Normal: janela apertada. Páginas de manhwa podem ser MUITO altas
@@ -189,7 +193,8 @@ function releaseImageMemory(reason: string, detail = ''): void {
  *
  * Com a célula fora do alcance de toque, o alvo passa a ser o contêiner de
  * conteúdo da lista: uma view só, sem bitmap, que vive o capítulo inteiro.
- * O toque de mostrar/esconder controles foi pro `Pressable` em volta da lista.
+ * O toque de mostrar/esconder controles é detectado por `onTouchStart`/`onTouchEnd`
+ * numa `View` em volta da lista (ver `tapHandlers`), SEM responder.
  */
 function ReaderCell<ItemT>({ cellKey, index, item, children, ...viewProps }: CellRendererProps<ItemT>) {
     return <View {...viewProps} pointerEvents="none">{children}</View>;
@@ -1037,6 +1042,15 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
         };
     }, [manhwaId, filename, flushScrollPosition, cancelAutoScroll]);
 
+    // Toque simples (sem arrastar) em volta da lista = mostrar/esconder controles.
+    // 🚨 Eventos de toque CRUS de propósito, nunca `Pressable`/`Touchable*`/
+    // `onStartShouldSetResponder` num ancestral da lista: no Android a view que
+    // vira JS responder passa a INTERCEPTAR os MOVEs seguintes
+    // (`JSResponderHandler.onInterceptTouchEvent`), antes de eles chegarem na
+    // ScrollView de dentro. Num arrasto lento o responder ganhava a corrida e o
+    // scroll travava (regressão da v1.5.14). `onTouch*` só observa: quando a
+    // ScrollView assume o gesto chega um `touchCancel` e não há toggle.
+    const tapRef = useRef<{ x: number; y: number; t: number } | null>(null);
     const toggleUI = useCallback(() => {
         setShowUI(prev => {
             const next = !prev;
@@ -1284,11 +1298,33 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                     <>
                     {/* Toque simples = mostrar/esconder controles. Fica AQUI, em
                         volta da lista, e não em cada página: página não pode ser
-                        alvo de toque (ver `ReaderCell`). Arrastar continua
-                        rolando: a ScrollView assume o gesto e o press é
-                        cancelado. Os botões do rodapé ganham o toque por
-                        estarem mais fundo. */}
-                    <Pressable style={{ flex: 1 }} onPress={toggleUI}>
+                        alvo de toque (ver `ReaderCell`). Só observa os toques
+                        (ver `tapRef`): nada aqui pode virar responder. */}
+                    <View
+                        style={{ flex: 1 }}
+                        onTouchStart={(e) => {
+                            const { touches, pageX, pageY } = e.nativeEvent;
+                            tapRef.current = touches.length === 1 ? { x: pageX, y: pageY, t: Date.now() } : null;
+                        }}
+                        onTouchMove={(e) => {
+                            const tap = tapRef.current;
+                            if (!tap) return;
+                            const { pageX, pageY } = e.nativeEvent;
+                            if (Math.abs(pageX - tap.x) > TAP_SLOP || Math.abs(pageY - tap.y) > TAP_SLOP) tapRef.current = null;
+                        }}
+                        onTouchCancel={() => { tapRef.current = null; }}
+                        onTouchEnd={(e) => {
+                            const tap = tapRef.current;
+                            tapRef.current = null;
+                            if (!tap) return;
+                            const { pageX, pageY } = e.nativeEvent;
+                            if (
+                                Date.now() - tap.t <= TAP_MAX_MS &&
+                                Math.abs(pageX - tap.x) <= TAP_SLOP &&
+                                Math.abs(pageY - tap.y) <= TAP_SLOP
+                            ) toggleUI();
+                        }}
+                    >
                     <FlatList
                         ref={flatListRef}
                         data={pages}
@@ -1338,7 +1374,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                         updateCellsBatchingPeriod={renderBoost ? BATCH_PERIOD_BOOST : BATCH_PERIOD_NORMAL}
                         renderItem={renderPage}
                     />
-                    </Pressable>
+                    </View>
                     {/* Overlay durante scroll automático (restore ou "ir pro
                         fim"): esconde o "flicker" das páginas passando rápido
                         até o offset alvo. `pointerEvents="none"` de propósito —
