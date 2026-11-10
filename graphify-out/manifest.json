@@ -30,9 +30,9 @@
     "semantic_hash": "7ef9f5edc693e896e11c7238d0f973ce"
   },
   "backend/main.py": {
-    "mtime": 1793313425.1773155,
-    "seen": 1793313774.2554543,
-    "ast_hash": "82237a93f50447e683c2ac6559ac7606",
+    "mtime": 1794269154.470076,
+    "seen": 1794269273.3751569,
+    "ast_hash": "826a8b4dab9cc05abcde3d469dc3b225",
     "semantic_hash": ""
   },
   "backend/models.py": {
@@ -312,9 +312,9 @@
     "semantic_hash": "817fe671013b35ae0bc9301dfe449a87"
   },
   "AGENT_INSTRUCTIONS.md": {
-    "mtime": 1793363197.4972394,
-    "seen": 1793363216.0116196,
-    "ast_hash": "450b3956ecf03b879115658307f3d8dd",
+    "mtime": 1794269264.6778264,
+    "seen": 1794269273.3751569,
+    "ast_hash": "86b402bbc68528288153d1c67ca9cd1a",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -663,6 +663,12 @@
     "mtime": 1794268519.9815087,
     "seen": 1794268792.810966,
     "ast_hash": "4afce62b7a16a5f314e2fbbd51306a38",
+    "semantic_hash": ""
+  },
+  "backend/test_cbz_path_traversal.py": {
+    "mtime": 1794269202.6019838,
+    "seen": 1794269273.3751569,
+    "ast_hash": "0831256cefa3b4485a72c1113f066dfa",
     "semantic_hash": ""
   },
   "frontend/package-lock.json": {

@@ -24,6 +24,15 @@ O projeto Manhwa Tracker é composto por três partes principais:
     ambiente. Chamado hoje no `@app.exception_handler(Exception)` global e nos dois blocos "ERRO
     CRÍTICO" (`/api/manhwas/download-all`, `/api/manhwas/review-all`) — ao adicionar um novo `except`
     para uma falha inesperada/crítica, chame `log_error()` junto do `print()` existente.
+- **🔒 Nome de arquivo vindo da URL passa SEMPRE por `_cbz_path(title, filename)` (`main.py`).** As
+  rotas `/api/manhwas/{id}/read/{filename}` (`info`, `/download`, `/page/N`) montavam o caminho com
+  `os.path.join(pasta_do_manhwa, filename)`. O `{filename}` do Starlette só barra `/`: `..\..\x` e
+  `C:\Windows\win.ini` chegam como um segmento só, e no Windows o `join` trata `\` como separador e
+  deixa um caminho absoluto substituir a base. Como a `/download` devolve o arquivo cru, dava pra ler
+  qualquer arquivo do PC — e o servidor sobe em `0.0.0.0` sem token por padrão. `_cbz_path` só aceita
+  nome simples terminado em `.cbz` que resolva (via `realpath`) pra dentro da pasta do manhwa; o resto
+  vira 404. Qualquer rota nova que receba nome de arquivo do cliente usa o mesmo helper. Teste:
+  `backend/test_cbz_path_traversal.py` (sem banco, sem servidor).
 - **Transações no `get_db()` (`database.py`):** a dependency já faz `commit()` automático se o endpoint
   retornar sem exceção, e `rollback()` se uma exceção propagar. **Não dê `await db.commit()` manual
   dentro de um endpoint** — deixe o `get_db()` cuidar disso, senão fica fácil deixar o banco com commits

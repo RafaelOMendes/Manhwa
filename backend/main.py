@@ -332,6 +332,34 @@ def _manhwa_download_dir(title: str) -> str:
     return os.path.join(DOWNLOAD_DIR, safe_name or "Manhwa_Desconhecido")
 
 
+def _cbz_path(title: str, filename: str) -> str:
+    """Caminho de um `.cbz` DENTRO da pasta do manhwa. 404 pra qualquer outro nome.
+
+    `filename` vem da URL. O conversor de rota do Starlette (`[^/]+`) só barra a
+    barra normal: `..\\..\\algo` e `C:\\Windows\\win.ini` passam como UM segmento, e
+    no Windows o `os.path.join` trata `\\` como separador e deixa um caminho
+    absoluto substituir a base. Sem esta checagem, as rotas `/read/...` (em
+    especial a `/download`, que devolve o arquivo cru) liam qualquer arquivo do
+    PC. Só aceita um nome simples, terminado em `.cbz`, que resolva pra dentro da
+    pasta do manhwa (o `realpath` também cobre link simbólico apontando pra fora).
+    """
+    nao_encontrado = HTTPException(status_code=404, detail="Arquivo não encontrado")
+    if (
+        not filename
+        or "\x00" in filename
+        or "/" in filename
+        or "\\" in filename
+        or os.path.basename(filename) != filename
+        or not filename.lower().endswith(".cbz")
+    ):
+        raise nao_encontrado
+    base = os.path.realpath(_manhwa_download_dir(title))
+    caminho = os.path.realpath(os.path.join(base, filename))
+    if os.path.dirname(caminho) != base:
+        raise nao_encontrado
+    return caminho
+
+
 def _extract_chapter_number(filename: str) -> float:
     """Extrai o número do capítulo do nome do arquivo para ordenação."""
     # Tenta padrões como "Cap 01", "Chapter 123", "Cap. 05", "- 10 -", etc.
@@ -737,7 +765,7 @@ async def get_cbz_info(manhwa_id: int, filename: str, db: AsyncSession = Depends
     if not manhwa:
         raise HTTPException(status_code=404, detail="Manhwa não encontrado")
 
-    cbz_path = os.path.join(_manhwa_download_dir(manhwa.title), filename)
+    cbz_path = _cbz_path(manhwa.title, filename)
 
     if not os.path.exists(cbz_path):
         raise HTTPException(status_code=404, detail="Arquivo não encontrado")
@@ -762,7 +790,7 @@ async def download_cbz_file(manhwa_id: int, filename: str, db: AsyncSession = De
         print(f"📵 [APP-DOWNLOAD] 404 — manhwa_id={manhwa_id} não existe")
         raise HTTPException(status_code=404, detail="Manhwa não encontrado")
 
-    cbz_path = os.path.join(_manhwa_download_dir(manhwa.title), filename)
+    cbz_path = _cbz_path(manhwa.title, filename)
 
     if not os.path.exists(cbz_path):
         print(f"📵 [APP-DOWNLOAD] 404 — {manhwa.title} / {filename} (não está em disco)")
@@ -788,7 +816,7 @@ async def get_cbz_page(manhwa_id: int, filename: str, page_num: int, db: AsyncSe
     if not manhwa:
         raise HTTPException(status_code=404, detail="Manhwa não encontrado")
 
-    cbz_path = os.path.join(_manhwa_download_dir(manhwa.title), filename)
+    cbz_path = _cbz_path(manhwa.title, filename)
 
     if not os.path.exists(cbz_path):
         raise HTTPException(status_code=404, detail="Arquivo não encontrado")
