@@ -4,6 +4,20 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.5.15
+
+- **Botão de descer vai até o fim de verdade, e o capítulo abre onde você parou.** O leitor agora sabe a
+  altura de todas as páginas antes de mostrar o capítulo, então pula direto para o ponto certo em vez de
+  ir descendo até onde a lista tinha carregado. Sem travar e sem decodificar as páginas do caminho.
+- **Fim do "teleporte" para o fim do capítulo** ao abrir pela primeira vez um capítulo baixado. Mesma
+  causa: as alturas das páginas mudavam enquanto o leitor voltava para o ponto salvo.
+- **Baixar capítulos não trava mais o app.** Antes, quando o arquivo terminava de chegar, o app
+  descompactava o capítulo inteiro na mesma linha de execução da tela. Agora cada página é baixada
+  direto para o disco, sem passar por ali.
+- **O total de capítulos não some mais do card** ("Cap: 39" sem o "/ 55"). O "Sincronizar" gravava total 0
+  quando o tópico do Telegram vinha vazio; isso foi corrigido no servidor, que também conserta sozinho os
+  que já estavam zerados.
+
 ## 1.5.14.1
 
 - **Corrigido o scroll do leitor travando** (regressão da 1.5.14). O toque de mostrar/esconder controles

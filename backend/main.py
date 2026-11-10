@@ -306,6 +306,11 @@ async def update_manhwa(manhwa_id: int, manhwa: ManhwaUpdate, db: AsyncSession =
     
     # Atualizar campos
     for key, value in manhwa.model_dump().items():
+        # `total_chapters` é a contagem de .cbz do acervo (sync/review/files), não
+        # algo que o usuário edita: um PUT sem ele (ou com 0) não apaga o valor
+        # que já existe. Um total novo e positivo continua sendo aceito.
+        if key == "total_chapters" and not value and db_manhwa.total_chapters:
+            continue
         setattr(db_manhwa, key, value)
     
     await db.commit()
@@ -481,6 +486,12 @@ async def list_manhwa_files(manhwa_id: int, db: AsyncSession = Depends(get_db)):
     # semântica do campo no banco, que o review-all recalcula). Vai na resposta
     # pra o cliente poder ressincronizar o valor do banco quando ele estiver
     # `null` — ver mobile/src/components/ManhwaCard.tsx.
+    # Autocorreção: banco sem total (null/0) mas com capítulos em disco → grava a
+    # contagem real aqui mesmo (o `get_db()` commita), sem depender do PUT do app.
+    if files and not manhwa.total_chapters:
+        print(f"🩹 total_chapters de #{manhwa.id} estava {manhwa.total_chapters!r} → {len(files)}")
+        manhwa.total_chapters = len(files)
+
     return {
         "files": files,
         "path": download_dir,
@@ -985,7 +996,14 @@ async def download_all_manhwas(db: AsyncSession = Depends(get_db)):
                     # Atualizar total de capítulos no banco de dados
                     if dl_result.get("success") and "total" in dl_result:
                         total_found = dl_result["total"]
-                        if manhwa.total_chapters != total_found:
+                        # Tópico lido sem nenhum .cbz (vazio, mensagens apagadas,
+                        # leitura parcial) NÃO zera um total válido — mesma regra do
+                        # review-all (EMPTY_TOPIC). Era isso que deixava o card do app
+                        # e da web com "Cap: 39" sem o "/ 55": cada "Sincronizar"
+                        # regravava 0 por cima do total real.
+                        if total_found <= 0 and (manhwa.total_chapters or 0) > 0:
+                            print(f"   📭 Tópico sem .cbz — total mantido em {manhwa.total_chapters}")
+                        elif manhwa.total_chapters != total_found:
                             print(f"   🔄 Atualizando total de capítulos: {manhwa.total_chapters} → {total_found}")
                             changes["total_chapters"] = total_found
 

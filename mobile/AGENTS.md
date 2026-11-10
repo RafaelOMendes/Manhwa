@@ -54,7 +54,35 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
   e a FlatList alcançou ≥98% dela — necessário depois do botão "ir pro fim", que pula páginas e
   portanto **nunca** decodifica todas.
 - `removeClippedSubviews={false}` no FlatList (senão Android mostra "tela preta" em imagens altas).
-- **Scroll automático (`stepScrollTo`) — restore E botão "ir pro fim" usam o MESMO motor.** A FlatList
+- **📐 Layout EXATO antes de montar a lista (v1.5.15) — o que resolveu o botão de descer e a volta pro
+  ponto de leitura.** Sem `getItemLayout`, a `VirtualizedList` limita o espaço reservado ao que ela já
+  MEDIU (`constrainToMeasured` no último espaçador): um `scrollToOffset` pra além disso clampa "onde a
+  lista terminou de carregar", e ao tocar a tela mais páginas montavam e o fim mudava de lugar. O
+  `stepScrollTo` abaixo era o contorno disso, e nunca foi confiável. Agora:
+  - Antes de `loading` cair, o leitor descobre a altura de TODAS as páginas: **baixado** =
+    `measureLocalRatios` (cabeçalho de cada arquivo via `readImageSize`, 6 por vez, teto
+    `LOCAL_LAYOUT_TIMEOUT_MS` 4s); **remoto** = `page_sizes` da rota de info (backend `cbz_pages.py`).
+    `buildLayout` (`src/lib/reader-layout.ts`, puro e testado em
+    `src/lib/__tests__/reader-layout.test.mjs`) vira alturas + topos.
+  - A FlatList recebe `getItemLayout` e cada `ReaderPage` recebe `fixedHeight`: **a altura nunca muda no
+    `onLoad`** (senão o layout informado mentiria e todos os topos abaixo ficariam errados). Página que
+    não deu pra medir usa `FALLBACK_RATIO` (0.7) nos DOIS lugares; a imagem fica em `contain`.
+  - **Restore** = UM `scrollToOffset` sem animação pro offset salvo, passando por `clampRestoreOffset`
+    (nunca além de `total - viewport - END_SAFE_GAP`). **"Ir pro fim"** = UM salto sem animação pra
+    `bottomTarget` + a mesma chamada manual de `handleEndReached`. Nada de boost: só a janela de destino
+    monta (animar o salto montaria e decodificaria TODAS as páginas do caminho).
+  - `handleEndReached` considera a altura final quando há layout (critério (c)).
+  - **Sem layout** (backend antigo sem `page_sizes`, medição local estourou o teto, `page_sizes` com
+    tamanho diferente de `total_pages`), tudo continua no caminho antigo descrito abaixo: pré-cálculo em
+    segundo plano, `stepScrollTo` e `renderBoost`. Não remova esse caminho enquanto houver backend antigo.
+  - **Teleporte (card "Bug de teleporte", só em capítulo baixado):** a causa era a mesma — as alturas
+    das páginas baixadas mudavam logo depois do mount (pré-cálculo instantâneo + `onLoad`) enquanto o
+    restore empurrava o scroll, e um offset salvo maior que o conteúdo medido mandava pro fim. Com o
+    layout pronto antes do mount e o offset limitado por `clampRestoreOffset`, os dois somem.
+  - Log: `[reader] layout exato #id/arquivo: N páginas, Xdp (cabeçalho local | page_sizes do servidor)`.
+    Sem essa linha ao abrir um capítulo = caiu no caminho antigo.
+- **Scroll automático (`stepScrollTo`) — caminho SEM layout exato.** Restore E botão "ir pro fim" usam o
+  MESMO motor. A FlatList
   só mantém `windowSize` viewports montadas, então **um `scrollToOffset` único pra um offset muito à
   frente não funciona**: o conteúdo à frente ainda não existe/não foi medido, o scroll morre no meio
   ou engasga enquanto as páginas decodificam. `stepScrollTo(token, getTarget, opts)` empurra em
@@ -413,7 +441,8 @@ indefinidamente — foi assim que o app derrubava o aparelho depois de ~1h de us
 
 Timeouts de rede que sustentam tudo isso (o `fetch` do RN e o `File.downloadFileAsync` **não têm
 timeout padrão** — promise pendente pra sempre num socket travado):
-`FILES_FETCH_TIMEOUT_MS` (30s, `download-manager.ts`) e `CHAPTER_TIMEOUT_MS` (5min, `cache.ts`).
+`FILES_FETCH_TIMEOUT_MS` (30s, `download-manager.ts`), `CHAPTER_INFO_TIMEOUT_MS` (30s), `PAGE_TIMEOUT_MS`
+(60s) e `CHAPTER_TIMEOUT_MS` (5min, `cache.ts`), e `INFO_TIMEOUT_MS` (30s, info do capítulo no leitor).
 Ao mexer em download, **toda** operação de rede nova precisa de teto.
 
 Pra depurar: os logs são prefixados `[fgs]` — `handler iniciado` → `encerrando (motivo)` →
@@ -424,15 +453,28 @@ Pra depurar: os logs são prefixados `[fgs]` — `handler iniciado` → `encerra
   quando NÃO há download ativo — resolve o caso "X GB usado mas 0 baixado" de downloads interrompidos.
   Desde a v1.5.13 os órfãos também saem na inicialização (`cleanupOrphanedStorage`, ver "Armazenamento"
   acima), sem depender de abrir a tela de Downloads.
-- **CBZ quebrado/incompleto é barrado em duas camadas.** O backend (`_scan_cbz_files` em
-  `backend/main.py`) já filtra do `/api/manhwas/{id}/files` qualquer `.cbz` abaixo de
-  `MIN_CBZ_SIZE_BYTES` (100KB) — download interrompido no meio, disco cheio etc. nunca aparecem na
-  listagem, então nem a home nem a tela de Downloads chegam a oferecer esses capítulos. O mobile
-  reforça com o MESMO limiar em `downloadChapter` (`cache.ts`): depois do `File.downloadFileAsync`,
-  antes de extrair, `cbzTemp.size < MIN_CBZ_SIZE_BYTES` joga um erro — cai no catch existente, que já
-  apaga `_chapter.cbz` e a pasta do capítulo e conta como erro no `syncManhwaLocal`. Essa segunda
-  camada cobre quem baixou de um servidor sem o filtro (ou uma conexão que morreu no meio do
-  download local mesmo com o arquivo remoto íntegro).
+- **🚨 Capítulo é baixado PÁGINA A PÁGINA, nunca descompactado em JS (v1.5.15).** Sintoma (card "Ajuste
+  no download"): "quando termina de enviar o arquivo, o app trava inteiro". Causa: `downloadChapter`
+  baixava o `.cbz` e, ao chegar, fazia `cbzTemp.bytes()` (o capítulo inteiro, 5–70MB, no heap JS),
+  `JSZip.loadAsync` e `File.write` SÍNCRONO por página — tudo na thread JS, com até 20 capítulos ao
+  mesmo tempo (4 manhwas × 5). Agora:
+  - `GET /read/{f}` → `total_pages`, depois `File.downloadFileAsync` de cada `/read/{f}/page/{i}` direto
+    pra `page_{i}.jpg` (OkHttp no nativo, em stream): memória constante, zero CPU na thread JS. As rotas
+    são as do leitor remoto, então a ordem das páginas é a mesma (`listar_paginas` no backend).
+  - Concorrência: `PAGES_PER_CHAPTER` (3) por capítulo, `CHAPTER_CONCURRENCY` (2, era 5) por manhwa e um
+    teto GLOBAL `MAX_PAGE_DOWNLOADS` (6) no app inteiro (`pageLimiter`), pra "Baixar tudo" não abrir
+    dezenas de conexões no backend (cada página abre o `.cbz` lá). Medido no servidor real: ~0,6s por
+    página; 135 páginas em ~16s com 6 de cada vez, mesmo total de bytes do `.cbz`.
+  - Tetos: `CHAPTER_INFO_TIMEOUT_MS` (30s), `PAGE_TIMEOUT_MS` (60s) por página e `CHAPTER_TIMEOUT_MS`
+    (5min) pro capítulo. Uma página que falha derruba o capítulo inteiro (`runPages` para na primeira
+    falha) e a pasta é apagada com `LegacyFS.deleteAsync` (assíncrono); se não der tempo, a limpeza de
+    órfãos da inicialização pega. Capítulo com página faltando NUNCA entra no índice.
+  - Peças puras em `src/lib/page-pool.ts` (`createLimiter`, `runPages`, `withTimeout`), testadas em
+    `src/lib/__tests__/page-pool.test.mjs` (`node <arquivo>`, Node 22.6+).
+  - Pico de disco = 1× o capítulo (não há mais `.cbz` temporário). O `jszip` continua no `package.json`
+    só porque mexer nele muda o fingerprint; não use.
+  - O backend continua filtrando `.cbz` abaixo de `MIN_CBZ_SIZE_BYTES` (100KB) da listagem; no app esse
+    limiar só marca capítulo suspeito na tela de Downloads (`possiblyCorrupted`).
 - Tela de Downloads carrega **progressivamente** (linhas aparecem conforme prontas) e lê o índice uma
   única vez (`getManhwasWithLocalData`) pra abrir rápido.
 - ⚠️ **NÃO mexer no botão "Baixar tudo" (`downloads.tsx`) sem pedir permissão ao usuário.** O usuário

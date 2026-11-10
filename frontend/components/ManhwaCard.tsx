@@ -229,7 +229,7 @@ export default function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                     {manhwa.current_chapter !== undefined && (
                         <p className="text-xs sm:text-sm text-gray-400 mb-2">
                             Capítulo: {manhwa.current_chapter}
-                            {manhwa.total_chapters && ` / ${manhwa.total_chapters}`}
+                            {manhwa.total_chapters ? ` / ${manhwa.total_chapters}` : ''}
                         </p>
                     )}
 

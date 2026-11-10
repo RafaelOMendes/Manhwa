@@ -33,6 +33,14 @@ O projeto Manhwa Tracker é composto por três partes principais:
   nome simples terminado em `.cbz` que resolva (via `realpath`) pra dentro da pasta do manhwa; o resto
   vira 404. Qualquer rota nova que receba nome de arquivo do cliente usa o mesmo helper. Teste:
   `backend/test_cbz_path_traversal.py` (sem banco, sem servidor).
+- **📐 Páginas de um `.cbz`: ordem e dimensões vêm SEMPRE de `cbz_pages.py` (v1.5.15).**
+  `listar_paginas(zf)` é a única fonte da ordem: a rota `/read/{f}/page/{n}` e o `page_sizes` da rota
+  `/read/{f}` (info) têm que usar a mesma lista, porque o app baixa e mede pelo índice. `page_sizes[i]`
+  = `[largura, altura]` da página `i` (ou `null`), lido só do cabeçalho de cada imagem (JPEG/PNG/GIF/
+  WebP/BMP; até 256KB por página, ou a página inteira se o SOF do JPEG vier depois disso), com cache por
+  arquivo (caminho + mtime + tamanho, LRU de 256). Conferido contra o Pillow em 1298 páginas reais de
+  `D:\Manhwas` (JPEG e WebP), 0 divergências. Custo medido: ~0,5s a mais na primeira abertura de um
+  capítulo; depois vem do cache. Teste: `backend/test_cbz_pages.py`.
 - **Transações no `get_db()` (`database.py`):** a dependency já faz `commit()` automático se o endpoint
   retornar sem exceção, e `rollback()` se uma exceção propagar. **Não dê `await db.commit()` manual
   dentro de um endpoint** — deixe o `get_db()` cuidar disso, senão fica fácil deixar o banco com commits
@@ -265,8 +273,23 @@ O projeto Manhwa Tracker é composto por três partes principais:
     fire-and-forget (não bloqueia a abertura; falha é silenciosa, porque a lista exibida já está certa).
     Só acontece **online** — offline a lista é só a dos capítulos baixados, escrever esse tamanho
     zeraria o total real.
+  - **🩹 Total 0 por cima do real (v1.5.15, card "manhwas sem capítulos lidos").** No banco real,
+    "Reencarnei no Corpo de Um Príncipe Canalha" estava com `total_chapters = 0` e 55 `.cbz` na pasta, e
+    "Murim Login" com 0 e 251. Causa: o `download-all` ("Sincronizar") grava o `total` que o scraper
+    contou no tópico, e um tópico lido sem nenhum `.cbz` (vazio, mensagens apagadas, leitura parcial)
+    vinha como `success` com `total = 0` — cada sincronização regravava 0, desfazendo o `PUT` que o card
+    do app manda ao abrir a lista. Regras:
+    - `download-all` **não grava total 0 por cima de um total positivo** (mesma regra do `EMPTY_TOPIC`
+      do `review-all`).
+    - `GET /files` **se corrige sozinho**: se o banco tem `null`/0 e há `.cbz` em disco, grava
+      `len(files)` (o `get_db()` commita). Não depende mais do PUT do app.
+    - `PUT /api/manhwas/{id}` com `total_chapters` ausente/0 **não apaga** um total existente (um valor
+      novo positivo continua valendo).
+    - Card: o app mostra o total fresco do `/files` na hora (`knownTotal`); a web não renderiza mais um
+      `0` solto (`{0 && ...}` vira `0` no React).
+    - Teste: `backend/test_total_chapters.py`.
   - ⚠️ O `PUT /api/manhwas/{id}` **substitui a linha inteira** (`ManhwaUpdate.model_dump()` faz
-    `setattr` de todos os campos, inclusive os ausentes → `None`). Qualquer escrita de um campo só tem
+    `setattr` de todos os campos, inclusive os ausentes → `None`; exceção: `total_chapters`, acima). Qualquer escrita de um campo só tem
     que mandar o objeto completo; e `current_chapter` vai pelo **maior** entre o snapshot da home e o
     valor fresco do `/files` (que já reflete a fila offline drenada), senão sincronizar o total
     regrediria progresso de leitura.

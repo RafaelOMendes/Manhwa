@@ -39,6 +39,10 @@ function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
     const [localFiles, setLocalFiles] = useState<Set<string>>(new Set());
     const [readChapters, setReadChapters] = useState<Set<string>>(new Set());
     const [localCoverUri, setLocalCoverUri] = useState<string | null>(null);
+    // Total fresco do servidor (`GET /files`), pra o card mostrar o "/ N" na hora
+    // em vez de esperar a home recarregar a lista com o valor corrigido.
+    const [knownTotal, setKnownTotal] = useState<number | null>(null);
+    const displayTotal = manhwa.total_chapters || knownTotal || 0;
 
     // Re-checa a cover local sempre que o manhwa mudar de identidade (após fetchManhwas / sync)
     useEffect(() => {
@@ -155,6 +159,7 @@ function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
 
                 setFiles(loadedFiles);
                 setCurrentChapter(loadedCurrentChapter);
+                if (fetchedOnline && serverTotal !== null && serverTotal > 0) setKnownTotal(serverTotal);
 
                 // `total_chapters` no banco pode estar `null` (manhwa criado/importado
                 // sem esse campo) — é o que faz o card mostrar "Cap: 10" sem o "/ 300".
@@ -395,7 +400,7 @@ function ManhwaCard({ manhwa, onUpdate }: ManhwaCardProps) {
                     {/* Chapter info */}
                     {manhwa.current_chapter !== undefined && (
                         <Text className="text-[11px] text-gray-400 mb-2">
-                            Cap: {manhwa.current_chapter}{manhwa.total_chapters ? ` / ${manhwa.total_chapters}` : ''}
+                            Cap: {manhwa.current_chapter}{displayTotal ? ` / ${displayTotal}` : ''}
                         </Text>
                     )}
 
