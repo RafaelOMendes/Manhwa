@@ -25,6 +25,7 @@ from database import (
 from models import Manhwa as ManhwaModel, ChapterProgress
 from error_logger import log_error
 from chapter_progress_dedup import remover_duplicatas_progress
+from cbz_pages import listar_paginas, dimensoes_paginas
 
 logger = logging.getLogger(__name__)
 
@@ -757,9 +758,12 @@ async def get_scroll(manhwa_id: int, filename: str, db: AsyncSession = Depends(g
 
 @app.get("/api/manhwas/{manhwa_id}/read/{filename}")
 async def get_cbz_info(manhwa_id: int, filename: str, db: AsyncSession = Depends(get_db)):
-    """Retorna informações do CBZ (número de páginas)"""
-    import zipfile
+    """Informações do CBZ: número de páginas e as dimensões de cada uma.
 
+    `page_sizes[i]` é `[largura, altura]` da página `i` (mesma ordem da rota
+    `/page/{i}`), ou `null` se não deu pra medir. O app usa pra montar o leitor já
+    com a altura de todas as páginas (ver `cbz_pages.py`).
+    """
     result = await db.execute(select(ManhwaModel).where(ManhwaModel.id == manhwa_id))
     manhwa = result.scalar_one_or_none()
     if not manhwa:
@@ -770,16 +774,15 @@ async def get_cbz_info(manhwa_id: int, filename: str, db: AsyncSession = Depends
     if not os.path.exists(cbz_path):
         raise HTTPException(status_code=404, detail="Arquivo não encontrado")
 
-    image_extensions = {'.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp'}
+    # Lê o cabeçalho de cada página: I/O de disco, fora do event loop.
+    sizes = await asyncio.to_thread(dimensoes_paginas, cbz_path)
 
-    with zipfile.ZipFile(cbz_path, 'r') as zf:
-        pages = sorted([
-            name for name in zf.namelist()
-            if os.path.splitext(name.lower())[1] in image_extensions
-            and not os.path.basename(name).startswith('.')
-        ])
-
-    return {"filename": filename, "total_pages": len(pages), "pages": list(range(len(pages)))}
+    return {
+        "filename": filename,
+        "total_pages": len(sizes),
+        "pages": list(range(len(sizes))),
+        "page_sizes": [list(s) if s else None for s in sizes],
+    }
 
 @app.get("/api/manhwas/{manhwa_id}/read/{filename}/download")
 async def download_cbz_file(manhwa_id: int, filename: str, db: AsyncSession = Depends(get_db)):
@@ -821,14 +824,9 @@ async def get_cbz_page(manhwa_id: int, filename: str, page_num: int, db: AsyncSe
     if not os.path.exists(cbz_path):
         raise HTTPException(status_code=404, detail="Arquivo não encontrado")
 
-    image_extensions = {'.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp'}
-
     with zipfile.ZipFile(cbz_path, 'r') as zf:
-        pages = sorted([
-            name for name in zf.namelist()
-            if os.path.splitext(name.lower())[1] in image_extensions
-            and not os.path.basename(name).startswith('.')
-        ])
+        # Mesma ordem do `page_sizes` da rota de info (o app mede e baixa por índice).
+        pages = listar_paginas(zf)
 
         if page_num < 0 or page_num >= len(pages):
             raise HTTPException(status_code=404, detail="Página não encontrada")
