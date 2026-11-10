@@ -16,8 +16,8 @@ import * as LegacyFS from 'expo-file-system/legacy';
  * o leitor mede o capítulo inteiro a cada abertura, a memória nativa subia a
  * cada capítulo aberto.
  *
- * Formatos: os mesmos que o download extrai do .cbz (`IMAGE_EXTS` em
- * `cache.ts`) — JPEG, PNG, GIF, WebP e BMP. Em disco a extensão é sempre
+ * Formatos: os mesmos que o backend serve como página do .cbz (`image_extensions` em
+ * `backend/main.py`) — JPEG, PNG, GIF, WebP e BMP. Em disco a extensão é sempre
  * `.jpg`, então o formato vem dos magic bytes, não do nome. Orientação EXIF é
  * ignorada (raríssima em página de manhwa); se aparecer, o `onLoad` da página
  * corrige a altura dela ao decodificar.

@@ -2,9 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Directory, File, Paths } from 'expo-file-system';
 import * as LegacyFS from 'expo-file-system/legacy';
 import { Image } from 'expo-image';
-import JSZip from 'jszip';
 import { API_BASE } from './api';
 import { sweepStaleProbeSessions } from './image-size';
+import { createLimiter, runPages, withTimeout } from './page-pool';
 
 /**
  * Apaga uma pasta de capítulo de forma ASSÍNCRONA (fire-and-forget), pra NÃO
@@ -71,15 +71,33 @@ const SCROLL_KEY = 'manhwa-scroll-v1';
 const LASTREAD_KEY = 'manhwa-lastread-v1';
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_CACHED = 1;
-/** Chapters baixados em paralelo dentro de um mesmo manhwa. */
-const CHAPTER_CONCURRENCY = 5;
-/** Teto pra baixar UM capítulo. Ver o comentário em `downloadChapter`. */
+/**
+ * Chapters baixados em paralelo dentro de um mesmo manhwa. Era 5 quando cada
+ * capítulo era UM arquivo; agora cada um já baixa várias páginas em paralelo e
+ * todos disputam o mesmo `pageLimiter`, então mais capítulos ao mesmo tempo só
+ * deixaria mais capítulos pela metade (e mais tempo até cada um entrar no índice).
+ */
+const CHAPTER_CONCURRENCY = 2;
+/** Páginas de UM capítulo baixando ao mesmo tempo. */
+const PAGES_PER_CHAPTER = 3;
+/**
+ * Páginas baixando ao mesmo tempo no app inteiro (todos os manhwas e capítulos).
+ * Cada página é uma requisição que o backend atende abrindo o `.cbz`; medido no
+ * servidor real: ~0,6s por página, um capítulo de 135 páginas em ~16s com 6 de
+ * cada vez — mesmo total de bytes do `.cbz`.
+ */
+const MAX_PAGE_DOWNLOADS = 6;
+const pageLimiter = createLimiter(MAX_PAGE_DOWNLOADS);
+/** Teto pra descobrir quantas páginas o capítulo tem. */
+const CHAPTER_INFO_TIMEOUT_MS = 30 * 1000;
+/** Teto por página (as maiores passam de 3MB). */
+const PAGE_TIMEOUT_MS = 60 * 1000;
+/** Teto pra baixar UM capítulo inteiro. Ver o comentário em `downloadChapter`. */
 const CHAPTER_TIMEOUT_MS = 5 * 60 * 1000;
 /**
- * Abaixo disso o .cbz baixado é considerado quebrado/incompleto (conexão caiu
- * no meio, disco cheio etc.) — mesmo limiar do backend (`MIN_CBZ_SIZE_BYTES`
- * em `main.py`), que já filtra esses arquivos da listagem. Serve de segunda
- * linha de defesa pra quem baixou antes do filtro existir no servidor.
+ * Capítulo baixado com menos que isso no total é suspeito de incompleto (mesmo
+ * limiar do backend, `MIN_CBZ_SIZE_BYTES` em `main.py`, que filtra `.cbz`
+ * menores da listagem). Só informativo, na tela de Downloads.
  */
 const MIN_CBZ_SIZE_BYTES = 100 * 1024;
 /**
@@ -297,19 +315,21 @@ export async function trimAllCached(): Promise<{ trimmed: number }> {
     });
 }
 
-const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp']);
-
-function isImageEntry(name: string): boolean {
-    const base = name.split('/').pop() || '';
-    if (!base || base.startsWith('.')) return false;
-    const dot = base.lastIndexOf('.');
-    if (dot < 0) return false;
-    return IMAGE_EXTS.has(base.slice(dot).toLowerCase());
-}
-
 /**
- * Baixa o .cbz inteiro de um chapter e extrai as páginas pra disco.
- * Retorna o número de páginas extraídas.
+ * Baixa um capítulo PÁGINA A PÁGINA, cada uma direto do servidor pro disco.
+ * Retorna o número de páginas.
+ *
+ * 🚨 Por que não baixar o `.cbz` e descompactar (v1.5.15): era a causa do "app
+ * trava inteiro quando o download termina". Ao chegar o arquivo, o capítulo
+ * inteiro (5–70MB) virava `Uint8Array` no heap JS (`cbzTemp.bytes()`), o JSZip
+ * descompactava em JavaScript e cada página era gravada com `File.write`, que é
+ * SÍNCRONO. Tudo na thread JS — a mesma que desenha a tela e responde ao toque —
+ * e com até 20 capítulos fazendo isso ao mesmo tempo (4 manhwas × 5). Agora o
+ * JS só dispara `File.downloadFileAsync` (OkHttp no nativo, escreve em stream
+ * direto no arquivo): memória constante e nada de CPU na thread JS.
+ *
+ * Usa as mesmas rotas do leitor remoto (`/read/{f}` → `total_pages`,
+ * `/read/{f}/page/{i}`), então a ordem das páginas é a mesma dos dois lados.
  */
 async function downloadChapter(manhwaId: number, filename: string): Promise<number> {
     invalidateStorageCache(manhwaId);
@@ -317,62 +337,57 @@ async function downloadChapter(manhwaId: number, filename: string): Promise<numb
     console.log(`[download] ⬇️  #${manhwaId}/${filename} iniciando...`);
 
     const dir = chapterDir(manhwaId, filename);
-    if (!dir.exists) dir.create({ intermediates: true, idempotent: true });
+    const base = `${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}`;
 
-    const cbzTemp = new File(dir, '_chapter.cbz');
-    const remoteUrl = `${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}/download`;
-
-    let timeoutTimer: ReturnType<typeof setTimeout> | undefined;
     try {
-        // `File.downloadFileAsync` não tem timeout próprio: num socket que trava
-        // (host inalcançável depois da conexão aberta, ex.: a VPN caiu) a promise
-        // fica pendente PRA SEMPRE. Como esse download roda dentro do foreground
-        // service, isso segurava o serviço vivo indefinidamente. O race abaixo faz
-        // o lado JS desistir e contar como erro; o worker segue pro próximo cap.
-        await Promise.race([
-            File.downloadFileAsync(remoteUrl, cbzTemp, { idempotent: true }),
-            new Promise<never>((_, reject) => {
-                timeoutTimer = setTimeout(
-                    () => reject(new Error(`timeout de ${CHAPTER_TIMEOUT_MS}ms baixando o CBZ`)),
-                    CHAPTER_TIMEOUT_MS
+        // 1. Quantas páginas. `fetch` do RN não tem timeout: teto explícito.
+        const ctrl = new AbortController();
+        const infoTimer = setTimeout(() => ctrl.abort(), CHAPTER_INFO_TIMEOUT_MS);
+        let totalPages: number;
+        try {
+            const res = await fetch(base, { signal: ctrl.signal });
+            if (!res.ok) throw new Error(`info do capítulo: HTTP ${res.status}`);
+            const info = await res.json();
+            totalPages = Number(info.total_pages);
+        } finally {
+            clearTimeout(infoTimer);
+        }
+        if (!Number.isInteger(totalPages) || totalPages <= 0) {
+            throw new Error(`capítulo sem páginas (total_pages=${totalPages})`);
+        }
+
+        if (!dir.exists) dir.create({ intermediates: true, idempotent: true });
+
+        // 2. Páginas: poucas por capítulo e um teto GLOBAL (`pageLimiter`), pra
+        // "Baixar tudo" não abrir dezenas de conexões no servidor de uma vez.
+        // `File.downloadFileAsync` também não tem timeout próprio (ver AGENTS.md,
+        // "Timeouts de rede"): cada página tem o seu, e o capítulo inteiro tem
+        // `CHAPTER_TIMEOUT_MS`, pra um socket travado não prender o foreground
+        // service. Uma página que falha derruba o capítulo (cai no catch abaixo).
+        await withTimeout(
+            runPages(totalPages, PAGES_PER_CHAPTER, async (i) => {
+                const target = pageFile(manhwaId, filename, i);
+                await withTimeout(
+                    File.downloadFileAsync(`${base}/page/${i}`, target, { idempotent: true }),
+                    PAGE_TIMEOUT_MS,
+                    `timeout de ${PAGE_TIMEOUT_MS}ms na página ${i}`,
                 );
-            }),
-        ]);
-        if (cbzTemp.size < MIN_CBZ_SIZE_BYTES) {
-            throw new Error(`CBZ quebrado/incompleto: ${cbzTemp.size} bytes (< ${MIN_CBZ_SIZE_BYTES})`);
-        }
-        const sizeMB = (cbzTemp.size / (1024 * 1024)).toFixed(1);
-        const dlMs = Date.now() - t0;
-        console.log(`[download]   📦 #${manhwaId}/${filename} CBZ recebido — ${sizeMB}MB em ${dlMs}ms`);
+                if (!target.exists || target.size <= 0) throw new Error(`página ${i} vazia`);
+            }, pageLimiter),
+            CHAPTER_TIMEOUT_MS,
+            `timeout de ${CHAPTER_TIMEOUT_MS}ms baixando o capítulo`,
+        );
 
-        const tExtract = Date.now();
-        const bytes = await cbzTemp.bytes();
-        const zip = await JSZip.loadAsync(bytes);
-
-        const entries = Object.entries(zip.files)
-            .filter(([name, entry]) => !entry.dir && isImageEntry(name))
-            .sort(([a], [b]) => a.localeCompare(b));
-
-        for (let i = 0; i < entries.length; i++) {
-            const [, entry] = entries[i];
-            const data = await entry.async('uint8array');
-            const target = pageFile(manhwaId, filename, i);
-            target.write(data);
-        }
-
-        try { if (cbzTemp.exists) cbzTemp.delete(); } catch {}
-        const extractMs = Date.now() - tExtract;
-        const totalMs = Date.now() - t0;
-        console.log(`[download] ✅ #${manhwaId}/${filename} salvo no app — ${entries.length} páginas, extração ${extractMs}ms, total ${totalMs}ms`);
-        return entries.length;
+        console.log(`[download] ✅ #${manhwaId}/${filename} salvo no app — ${totalPages} páginas em ${Date.now() - t0}ms`);
+        return totalPages;
     } catch (e) {
         console.warn(`[download] ❌ #${manhwaId}/${filename} falhou após ${Date.now() - t0}ms:`, e);
-        // Limpa estado parcial em caso de falha
-        try { if (cbzTemp.exists) cbzTemp.delete(); } catch {}
-        try { if (dir.exists) dir.delete(); } catch {}
+        // Limpa estado parcial (assíncrono: apagar dezenas de páginas com a API
+        // nova, síncrona, travaria a UI). Ainda fora do índice, então se a
+        // deleção não terminar a limpeza de órfãos da inicialização pega.
+        await LegacyFS.deleteAsync(dir.uri, { idempotent: true }).catch(() => {});
         throw e;
     } finally {
-        if (timeoutTimer) clearTimeout(timeoutTimer);
         // Sucesso ou falha, o diretório do manhwa mudou de tamanho.
         invalidateStorageCache(manhwaId);
     }
@@ -553,9 +568,10 @@ async function syncManhwaLocalInner(
             if (shouldCancel?.()) { queue.length = 0; return; }
             const fn = queue.shift();
             if (!fn) return;
-            // Pico em disco enquanto extrai: o .cbz e as páginas juntos (~2×).
+            // As páginas vão direto pro disco (sem .cbz temporário): o pico é o
+            // próprio tamanho do capítulo.
             const free = freeDiskBytes();
-            const peak = 2 * (sizeByName.get(fn) ?? 0) * 1024 * 1024;
+            const peak = (sizeByName.get(fn) ?? 0) * 1024 * 1024;
             if (lowSpace || (free !== null && free - peak < MIN_FREE_SPACE_BYTES)) {
                 const skipped = 1 + queue.length;
                 queue.length = 0;
