@@ -61,13 +61,48 @@ export async function runPages(
     if (failure) throw (failure as { error: unknown }).error;
 }
 
-/** Rejeita com `message` se `promise` não terminar em `ms`; o timer é sempre limpo. */
+/**
+ * Erro do `withTimeout`. Diferente de uma falha da própria operação, aqui ela
+ * NÃO terminou: continua rodando por baixo (um download nativo segue escrevendo
+ * no arquivo). Quem tenta de novo precisa saber disso: ver `retryUnlessTimeout`.
+ */
+export class TimeoutError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'TimeoutError';
+    }
+}
+
+/**
+ * Tenta `fn` até `retries` vezes a mais, esperando `delayMs × tentativa` entre
+ * elas. NÃO repete depois de `TimeoutError` (a tentativa anterior ainda está
+ * viva e escrevendo no mesmo arquivo: duas escritas juntas corromperiam a
+ * página) nem quando `shouldStop()` vira verdadeiro.
+ */
+export async function retryUnlessTimeout<T>(
+    fn: (attempt: number) => Promise<T>,
+    retries: number,
+    delayMs: number,
+    shouldStop: () => boolean = () => false,
+): Promise<T> {
+    for (let attempt = 0; ; attempt++) {
+        try {
+            return await fn(attempt);
+        } catch (error) {
+            if (error instanceof TimeoutError || attempt >= retries || shouldStop()) throw error;
+            await new Promise<void>(resolve => setTimeout(resolve, delayMs * (attempt + 1)));
+            if (shouldStop()) throw error;
+        }
+    }
+}
+
+/** Rejeita com `TimeoutError(message)` se `promise` não terminar em `ms`; o timer é sempre limpo. */
 export function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
     let timer: ReturnType<typeof setTimeout> | undefined;
     return Promise.race([
         promise,
         new Promise<never>((_, reject) => {
-            timer = setTimeout(() => reject(new Error(message)), ms);
+            timer = setTimeout(() => reject(new TimeoutError(message)), ms);
         }),
     ]).finally(() => {
         if (timer) clearTimeout(timer);

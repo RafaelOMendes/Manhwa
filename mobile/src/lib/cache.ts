@@ -4,7 +4,7 @@ import * as LegacyFS from 'expo-file-system/legacy';
 import { Image } from 'expo-image';
 import { API_BASE } from './api';
 import { sweepStaleProbeSessions } from './image-size';
-import { createLimiter, runPages, withTimeout } from './page-pool';
+import { createLimiter, retryUnlessTimeout, runPages, withTimeout } from './page-pool';
 
 /**
  * Apaga uma pasta de capítulo de forma ASSÍNCRONA (fire-and-forget), pra NÃO
@@ -90,10 +90,18 @@ const MAX_PAGE_DOWNLOADS = 6;
 const pageLimiter = createLimiter(MAX_PAGE_DOWNLOADS);
 /** Teto pra descobrir quantas páginas o capítulo tem. */
 const CHAPTER_INFO_TIMEOUT_MS = 30 * 1000;
-/** Teto por página (as maiores passam de 3MB). */
-const PAGE_TIMEOUT_MS = 60 * 1000;
-/** Teto pra baixar UM capítulo inteiro. Ver o comentário em `downloadChapter`. */
-const CHAPTER_TIMEOUT_MS = 5 * 60 * 1000;
+/**
+ * Teto por página, contado só DEPOIS que ela ganha a vez na fila. Generoso de
+ * propósito (v1.6.0): uma página de 3MB a 30KB/s leva ~100s, e conexão lenta
+ * não é erro. Quem pega conexão MORTA é o OkHttp do `downloadFileAsync` (10s
+ * sem receber nada → falha), e essa falha é repetida (`PAGE_RETRIES`).
+ */
+const PAGE_TIMEOUT_MS = 3 * 60 * 1000;
+/** Novas tentativas por página em falha de rede (não em timeout). */
+const PAGE_RETRIES = 2;
+const PAGE_RETRY_DELAY_MS = 1500;
+/** Intervalo mínimo entre avisos de progresso parcial (por manhwa). */
+const PARTIAL_PROGRESS_MS = 700;
 /**
  * Capítulo baixado com menos que isso no total é suspeito de incompleto (mesmo
  * limiar do backend, `MIN_CBZ_SIZE_BYTES` em `main.py`, que filtra `.cbz`
@@ -331,7 +339,11 @@ export async function trimAllCached(): Promise<{ trimmed: number }> {
  * Usa as mesmas rotas do leitor remoto (`/read/{f}` → `total_pages`,
  * `/read/{f}/page/{i}`), então a ordem das páginas é a mesma dos dois lados.
  */
-async function downloadChapter(manhwaId: number, filename: string): Promise<number> {
+async function downloadChapter(
+    manhwaId: number,
+    filename: string,
+    onPage?: (donePages: number, totalPages: number) => void,
+): Promise<number> {
     invalidateStorageCache(manhwaId);
     const t0 = Date.now();
     console.log(`[download] ⬇️  #${manhwaId}/${filename} iniciando...`);
@@ -339,10 +351,10 @@ async function downloadChapter(manhwaId: number, filename: string): Promise<numb
     const dir = chapterDir(manhwaId, filename);
     const base = `${API_BASE}/api/manhwas/${manhwaId}/read/${encodeURIComponent(filename)}`;
 
-    // Vira `true` quando o capítulo é abandonado (falha ou teto de tempo). O
-    // `withTimeout` do capítulo só desiste de ESPERAR: os workers do `runPages`
-    // continuam vivos, e sem isto cada um ainda pediria mais uma página ao
-    // servidor pra uma pasta que já está sendo apagada.
+    // Vira `true` quando o capítulo é abandonado (uma página esgotou as
+    // tentativas): os outros workers do `runPages` ainda estão vivos, e sem isto
+    // cada um repetiria a própria página no servidor pra uma pasta que já está
+    // sendo apagada.
     let abandoned = false;
 
     try {
@@ -366,24 +378,31 @@ async function downloadChapter(manhwaId: number, filename: string): Promise<numb
 
         // 2. Páginas: poucas por capítulo e um teto GLOBAL (`pageLimiter`), pra
         // "Baixar tudo" não abrir dezenas de conexões no servidor de uma vez.
-        // `File.downloadFileAsync` também não tem timeout próprio (ver AGENTS.md,
-        // "Timeouts de rede"): cada página tem o seu, e o capítulo inteiro tem
-        // `CHAPTER_TIMEOUT_MS`, pra um socket travado não prender o foreground
-        // service. Uma página que falha derruba o capítulo (cai no catch abaixo).
-        await withTimeout(
-            runPages(totalPages, PAGES_PER_CHAPTER, async (i) => {
+        //
+        // Conexão lenta (v1.6.0): NÃO existe mais teto pro capítulo inteiro. Ele
+        // contava também o tempo de espera na fila global, então em rede fraca
+        // capítulos grandes estouravam os 5min sem estarem travados, eram
+        // apagados e recomeçavam do zero. Agora o limite é por página, só conta
+        // depois que ela ganha a vez, e falha de rede é repetida. O que segura
+        // um download realmente morto é o watchdog do foreground service (10min
+        // sem NENHUM progresso), alimentado pelo `onPage` abaixo.
+        // Uma página que esgota as tentativas derruba o capítulo (catch abaixo).
+        let donePages = 0;
+        await runPages(totalPages, PAGES_PER_CHAPTER, async (i) => {
+            const target = pageFile(manhwaId, filename, i);
+            await retryUnlessTimeout(async (attempt) => {
                 if (abandoned) throw new Error('capítulo abandonado');
-                const target = pageFile(manhwaId, filename, i);
+                if (attempt > 0) console.log(`[download]   ↻ #${manhwaId}/${filename} página ${i}, tentativa ${attempt + 1}`);
                 await withTimeout(
                     File.downloadFileAsync(`${base}/page/${i}`, target, { idempotent: true }),
                     PAGE_TIMEOUT_MS,
                     `timeout de ${PAGE_TIMEOUT_MS}ms na página ${i}`,
                 );
                 if (!target.exists || target.size <= 0) throw new Error(`página ${i} vazia`);
-            }, pageLimiter),
-            CHAPTER_TIMEOUT_MS,
-            `timeout de ${CHAPTER_TIMEOUT_MS}ms baixando o capítulo`,
-        );
+            }, PAGE_RETRIES, PAGE_RETRY_DELAY_MS, () => abandoned);
+            donePages++;
+            onPage?.(donePages, totalPages);
+        }, pageLimiter);
 
         console.log(`[download] ✅ #${manhwaId}/${filename} salvo no app — ${totalPages} páginas em ${Date.now() - t0}ms`);
         return totalPages;
@@ -568,7 +587,19 @@ async function syncManhwaLocalInner(
     let doneChapters = 0;
     let doneMB = 0;
     let lowSpace = false;
-    onProgress?.({ doneChapters, totalChapters, doneMB, totalMB });
+    // Fração já baixada de cada capítulo EM ANDAMENTO: o progresso em MB anda a
+    // cada página, não só quando um capítulo inteiro termina. Em conexão lenta
+    // um capítulo pode levar minutos, e sem isso a barra ficava parada e o
+    // watchdog do foreground service (10min sem progresso) abortava um
+    // download que estava andando.
+    const partial = new Map<string, number>();
+    let lastPartialEmit = 0;
+    const emitProgress = () => {
+        let inFlightMB = 0;
+        partial.forEach((fraction, name) => { inFlightMB += fraction * (sizeByName.get(name) ?? 0); });
+        onProgress?.({ doneChapters, totalChapters, doneMB: doneMB + inFlightMB, totalMB });
+    };
+    emitProgress();
 
     const worker = async () => {
         while (queue.length > 0) {
@@ -594,15 +625,25 @@ async function syncManhwaLocalInner(
                 return;
             }
             try {
-                const totalPages = await downloadChapter(manhwaId, fn);
+                const totalPages = await downloadChapter(manhwaId, fn, (done, total) => {
+                    partial.set(fn, done / total);
+                    const now = Date.now();
+                    if (now - lastPartialEmit >= PARTIAL_PROGRESS_MS) {
+                        lastPartialEmit = now;
+                        emitProgress();
+                    }
+                });
                 await commitDownloadedChapter(manhwaId, fn, totalPages, chapterNumberByName.get(fn));
+                partial.delete(fn);
                 result.downloaded++;
                 doneChapters++;
                 doneMB += sizeByName.get(fn) ?? 0;
-                onProgress?.({ doneChapters, totalChapters, doneMB, totalMB });
+                emitProgress();
             } catch (e) {
                 console.warn(`[cache] download falhou pra ${fn}:`, e);
+                partial.delete(fn);
                 result.errors++;
+                emitProgress();
             }
         }
     };

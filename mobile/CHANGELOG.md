@@ -4,6 +4,18 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.6.0
+
+Marco: o vazamento de memória que resetava o aparelho foi confirmado como resolvido no uso real.
+
+- **Download em conexão lenta não fica mais recomeçando.** Antes cada capítulo tinha 5 minutos no total,
+  contando a espera na fila; em internet fraca os capítulos grandes estouravam o tempo, eram apagados e
+  voltavam do zero. Agora o limite é por página (3 minutos, contados só quando ela começa a baixar), e
+  uma queda de conexão no meio é tentada de novo até 2 vezes antes de desistir do capítulo.
+- **A barra de progresso anda a cada página**, e não só quando um capítulo inteiro termina.
+- **Aviso de dados móveis na tela de Downloads** (faixa no topo e confirmação antes de baixar, com o
+  tamanho estimado). ⚠️ Depende de uma versão nova do APK: no APK atual o aviso não aparece.
+
 ## 1.5.15.1
 
 - Ajuste da auditoria do download: quando um capítulo é abandonado (falha ou tempo esgotado), o app

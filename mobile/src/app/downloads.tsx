@@ -22,6 +22,7 @@ import {
 } from '../lib/cache';
 import { useDownloadProgress, clearFinishedProgress, getStoreState } from '../lib/download-manager';
 import { startBackgroundDownload, stopBackgroundDownload } from '../lib/background-download';
+import { getConnectionKind, useIsOnCellular } from '../lib/network';
 
 type Unit = 'chapters' | 'mb';
 
@@ -196,6 +197,7 @@ export default function Downloads() {
     // Atualiza a linha quando o download daquele manhwa termina (done/error),
     // mesmo tendo rodado no foreground service.
     const handledStatusRef = useRef<Record<number, string>>({});
+    const onCellular = useIsOnCellular();
     useEffect(() => {
         for (const idStr of Object.keys(progress)) {
             const id = Number(idStr);
@@ -210,15 +212,41 @@ export default function Downloads() {
         }
     }, [progress, rows, refreshRow]);
 
-    const handleDownloadOne = useCallback((m: Manhwa) => {
-        startBackgroundDownload([m]);
+    // Nos dados móveis, pede confirmação antes de começar (capítulos têm de 5
+    // a 70MB cada). Só existe num APK com o `expo-network`; sem ele
+    // `getConnectionKind()` devolve 'unknown' e o download começa direto.
+    const startWithDataWarning = useCallback(async (list: Manhwa[], pendingMB: number) => {
+        if ((await getConnectionKind()) !== 'cellular') {
+            startBackgroundDownload(list);
+            return;
+        }
+        const tamanho = pendingMB >= 1024
+            ? `${(pendingMB / 1024).toFixed(1)} GB`
+            : `${Math.round(pendingMB)} MB`;
+        Alert.alert(
+            'Você está nos dados móveis',
+            (pendingMB > 0 ? `Este download tem cerca de ${tamanho}. ` : '') +
+            'Baixar agora vai usar a sua franquia de internet. Quer continuar?',
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                { text: 'Baixar mesmo assim', onPress: () => startBackgroundDownload(list) },
+            ],
+        );
     }, []);
 
+    const handleDownloadOne = useCallback((m: Manhwa) => {
+        const row = rows.find(r => r.manhwa.id === m.id);
+        startWithDataWarning([m], row?.pendingMB ?? 0);
+    }, [rows, startWithDataWarning]);
+
     const handleDownloadAll = useCallback(() => {
-        const pending = rows.filter(r => r.pendingCount > 0).map(r => r.manhwa);
-        if (pending.length === 0) return;
-        startBackgroundDownload(pending);
-    }, [rows]);
+        const pendingRows = rows.filter(r => r.pendingCount > 0);
+        if (pendingRows.length === 0) return;
+        startWithDataWarning(
+            pendingRows.map(r => r.manhwa),
+            pendingRows.reduce((sum, r) => sum + (r.pendingMB ?? 0), 0),
+        );
+    }, [rows, startWithDataWarning]);
 
     const handleStop = useCallback(async () => {
         await stopBackgroundDownload();
@@ -305,6 +333,15 @@ export default function Downloads() {
 
     const renderHeader = () => (
         <View className="px-4 pt-2 pb-1">
+            {/* Aviso de dados móveis (só aparece num APK com o expo-network) */}
+            {onCellular && (
+                <View className="flex-row items-center gap-2 mb-3 px-3 py-2.5 rounded-xl border border-amber-600/50 bg-amber-500/10">
+                    <AlertTriangle size={16} color="#f59e0b" />
+                    <Text className="flex-1 text-[12px] text-amber-200">
+                        Você está nos dados móveis. Baixar capítulos vai usar a sua franquia de internet.
+                    </Text>
+                </View>
+            )}
             {/* Cartões de resumo */}
             <View className="flex-row gap-3 mb-4">
                 <View className="flex-1 bg-[#1f1c1c] rounded-xl border border-gray-800 p-3.5">

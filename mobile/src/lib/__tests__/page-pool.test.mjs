@@ -80,3 +80,37 @@ await test('withTimeout rejeita no prazo e não deixa timer vivo', async () => {
 });
 
 console.log(`\n${passed} testes passaram`);
+
+// --- retryUnlessTimeout (v1.6.0) ---
+const { retryUnlessTimeout, TimeoutError } = await import('../page-pool.ts');
+
+await test('retry repete falha de rede e devolve o resultado', async () => {
+    let calls = 0;
+    const r = await retryUnlessTimeout(async () => { calls++; if (calls < 3) throw new Error('reset'); return 'ok'; }, 2, 1);
+    assert.equal(r, 'ok');
+    assert.equal(calls, 3);
+});
+
+await test('retry desiste depois do limite', async () => {
+    let calls = 0;
+    await assert.rejects(retryUnlessTimeout(async () => { calls++; throw new Error('sempre'); }, 2, 1), /sempre/);
+    assert.equal(calls, 3);
+});
+
+await test('retry NÃO repete depois de timeout (a tentativa anterior ainda escreve no arquivo)', async () => {
+    let calls = 0;
+    await assert.rejects(
+        retryUnlessTimeout(() => { calls++; return withTimeout(new Promise(() => {}), 10, 'lento'); }, 5, 1),
+        (e) => e instanceof TimeoutError,
+    );
+    assert.equal(calls, 1);
+});
+
+await test('retry para quando o capítulo foi abandonado', async () => {
+    let calls = 0;
+    let stop = false;
+    await assert.rejects(retryUnlessTimeout(async () => { calls++; stop = true; throw new Error('x'); }, 5, 1, () => stop), /x/);
+    assert.equal(calls, 1);
+});
+
+console.log(`\n${passed} testes passaram (com retry)`);

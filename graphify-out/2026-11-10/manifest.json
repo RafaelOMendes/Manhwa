@@ -252,9 +252,9 @@
     "semantic_hash": ""
   },
   "mobile/src/lib/cache.ts": {
-    "mtime": 1794306645.9220073,
-    "seen": 1794307489.4055943,
-    "ast_hash": "f23f44aafc9d8c9fa3d11d75e5b59084",
+    "mtime": 1794354789.915217,
+    "seen": 1794354909.4383323,
+    "ast_hash": "ccf27b6fb0c38b40c85d2718f1460f63",
     "semantic_hash": ""
   },
   "mobile/src/lib/download-manager.ts": {
@@ -276,9 +276,9 @@
     "semantic_hash": ""
   },
   "mobile/src/lib/version.ts": {
-    "mtime": 1794307409.3534956,
-    "seen": 1794307489.4055943,
-    "ast_hash": "fa53614574adda1630cc09ce7ea187ff",
+    "mtime": 1794354902.0412548,
+    "seen": 1794354909.4383323,
+    "ast_hash": "05876eb242bd2f912f4cc37a8105e6cb",
     "semantic_hash": ""
   },
   "mobile/src/nativewind-env.d.ts": {
@@ -348,9 +348,9 @@
     "semantic_hash": ""
   },
   "mobile/CHANGELOG.md": {
-    "mtime": 1794307409.35249,
-    "seen": 1794307489.4055943,
-    "ast_hash": "a7cc110dc3bc1895b6adf74956743509",
+    "mtime": 1794354902.0412548,
+    "seen": 1794354909.4383323,
+    "ast_hash": "8df45309aba9ebbd37ae1802cb0b2b8e",
     "semantic_hash": ""
   },
   "mobile/CLAUDE.md": {
@@ -672,9 +672,9 @@
     "semantic_hash": ""
   },
   "backend/cbz_pages.py": {
-    "mtime": 1794307091.2806947,
-    "seen": 1794307489.4055943,
-    "ast_hash": "e48e34aa79857a142733e01135963121",
+    "mtime": 1794354789.4801917,
+    "seen": 1794354909.4383323,
+    "ast_hash": "14c9f983e0ee42f5bee1992eaca04ae6",
     "semantic_hash": ""
   },
   "backend/test_cbz_pages.py": {

@@ -441,8 +441,20 @@ indefinidamente — foi assim que o app derrubava o aparelho depois de ~1h de us
 
 Timeouts de rede que sustentam tudo isso (o `fetch` do RN e o `File.downloadFileAsync` **não têm
 timeout padrão** — promise pendente pra sempre num socket travado):
-`FILES_FETCH_TIMEOUT_MS` (30s, `download-manager.ts`), `CHAPTER_INFO_TIMEOUT_MS` (30s), `PAGE_TIMEOUT_MS`
-(60s) e `CHAPTER_TIMEOUT_MS` (5min, `cache.ts`), e `INFO_TIMEOUT_MS` (30s, info do capítulo no leitor).
+`FILES_FETCH_TIMEOUT_MS` (30s, `download-manager.ts`), `CHAPTER_INFO_TIMEOUT_MS` (30s) e `PAGE_TIMEOUT_MS`
+(3min por página, `cache.ts`), e `INFO_TIMEOUT_MS` (30s, info do capítulo no leitor).
+
+### Aviso de dados móveis (`src/lib/network.ts`, v1.6.0)
+- `getConnectionKind()` / `useIsOnCellular()` leem o tipo de conexão do módulo nativo `ExpoNetwork`
+  (pacote `expo-network`), carregado com `requireOptionalNativeModule`. **O APK de 25/08 não tem esse
+  módulo**: nele tudo devolve `'unknown'`/`false` e nenhum aviso aparece. O aviso só passa a funcionar
+  num APK construído com `expo-network` no `package.json` (dependência nativa → `eas build`, muda o
+  fingerprint). Não importe `expo-network` direto: quebraria o bundle no APK sem o módulo.
+- Na tela de Downloads: faixa amarela no topo enquanto estiver nos dados móveis, e um `Alert` de
+  confirmação (com o tamanho estimado) antes de "Baixar tudo" e do download individual. O handler do
+  botão "Baixar tudo" mudou; o layout/className dele não.
+- Com VPN (Tailscale) funciona igual: no Android 10+ o módulo testa `TRANSPORT_CELLULAR` primeiro, e a
+  rede da VPN carrega os transportes da rede de baixo (conferido no fonte do expo-network 8.0.8).
 Ao mexer em download, **toda** operação de rede nova precisa de teto.
 
 Pra depurar: os logs são prefixados `[fgs]` — `handler iniciado` → `encerrando (motivo)` →
@@ -465,9 +477,18 @@ Pra depurar: os logs são prefixados `[fgs]` — `handler iniciado` → `encerra
     teto GLOBAL `MAX_PAGE_DOWNLOADS` (6) no app inteiro (`pageLimiter`), pra "Baixar tudo" não abrir
     dezenas de conexões no backend (cada página abre o `.cbz` lá). Medido no servidor real: ~0,6s por
     página; 135 páginas em ~16s com 6 de cada vez, mesmo total de bytes do `.cbz`.
-  - Tetos: `CHAPTER_INFO_TIMEOUT_MS` (30s), `PAGE_TIMEOUT_MS` (60s) por página e `CHAPTER_TIMEOUT_MS`
-    (5min) pro capítulo. Uma página que falha derruba o capítulo inteiro (`runPages` para na primeira
-    falha) e a pasta é apagada com `LegacyFS.deleteAsync` (assíncrono); se não der tempo, a limpeza de
+  - **Conexão lenta (v1.6.0): não existe teto pro capítulo inteiro.** O antigo `CHAPTER_TIMEOUT_MS`
+    (5min) contava também a espera na fila global, então em rede fraca capítulos grandes estouravam sem
+    estarem travados, eram apagados e recomeçavam do zero, em laço. Agora: `CHAPTER_INFO_TIMEOUT_MS`
+    (30s) pra info e `PAGE_TIMEOUT_MS` (3min) **por página, contado só depois que ela ganha a vez**.
+    Conexão MORTA quem pega é o OkHttp do `downloadFileAsync` (10s sem receber nada → erro), e erro de
+    rede é repetido: `PAGE_RETRIES` (2) com `retryUnlessTimeout`. **Timeout não é repetido**: a tentativa
+    anterior continua viva no nativo escrevendo no mesmo arquivo, e duas escritas juntas corromperiam a
+    página. O progresso em MB anda **a cada página** (`onPage` → `emitProgress`, no máximo um aviso a
+    cada `PARTIAL_PROGRESS_MS`), e é isso que mantém vivo o watchdog de 10min do foreground service num
+    download lento. A notificação não muda (deduplica por capítulos concluídos).
+  - Uma página que esgota as tentativas derruba o capítulo inteiro (`runPages` para na primeira
+    falha, `abandoned` impede as outras de repetirem) e a pasta é apagada com `LegacyFS.deleteAsync` (assíncrono); se não der tempo, a limpeza de
     órfãos da inicialização pega. Capítulo com página faltando NUNCA entra no índice.
   - Peças puras em `src/lib/page-pool.ts` (`createLimiter`, `runPages`, `withTimeout`), testadas em
     `src/lib/__tests__/page-pool.test.mjs` (`node <arquivo>`, Node 22.6+).
