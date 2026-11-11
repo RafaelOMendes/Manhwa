@@ -186,9 +186,9 @@
     "semantic_hash": ""
   },
   "mobile/src/app/index.tsx": {
-    "mtime": 1794268601.4373271,
-    "seen": 1794268792.810966,
-    "ast_hash": "cb42ea342297f16427ece4a73f3b46b1",
+    "mtime": 1794357327.802899,
+    "seen": 1794357375.0142424,
+    "ast_hash": "5b748e81c325536488dcd1f18a3e3526",
     "semantic_hash": ""
   },
   "mobile/src/components/AddManhwaModal.tsx": {
@@ -198,9 +198,9 @@
     "semantic_hash": "b84f188a0aa80082acdf7831769e4604"
   },
   "mobile/src/components/CbzReader.tsx": {
-    "mtime": 1794306981.0913815,
-    "seen": 1794307489.4055943,
-    "ast_hash": "a9a5b9c02ba867d74739dd83c11724ad",
+    "mtime": 1794357332.4958842,
+    "seen": 1794357375.0142424,
+    "ast_hash": "1d4da3496d6ff2090852a7f92fa7aa49",
     "semantic_hash": ""
   },
   "mobile/src/components/ManhwaCard.tsx": {
@@ -276,9 +276,9 @@
     "semantic_hash": ""
   },
   "mobile/src/lib/version.ts": {
-    "mtime": 1794355651.6675155,
-    "seen": 1794355673.4548097,
-    "ast_hash": "7ef0987339de4e5241025c39f23ee6be",
+    "mtime": 1794357350.265023,
+    "seen": 1794357375.0142424,
+    "ast_hash": "1ac22c5aba76517a8e40c59c36a67c20",
     "semantic_hash": ""
   },
   "mobile/src/nativewind-env.d.ts": {
@@ -342,15 +342,15 @@
     "semantic_hash": "5a9309c07733e6e50e60ec877982781e"
   },
   "mobile/AGENTS.md": {
-    "mtime": 1794355646.4661317,
-    "seen": 1794355673.4548097,
-    "ast_hash": "07d80e91671dd682cd65398977a40182",
+    "mtime": 1794357343.6879766,
+    "seen": 1794357375.0142424,
+    "ast_hash": "a71ffa2d2722edd6062f8b9ca1f9519a",
     "semantic_hash": ""
   },
   "mobile/CHANGELOG.md": {
-    "mtime": 1794355650.6656792,
-    "seen": 1794355673.4548097,
-    "ast_hash": "976ab1e5ec58dd411ffd24e067cdfb1b",
+    "mtime": 1794357349.3194356,
+    "seen": 1794357375.0142424,
+    "ast_hash": "3af08f3965099076fe5ac8a2f5fc2fdf",
     "semantic_hash": ""
   },
   "mobile/CLAUDE.md": {
@@ -653,16 +653,10 @@
     "ast_hash": "a9a6f786f534463f276d36491cb09326",
     "semantic_hash": ""
   },
-  "mobile/src/components/MemoryLabel.tsx": {
-    "mtime": 1794268589.6658852,
-    "seen": 1794268792.810966,
-    "ast_hash": "1262312e21e694513aa64279bfb2de9a",
-    "semantic_hash": ""
-  },
   "mobile/src/lib/memory.ts": {
-    "mtime": 1794268519.9815087,
-    "seen": 1794268792.810966,
-    "ast_hash": "4afce62b7a16a5f314e2fbbd51306a38",
+    "mtime": 1794357347.7919142,
+    "seen": 1794357375.0142424,
+    "ast_hash": "15c3c12f3a1eb492c1a21f8c6ed5da70",
     "semantic_hash": ""
   },
   "backend/test_cbz_path_traversal.py": {

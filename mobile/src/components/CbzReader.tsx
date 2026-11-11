@@ -16,7 +16,6 @@ import {
 import { readImageSize, RemoteImageSizeProbe } from '../lib/image-size';
 import { readMemory, formatMemory } from '../lib/memory';
 import { buildLayout, ratiosFromSizes, clampRestoreOffset, bottomTarget, ReaderLayout } from '../lib/reader-layout';
-import MemoryLabel from './MemoryLabel';
 import { enqueueChapterRead, enqueueScroll } from '../lib/sync-queue';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -1418,7 +1417,7 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                         <Text style={styles.headerBtnText}>Anterior</Text>
                     </TouchableOpacity>
 
-                    {/* Chapter title + RAM (só lê enquanto o cabeçalho está visível) */}
+                    {/* Chapter title */}
                     <View style={styles.headerCenter}>
                         <Text style={styles.headerTitle} numberOfLines={1}>
                             {filename.replace('.cbz', '')}
@@ -1426,7 +1425,6 @@ export default function CbzReader({ manhwaId, filename, chapterNumber, files, on
                                 <Text style={styles.headerTitleSub}> ({currentIndex + 1}/{files.length})</Text>
                             )}
                         </Text>
-                        <MemoryLabel active={showUI} style={styles.headerMemory} />
                     </View>
 
                     {/* Next + Close */}
@@ -1646,11 +1644,6 @@ const styles = StyleSheet.create({
         fontSize: 13,
         fontWeight: '500',
         textAlign: 'center',
-    },
-    headerMemory: {
-        color: 'rgba(255,255,255,0.45)',
-        fontSize: 10,
-        marginTop: 1,
     },
     headerTitleSub: {
         color: 'rgba(255,255,255,0.4)',

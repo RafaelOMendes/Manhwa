@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import * as LegacyFS from 'expo-file-system/legacy';
 
@@ -60,29 +59,4 @@ export function formatMemory(sample: MemorySample | null): string {
     if (sample.appMB !== null) parts.push(`app ${formatMB(sample.appMB)}`);
     if (sample.freeMB !== null) parts.push(`livre ${formatMB(sample.freeMB)}`);
     return parts.join(' · ');
-}
-
-/**
- * Amostra de memória atualizada a cada `intervalMs` enquanto `active`. Com
- * `active` falso não lê nada (nem timer): o leitor só liga com o cabeçalho
- * visível. Devolve `''` até a primeira leitura ou se `/proc` não for legível.
- */
-export function useMemoryLabel(active: boolean, intervalMs = 3000): string {
-    const [label, setLabel] = useState('');
-    useEffect(() => {
-        if (!active) return;
-        let cancelled = false;
-        const tick = () => {
-            readMemory().then(sample => {
-                if (!cancelled) setLabel(formatMemory(sample));
-            }).catch(() => {});
-        };
-        tick();
-        const timer = setInterval(tick, intervalMs);
-        return () => {
-            cancelled = true;
-            clearInterval(timer);
-        };
-    }, [active, intervalMs]);
-    return label;
 }

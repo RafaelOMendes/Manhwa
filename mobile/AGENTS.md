@@ -251,12 +251,12 @@ serve a lista, os arquivos `.cbz` e o progresso (`current_chapter`).
   - O que ainda vaza depois disso é a view-alvo em si (uma `ViewGroup` vazia por gesto, alguns bytes).
     Só some de vez com RN corrigido: no próximo `eas build`, subir o Expo SDK/RN ou aplicar um patch em
     `JSTouchDispatcher.onChildStartedNativeGesture` (chamar `sweepActiveTouchForTag` antes de zerar).
-  - **Como conferir sem logcat:** `MemoryLabel` (`src/components/MemoryLabel.tsx` + `src/lib/memory.ts`)
-    mostra `RAM app X · livre Y` na home e no cabeçalho do leitor, lido de `/proc/self/status` (`VmRSS`)
-    e `/proc/meminfo` (`MemAvailable`). O `app` **não** conta memória gráfica (bitmap de hardware do
-    Glide fica fora do RSS); o número que acusa o vazamento é o **`livre`**, que não pode ir caindo
-    capítulo após capítulo e tem que voltar ao fechar o leitor. O log `memória de imagem liberada`
-    também traz esses dois números.
+  - **Como conferir:** o log `[reader] memória de imagem liberada` traz `app X · livre Y`
+    (`src/lib/memory.ts`, lido de `/proc/self/status` `VmRSS` e `/proc/meminfo` `MemAvailable`). O `app`
+    **não** conta memória gráfica (bitmap de hardware do Glide fica fora do RSS); o número que acusa o
+    vazamento é o **`livre`**, que não pode ir caindo capítulo após capítulo. O indicador de RAM na
+    tela (home e cabeçalho do leitor) existiu da v1.5.14 à v1.6.0 só pra validar a correção; o dono
+    confirmou que resolveu e pediu pra tirar (v1.6.1). **Não recolocar na interface** sem ele pedir.
 - **Cancelamento por token.** `autoScrollTokenRef` guarda o scroll automático em andamento.
   `onScrollBeginDrag` (toque do usuário), `scrollToTop`, troca de capítulo, fechar e unmount cancelam — o
   cancelamento funciona mesmo com o boost já desligado (não depende de `renderBoost`, só do token).

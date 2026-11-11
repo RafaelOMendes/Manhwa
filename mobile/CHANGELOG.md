@@ -4,6 +4,11 @@ Versões entregues via `eas update` (branch `preview`). Bumpar `APP_VERSION` em
 `src/lib/version.ts` a cada entrega (NÃO mexer no `expo.version` do `app.json`
 — ver `AGENTS.md`).
 
+## 1.6.1
+
+- Removido o indicador de RAM da home e do cabeçalho do leitor. Ele existia só para conferir a correção
+  do vazamento de memória, que já foi confirmada.
+
 ## 1.6.0
 
 Marco: o vazamento de memória que resetava o aparelho foi confirmado como resolvido no uso real.

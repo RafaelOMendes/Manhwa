@@ -5,7 +5,6 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { BookOpen, Plus, Download, CheckCircle, XCircle, WifiOff, RefreshCw, RotateCw, FolderDown } from 'lucide-react-native';
 import ManhwaCard from '../components/ManhwaCard';
 import AddManhwaModal from '../components/AddManhwaModal';
-import MemoryLabel from '../components/MemoryLabel';
 import { Manhwa } from '../types/manhwa';
 import { API_BASE } from '../lib/api';
 import {
@@ -318,9 +317,6 @@ export default function Home() {
                         <Text className="text-2xl font-bold text-white">Manhwa Tracker</Text>
                         <Text className="text-[11px] text-gray-500 mb-1">v{APP_VERSION}</Text>
                     </View>
-                    {/* Conferência do vazamento do leitor: `livre` tem que voltar
-                        ao fechar um capítulo (ver MemoryLabel). */}
-                    <MemoryLabel intervalMs={5000} style={{ fontSize: 10, color: '#6b7280', marginTop: 2 }} />
                 </View>
                 {isOffline && (
                     <TouchableOpacity
